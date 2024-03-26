@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#0292FA</color>
+    <color name="colorAccent">#609848</color>
+    <color name="calendarSurfaceColor">#FFFFFF</color>
+    <color name="calendarTextColor">#000000</color>
+    <color name="black_99">#0D000000</color>
+
+</resources>

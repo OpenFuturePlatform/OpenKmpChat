@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "824491642882",
+    "project_id": "open-chat-5f7ba",
+    "storage_bucket": "open-chat-5f7ba.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:824491642882:android:ba618329aa37e8dda6571b",
+        "android_client_info": {
+          "package_name": "com.mutualmobile.harvestKmp.android"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGWW1WW-c8qbvZRKaiGgPeVcNRi1lr0b0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
