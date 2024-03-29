@@ -4,6 +4,7 @@ import com.mutualmobile.harvestKmp.db.BaseIoDB
 import com.mutualmobile.harvestKmp.db.asFlow
 import com.mutualmobile.harvestKmp.db.mapToList
 import com.mutualmobile.harvestKmp.domain.model.Message
+import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
 import db.Harvest_chat
 import kotlinx.coroutines.flow.Flow
@@ -21,8 +22,8 @@ class ChatLocalImpl(override var driver: SqlDriver? = null) : ChatLocal {
         )
     }
 
-    override fun getAll(): Flow<List<Harvest_chat>> {
-        return dbQuery.selectAllChats().asFlow().mapToList()
+    override fun getAll(): List<Harvest_chat> {
+        return dbQuery.selectAllChats().executeAsList()
     }
 
     override fun getChat(): Harvest_chat? {

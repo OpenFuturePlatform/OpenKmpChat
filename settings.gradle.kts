@@ -9,5 +9,5 @@ pluginManagement {
 rootProject.name = "OpenChatKMP"
 include(":androidApp")
 include(":shared")
-include(":webApp")
-include(":compose-desktop")
+//include(":webApp")
+//include(":compose-desktop")

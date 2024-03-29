@@ -18,5 +18,5 @@ val viewModelModule = module {
     single { WorkTypeScreenViewModel() }
     single { UserHomeViewModel() }
     single { ChatRoomViewModel() }
-    single { ChatViewModel() }
+    single { ChatViewModel(get()) }
 }

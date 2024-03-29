@@ -57,8 +57,8 @@ class ChatRoomViewModel : ViewModel() {
         val chat2 = DisplayChatRoom(
             chatUid = "2",
             chatRoomName = "GROUP CHAT",
-            group = true,
-            displayUserName = "",
+            group = false,
+            displayUserName = "MAKSIM",
             memberCount = 15,
             lastMessageText = "hello guys",
             lastMessageTime = now.epochSeconds,

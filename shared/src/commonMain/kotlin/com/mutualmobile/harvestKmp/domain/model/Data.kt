@@ -2,6 +2,7 @@ package com.mutualmobile.harvestKmp.domain.model
 import dev.icerock.moko.graphics.Color
 import dev.icerock.moko.resources.ImageResource
 import kotlinx.datetime.Clock
+import kotlinx.serialization.Serializable
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -21,6 +22,11 @@ data class Message(
         id = Random.nextLong()
     )
 }
+
+@Serializable
+data class MessagesState(
+    val message: String? = ""
+)
 
 data class ChatUser(
     val id: String,

@@ -1,6 +1,8 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.chatScreen
 
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
@@ -14,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.R
 import androidx.compose.material.icons.Icons
@@ -23,15 +26,20 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.mutualmobile.harvestKmp.MR
@@ -45,6 +53,7 @@ import com.mutualmobile.harvestKmp.android.ui.theme.spacing
 import com.mutualmobile.harvestKmp.android.viewmodels.ChatRoomViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.UserHomeViewModel
+import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.domain.model.DisplayChatRoom
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import org.koin.androidx.compose.get
@@ -122,6 +131,14 @@ fun ChatsBody(viewModel: ChatRoomViewModel) {
                         onChatClicked = viewModel::onChatClicked
                     )
                 }
+//                ChannelListItem(
+//                    position = position,
+//                    otherUserName = chat.displayUserName,
+//                    lastMessageText = chat.lastMessageText!!,
+//                    otherUserPicture = chat.chatRoomPicture,
+//                    onChatClicked = viewModel::onChatClicked
+//                )
+                Divider()
             }
             item {
                 Box(Modifier.height(70.dp))
@@ -251,4 +268,45 @@ fun OneToOneChatCard(
 
         }
     }
+}
+
+@Composable
+fun ChannelListItem(position: Int,
+                    otherUserName: String,
+                    lastMessageText: String,
+                    otherUserPicture: String?,
+                    onChatClicked: (Int) -> Unit) {
+    Row( // 1
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 8.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Avatar(otherUserPicture!!, otherUserName) // 2
+        Column(modifier = Modifier.padding(start = 8.dp)) { // 3
+            Text(
+                text = otherUserName,
+                style = TextStyle(fontWeight = FontWeight.Bold),
+                fontSize = 18.sp,
+            )
+
+            Text(
+                text = lastMessageText,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+@Composable
+fun Avatar(pictureString: String, displayName: String) {
+    Image(
+        modifier = Modifier
+            .size(PROFILE_PICTURE_SIZE.dp)
+            .clip(CircleShape),
+        contentScale = ContentScale.Crop,
+        painter = painterResource(MR.images.stock2.drawableResId),
+        contentDescription = "User picture"
+    )
 }

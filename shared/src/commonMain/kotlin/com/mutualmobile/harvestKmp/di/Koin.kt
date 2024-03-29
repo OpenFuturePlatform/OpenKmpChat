@@ -11,6 +11,10 @@ import com.mutualmobile.harvestKmp.data.network.authUser.AuthApi
 import com.mutualmobile.harvestKmp.data.network.authUser.UserForgotPasswordApi
 import com.mutualmobile.harvestKmp.data.network.authUser.impl.AuthApiImpl
 import com.mutualmobile.harvestKmp.data.network.authUser.impl.UserForgotPasswordApiImpl
+import com.mutualmobile.harvestKmp.data.network.chat.ChatApi
+import com.mutualmobile.harvestKmp.data.network.chat.RealtimeMessagingClient
+import com.mutualmobile.harvestKmp.data.network.chat.impl.ChatApiImpl
+import com.mutualmobile.harvestKmp.data.network.chat.impl.KtorRealtimeMessagingClient
 import com.mutualmobile.harvestKmp.data.network.org.OrgApi
 import com.mutualmobile.harvestKmp.data.network.org.OrgProjectsApi
 import com.mutualmobile.harvestKmp.data.network.org.OrgUsersApi
@@ -31,6 +35,8 @@ import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.GetUserUseCas
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.LoginUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.LogoutUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.NewOrgSignUpUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.chatApiUseCases.CreateMessagesUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.chatApiUseCases.GetMessagesUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgApiUseCases.FindOrgByIdUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgApiUseCases.FindOrgByIdentifierUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.CreateProjectUseCase
@@ -60,6 +66,7 @@ import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.*
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -85,6 +92,7 @@ fun initSharedDependencies() = startKoin {
         forgotPasswordApiUseCaseModule,
         userProjectUseCaseModule,
         userWorkUseCaseModule,
+        chatApiUseCaseModule,
         platformModule()
     )
 }
@@ -102,6 +110,7 @@ fun initSqlDelightExperimentalDependencies() = startKoin {
         forgotPasswordApiUseCaseModule,
         userProjectUseCaseModule,
         userWorkUseCaseModule,
+        chatApiUseCaseModule,
         platformModule()
     )
 }
@@ -119,6 +128,7 @@ val networkModule = module {
     single {
         httpClient(get(), get(), get())
     }
+    single<RealtimeMessagingClient> { KtorRealtimeMessagingClient(get()) }
 }
 
 val commonModule = module {
@@ -129,6 +139,7 @@ val commonModule = module {
     single<OrgUsersApi> { OrgUsersApiImpl(get()) }
     single<UserProjectApi> { UserProjectApiImpl(get()) }
     single<UserWorkApi> { UserWorkApiImpl(get()) }
+    single<ChatApi> { ChatApiImpl(get()) }
     single { Settings() }
 }
 
@@ -145,6 +156,11 @@ val authApiUseCaseModule = module {
     single { LoginUseCase(get()) }
     single { LogoutUseCase(get(), get(), get(), get()) }
     single { NewOrgSignUpUseCase(get()) }
+}
+
+val chatApiUseCaseModule = module {
+    single { GetMessagesUseCase(get()) }
+    single { CreateMessagesUseCase(get()) }
 }
 
 val orgApiUseCaseModule = module {
@@ -237,6 +253,11 @@ class UserWorkUseCaseComponent : KoinComponent {
     fun provideGetWorkLogsForDateRangeUseCase(): GetWorkLogsForDateRangeUseCase = get()
 }
 
+class ChatApiUseCaseComponent : KoinComponent {
+    fun provideGetMessagesByRecipient(): GetMessagesUseCase = get()
+    fun provideCreateMessages(): CreateMessagesUseCase = get()
+}
+
 fun httpClient(
     httpClientEngine: HttpClientEngine,
     settings: Settings,
@@ -267,6 +288,7 @@ fun httpClient(
             logger = Logger.DEFAULT
             level = LogLevel.ALL
         }
+        install(WebSockets)
     }
 
 private suspend fun RefreshTokensParams.refreshToken(

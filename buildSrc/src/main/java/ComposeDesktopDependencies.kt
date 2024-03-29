@@ -1,4 +1,5 @@
 object ComposeDesktopDependencyVersions {
+  //const val composeDesktopWeb = "1.2.0-alpha01-dev709"
   const val composeDesktopWeb = "1.2.0-alpha01-dev686"
 
 }

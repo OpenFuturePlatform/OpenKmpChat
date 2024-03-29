@@ -21,6 +21,7 @@ object CommonMainDependencies {
         "io.ktor:ktor-client-auth:${CommonDependencyVersions.ktor}",
         "io.ktor:ktor-client-content-negotiation:${CommonDependencyVersions.ktor}",
         "io.ktor:ktor-serialization-kotlinx-json:${CommonDependencyVersions.ktor}",
+        "io.ktor:ktor-client-websockets:${CommonDependencyVersions.ktor}",
         "io.ktor:ktor-client-logging:${CommonDependencyVersions.ktor}",
         "io.ktor:ktor-client-serialization:${CommonDependencyVersions.ktor}",
         "org.jetbrains.kotlinx:kotlinx-datetime:${CommonDependencyVersions.kotlinxDateTime}",

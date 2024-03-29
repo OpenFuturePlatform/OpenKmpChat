@@ -18,7 +18,9 @@
             android:name="com.mutualmobile.harvestKmp.android.ui.MainActivity"
             android:exported="true"
             android:theme="@style/SplashScreen"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:allowEmbedded="true"
+            android:resizeableActivity="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

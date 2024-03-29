@@ -49,6 +49,9 @@ object Endpoint {
     const val LOG_WORK = "$USER_PROJECT/log-work"
     const val GET_LOG_WORK = "$USER_PROJECT/get-work-log"
 
+    const val CHAT_URL = "$API_URL/messages"
+    const val LIST_RECIPIENT_CHATS = "$CHAT_URL/recipient/"
+
     object Params {
         const val START_DATE = "startDate"
         const val END_DATE = "endDate"
@@ -75,5 +78,10 @@ object Endpoint {
         const val NOTIFICATION_ID = "notificationId"
 
         const val ORG_IDENTIFIER = "identifier"
+
+        //websocket
+        const val SOCKET_URL = "ws://$SPRING_BOOT_BASE_URL/ws"
+        const val CHAT_TOPIC = "/topic/chat"
+        const val CHAT_LINK_SOCKET = "/app/direct-message"
     }
 }

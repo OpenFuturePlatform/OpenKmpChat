@@ -42,11 +42,11 @@ internal fun Messages(messages: List<Message>, myUser: ChatUser) {
     ) {
         item { Spacer(Modifier.size(20.dp)) }
         items(messages, key = { it.id }) {
-            ChatMessage(isMyMessage = it.user == myUser, it)
+            ChatMessage(isMyMessage = it.user.id == myUser.id, it)
         }
-        item {
-            Box(Modifier.height(70.dp))
-        }
+//        item {
+//            Box(Modifier.height(70.dp))
+//        }
     }
 }
 
