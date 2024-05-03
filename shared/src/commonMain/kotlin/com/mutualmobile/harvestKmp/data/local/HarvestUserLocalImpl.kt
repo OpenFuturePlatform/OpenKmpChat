@@ -14,6 +14,7 @@ class HarvestUserLocalImpl(override var driver: SqlDriver? = null) : HarvestUser
     private val dbQuery by lazy { database.harvestDBQueries }
 
     override fun saveUser(input: GetUserResponse) {
+        println(" GetUserResponse: $input")
         dbQuery.insertUser(
             uid = input.id ?: throw RuntimeException("Woah! the uid should not be null"),
             firstName = input.firstName,

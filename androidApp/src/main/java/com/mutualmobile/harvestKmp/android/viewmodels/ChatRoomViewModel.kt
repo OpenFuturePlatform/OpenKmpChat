@@ -10,62 +10,74 @@ import com.mutualmobile.harvestKmp.data.network.TAG
 import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.domain.model.DisplayChatRoom
+import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
-import com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels.LoginDataModel
+import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.ChatGroupDataModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.datetime.Clock
-import kotlinx.datetime.DateTimePeriod
-import kotlinx.datetime.Instant
-import java.time.LocalDateTime
-import java.util.Date
 
 class ChatRoomViewModel : ViewModel() {
+    var currentNavigationCommand: PraxisCommand? by mutableStateOf(null)
+    var currentHomeChatState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
+
+    /**
+     * The logged in user who is using the app.
+     */
+    private val _currentUser = MutableStateFlow(User())
+    val currentUser: StateFlow<User> = _currentUser
 
     /**
      * All [ChatRoom]s which the [currentUser] is participating in, as [DisplayChatRoom] objects.
      * All of these have at least one message.
      */
     private val _chats = MutableStateFlow(listOf<DisplayChatRoom>())
-    val chats: StateFlow<List<DisplayChatRoom>> = _chats
+    var chats: StateFlow<List<DisplayChatRoom>> = _chats
+
+    private val getChatGroupDataModel = ChatGroupDataModel()
 
     init {
+        println("ChatRoomViewModel call init")
         getCurrentUserAndChats()
+        with(getChatGroupDataModel) {
+            observeDataState()
+            observeNavigationCommands()
+        }
     }
 
-    private fun navigateToChatRoom(chatRoomUid: String) {
-        Log.d(TAG, "Sending new chat room event, with chat room UID $chatRoomUid...")
+    private fun ChatGroupDataModel.observeNavigationCommands() =
+        praxisCommand.onEach { newCommand ->
+            currentNavigationCommand = newCommand
+        }.launchIn(viewModelScope)
+
+    private fun ChatGroupDataModel.observeDataState() {
+        dataFlow.onEach { newState ->
+            currentHomeChatState = newState
+        }.launchIn(viewModelScope)
+    }
+
+    private fun navigateToChatRoom(chatRoomUid: String, isGroup: Boolean, recipient: String) {
+        Log.d(TAG, "Sending new chat room event, with chat room UID $chatRoomUid... with local user ${currentUser.value}")
+        getChatGroupDataModel.getUserPrivateChats(chatRoomUid, isGroup, recipient, currentUser.value.email!!)
     }
 
     private fun getCurrentUserAndChats() {
         _loading.value = true
-        val now: Instant = Clock.System.now()
-        val chat1 = DisplayChatRoom(
-            chatUid = "1",
-            chatRoomName = "SELF CHAT",
-            group = false,
-            displayUserName = "Beksultan",
-            memberCount = 0,
-            lastMessageText = "what was about",
-            lastMessageTime = now.epochSeconds,
-            chatRoomPicture = null //this is not implemented yet
-        )
-        val chat2 = DisplayChatRoom(
-            chatUid = "2",
-            chatRoomName = "GROUP CHAT",
-            group = false,
-            displayUserName = "MAKSIM",
-            memberCount = 15,
-            lastMessageText = "hello guys",
-            lastMessageTime = now.epochSeconds,
-            chatRoomPicture = null //this is not implemented yet
-        )
-        _chats.value = mutableListOf(chat1, chat2)
-
+        with(getChatGroupDataModel) {
+            println("GROUP CHAT STATE")
+            dataFlow.onEach { newChatState ->
+                if (newChatState is PraxisDataModel.SuccessState<*>) {
+                    println("NEW ROOM STATE WITH ${newChatState.data}")
+                    val newGroupMessage = newChatState.data as List<DisplayChatRoom>
+                    _chats.value = newGroupMessage
+                }
+            }.launchIn(viewModelScope)
+            activate()
+        }
         _loading.value = false
 
     }
@@ -76,6 +88,21 @@ class ChatRoomViewModel : ViewModel() {
      */
     fun onChatClicked(position: Int) {
         val chatUid = chats.value[position].chatUid
-        navigateToChatRoom(chatUid)
+        val recipient = chats.value[position].chatRoomName
+        val isGroup = chats.value[position].group
+        navigateToChatRoom(chatUid, isGroup, recipient)
+    }
+
+    fun getUserGroupChats(userState: PraxisDataModel.SuccessState<*>){
+        println("GROUP STATE $userState")
+        val userResponse = userState.data as GetUserResponse
+        _currentUser.value = User(id = userResponse.id, firstName = userResponse.firstName, lastName = userResponse.lastName, email = userResponse.email)
+        getChatGroupDataModel.getUserGroupChats(username = userResponse.email ?: "")
+    }
+
+    fun resetAll(onComplete: () -> Unit = {}) {
+        currentNavigationCommand = null
+        currentHomeChatState = PraxisDataModel.EmptyState
+        onComplete()
     }
 }

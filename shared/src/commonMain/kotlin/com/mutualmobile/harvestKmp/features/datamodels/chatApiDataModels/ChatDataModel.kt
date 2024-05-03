@@ -6,8 +6,12 @@ import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.domain.model.ChatUser
+import com.mutualmobile.harvestKmp.domain.model.ColorProvider
 import com.mutualmobile.harvestKmp.domain.model.Message
+import com.mutualmobile.harvestKmp.domain.model.TextType
+import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
+import dev.icerock.moko.graphics.Color
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -17,17 +21,18 @@ import org.koin.core.component.KoinComponent
 
 class ChatDataModel : PraxisDataModel(), KoinComponent {
 
-    private val _dataFlow = MutableSharedFlow<DataState>()
+    val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
-    private var currentLoadingJob: Job? = null
+    var currentLoadingJob: Job? = null
     private val chatLocal = SharedComponent().provideChatLocal()
 
     private val chatApiUseCaseComponent = ChatApiUseCaseComponent()
     private val getMessagesByRecipientUseCase = chatApiUseCaseComponent.provideGetMessagesByRecipient()
     private val createMessagesUseCase = chatApiUseCaseComponent.provideCreateMessages()
     override fun activate() {
-        getChat()
+        println("LOCAL STORAGE ACTIVATE")
+        //getChat()
     }
 
     override fun destroy() {
@@ -38,8 +43,9 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
         TODO("Not yet implemented")
     }
 
-    fun getChat(forceFetchFromNetwork: Boolean = false) {
+    private fun getChat(forceFetchFromNetwork: Boolean = false) {
         currentLoadingJob?.cancel()
+        println("GET CHATS IN ACTIVATE")
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
             if (!forceFetchFromNetwork) {
@@ -47,8 +53,10 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
                     val messages = nnChats
                         .map {
                             Message(
-                                ChatUser(it.userId!!, "owner", picture = null),
+                                ChatUser(it.userId!!, "owner", email = it.userId,  picture = null),
+                                it.userId!!,
                                 it.content!!,
+                                TextType.TEXT,
                                 it.time!!,
                                 it.uid.toLong()
                             )
@@ -103,12 +111,21 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
     }
 
     fun getUserChats(username: String){
+
         dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
             when (val response = getMessagesByRecipientUseCase(username = username)) {
                 is NetworkResponse.Success -> {
-                    _dataFlow.emit(SuccessState(response.data)) // TODO redundant
+                    _dataFlow.emit(SuccessState(response.data.map {
+                        Message(
+                            ChatUser(it.sender, it.sender, it.sender, ColorProvider.getColor(), null),
+                            it.recipient,
+                            it.content,
+                            it.contentType,
+                            it.receivedAt.nanosecond.toLong(),
+                            it.id.toLong())
+                    })) // TODO redundant
                 }
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))

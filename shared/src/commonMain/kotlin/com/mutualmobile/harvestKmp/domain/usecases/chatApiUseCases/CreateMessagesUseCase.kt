@@ -8,6 +8,6 @@ import com.mutualmobile.harvestKmp.features.NetworkResponse
 
 class CreateMessagesUseCase(private val chatApi: ChatApi) {
     suspend operator fun invoke(message: Message): NetworkResponse<ChatMessageResponse> {
-        return chatApi.saveChat(ChatMessageRequest(message.user.name, message.user.name, message.text))
+        return chatApi.saveChat(ChatMessageRequest(sender = message.user.email, recipient = message.recipient, body = message.text, contentType = message.type))
     }
 }

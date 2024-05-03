@@ -72,6 +72,7 @@
     <string name="change_password">Change Password</string>
     <string name="delete_work_dialog_title">Confirm Deletion?</string>
     <string name="delete_work_dialog_bodyText">Are you sure you want to delete this workLog?</string>
+    <string name="remove_member_dialog_bodyText">Are you sure you want to remove this user from group</string>
     <string name="onboarding_text_1">Simple, AI based chat engine</string>
     <string name="onboarding_text_2">Track time easily, wherever you are</string>
     <string name="onboarding_text_3">Enter expense on the go</string>

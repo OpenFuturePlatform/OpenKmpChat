@@ -29,6 +29,7 @@ import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 
 @Composable
 internal fun Messages(messages: List<Message>, myUser: ChatUser) {
+
     val listState = rememberLazyListState()
     if (messages.isNotEmpty()) {
         LaunchedEffect(messages.last()) {
@@ -42,11 +43,11 @@ internal fun Messages(messages: List<Message>, myUser: ChatUser) {
     ) {
         item { Spacer(Modifier.size(20.dp)) }
         items(messages, key = { it.id }) {
-            ChatMessage(isMyMessage = it.user.id == myUser.id, it)
+            ChatMessage(isMyMessage = it.user.email == myUser.email, it)
         }
-//        item {
-//            Box(Modifier.height(70.dp))
-//        }
+        item {
+            Box(Modifier.height(70.dp))
+        }
     }
 }
 

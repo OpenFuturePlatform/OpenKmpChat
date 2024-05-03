@@ -13,6 +13,7 @@ object AndroidDependencyVersions {
   const val appCompat = "1.4.0"
   const val constraintLayout = "2.1.2"
   const val compose = "1.2.0-beta02"
+  //const val compose = "1.3.0-beta01"
   const val composeKotlinCompiler = compose
   const val coil = "2.0.0-rc03"
   const val lifecycleRuntime = "2.4.0"
@@ -68,6 +69,7 @@ object AndroidMainDependencies {
     "org.jetbrains.kotlinx:kotlinx-coroutines-android:${CommonDependencyVersions.coroutines}",
     // File picker
     //"com.mohamedrejeb.calf:calf-file-picker:0.4.0"
+    //"com.github.mahdiasd:ComposeBottomDialogFilePicker:1.0.1"
   )
 }
 

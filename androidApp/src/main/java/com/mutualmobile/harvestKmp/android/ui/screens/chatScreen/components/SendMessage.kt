@@ -1,5 +1,14 @@
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -9,32 +18,99 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toFile
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
+import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.InputStreamRequestBody
 import com.mutualmobile.harvestKmp.android.ui.theme.Dimens
 import com.mutualmobile.harvestKmp.android.ui.theme.PrimaryLightColor
+import com.mutualmobile.harvestKmp.android.ui.utils.ImagePicker
+import com.mutualmobile.harvestKmp.android.ui.utils.URIPathHelper
+import com.mutualmobile.harvestKmp.android.ui.utils.toComposeImageBitmap
+import com.mutualmobile.harvestKmp.domain.model.TextType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import java.io.File
 
 @Composable
-fun SendMessage(sendMessage: (String) -> Unit) {
+fun SendMessage(sendMessage: (prompt: String, type: TextType) -> Unit) {
+
     var inputText by remember { mutableStateOf("") }
+    var selectedImage by remember { mutableStateOf<ByteArray?>(null) }
+    var photoUri by remember { mutableStateOf<Uri?>(null) }
+    var selectedImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
     var showImagePicker by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let {
+            photoUri = uri
+            println("PHOTO URL $uri")
+            context.contentResolver.getType(uri)?.let { mimeType ->
+                val file = File(uri.path!!)
+                val requestBody = InputStreamRequestBody(context.contentResolver, uri)
+                val filePart = MultipartBody.Part.createFormData("file", file.name, requestBody)
+                //selectedImage = file.readBytes()
+                println("MIME: $mimeType")
+                println("File $file")
+                println("filepart: $filePart")
+            }
+//            val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r", null)
+//            parcelFileDescriptor?.let { pfd ->
+//                val file = File(pfd.fileDescriptor)
+//                val requestFile = RequestBody.create(MediaType.parse("image/*"), file)
+//                val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
+//            }
+            sendMessage(uri.toString(), TextType.ATTACHMENT)
+        }
+    }
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+//        if (photoUri != null) {
+//            Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 16.dp)) {
+//                val painter = rememberAsyncImagePainter(
+//                    ImageRequest
+//                        .Builder(LocalContext.current)
+//                        .data(data = photoUri)
+//                        .build()
+//                )
+//                Image(
+//                    painter = painter,
+//                    contentDescription = "Selected image",
+//                    modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
+//                    contentScale = ContentScale.Crop,
+//                )
+//                IconButton(
+//                    onClick = { photoUri = null },
+//                    modifier = Modifier.size(48.dp).align(Alignment.TopEnd),
+//                ) {
+//                    Icon(Icons.Rounded.Delete, "Remove attached Image File")
+//                }
+//            }
+//        }
+
         TextField(
+            label = { Text("Label") },
             modifier = Modifier
                 .fillMaxWidth()
                 .background(MaterialTheme.colors.background)
@@ -51,7 +127,16 @@ fun SendMessage(sendMessage: (String) -> Unit) {
             },
             shape = RoundedCornerShape(Dimens.XS),
             leadingIcon = {
-                Icon(Icons.Default.Add, "Attach Image File")
+                IconButton(onClick = {
+                    showImagePicker = true
+                    launcher.launch(
+                        PickVisualMediaRequest(
+                            mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                        )
+                    )
+                }) {
+                    Icon(Icons.Rounded.Add, "Attach Image File")
+                }
             },
             trailingIcon = {
                 if (inputText.isNotEmpty()) {
@@ -59,8 +144,9 @@ fun SendMessage(sendMessage: (String) -> Unit) {
                         modifier = Modifier
                             .imePadding()
                             .clickable {
-                                sendMessage(inputText)
+                                sendMessage(inputText, TextType.TEXT)
                                 inputText = ""
+                                selectedImage = null
                             },
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -74,49 +160,17 @@ fun SendMessage(sendMessage: (String) -> Unit) {
             }
         )
     }
-}
 
-@Composable
-fun ChatNewBox(
-    onSendChatClickListener: (String) -> Unit
-) {
-    var chatBoxValue by remember { mutableStateOf(TextFieldValue("")) }
-    Row(modifier = Modifier.padding(16.dp)) {
-        TextField(
-            value = chatBoxValue,
-            onValueChange = { newText ->
-                chatBoxValue = newText
-            },
-            modifier = Modifier
-                .weight(1f)
-                .padding(4.dp),
-            shape = RoundedCornerShape(24.dp),
-            colors = TextFieldDefaults.textFieldColors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent
-            ),
-            placeholder = {
-                Text(text = "Type something")
-            }
-        )
-        IconButton(
-            onClick = {
-                val msg = chatBoxValue.text
-                if (msg.isBlank()) return@IconButton
-                onSendChatClickListener(chatBoxValue.text)
-                chatBoxValue = TextFieldValue("")
-            },
-            modifier = Modifier
-                .clip(CircleShape)
-                .background(color = PrimaryLightColor)
-                .align(Alignment.CenterVertically)
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Send,
-                contentDescription = "Send",
-                modifier = Modifier.fillMaxSize().padding(8.dp)
-            )
+    if (showImagePicker) {
+        ImagePicker {
+            selectedImage = it
+            showImagePicker = false
+        }
+    }
+
+    LaunchedEffect(selectedImage) {
+        withContext(Dispatchers.Default) {
+            selectedImageBitmap = selectedImage?.toComposeImageBitmap()
         }
     }
 }

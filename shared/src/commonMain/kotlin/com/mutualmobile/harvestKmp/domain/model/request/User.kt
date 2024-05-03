@@ -8,6 +8,7 @@ data class User(
     val firstName: String? = null,
     val lastName: String? = null,
     val email: String? = null,
+    val avatar: String? = null,
     val password: String? = null,
     val role: String? = null,
     val pushToken: String? = null,
@@ -16,7 +17,9 @@ data class User(
     val platform: DevicePlatform? = null,
     val orgId: String? = null,
     val harvestOrganization: HarvestOrganization? = null
-)
+){
+    //override fun toString(): String = Uri.encode(Gson().toJson(this))
+}
 
 @Serializable
 enum class DevicePlatform {

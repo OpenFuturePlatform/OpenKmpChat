@@ -1,8 +1,8 @@
 package com.mutualmobile.harvestKmp.data.network
 
 object Endpoint {
-    //const val SPRING_BOOT_BASE_URL = "http://192.168.7.204:5001"
-    const val SPRING_BOOT_BASE_URL = "http://192.168.0.100:5001"
+    //const val SPRING_BOOT_BASE_URL = "http://192.168.99.204:5001"
+    const val SPRING_BOOT_BASE_URL = "http://192.168.0.105:5001"
     //const val SPRING_BOOT_BASE_URL = "http://35.199.50.38:8080"
 
 
@@ -21,10 +21,10 @@ object Endpoint {
     const val EMAIL_VERIFY = "/emailVerify"
     const val FCM_TOKEN = "$API_URL/fcmToken"
     const val CHANGE_PASSWORD = "$API_URL/changePassword"
-    const val LOGOUT = "$API_URL/public/logout"
+    const val LOGOUT = "$API_URL/logout"
     const val REFRESH_TOKEN = "$API_URL/refreshToken"
 
-    const val USER = "$API_URL/public/user"
+    const val USER = "$API_URL/user"
     private const val USER_PROJECT = "$USER/project"
     const val USER_ASSIGNED_PROJECTS = "$USER/assigned-projects"
 
@@ -50,7 +50,13 @@ object Endpoint {
     const val GET_LOG_WORK = "$USER_PROJECT/get-work-log"
 
     const val CHAT_URL = "$API_URL/messages"
+    const val GROUP_URL = "$API_URL/groups"
+    const val ATTACHMENT_URL = "$API_URL/attachments"
     const val LIST_RECIPIENT_CHATS = "$CHAT_URL/recipient/"
+    const val LIST_CHATS = "$CHAT_URL/chat/"
+    const val LIST_CONTACTS = "$API_URL/user/all"
+    const val USER_DETAIL = "$API_URL/user/userDetails"
+    const val LIST_RECIPIENT_GROUP = "$CHAT_URL/front-messages?user="
 
     object Params {
         const val START_DATE = "startDate"
@@ -79,6 +85,9 @@ object Endpoint {
 
         const val ORG_IDENTIFIER = "identifier"
 
+        //private chat
+        const val SENDER_ID = "senderId"
+        const val RECIPIENT_ID = "recipientId"
         //websocket
         const val SOCKET_URL = "ws://$SPRING_BOOT_BASE_URL/ws"
         const val CHAT_TOPIC = "/topic/chat"

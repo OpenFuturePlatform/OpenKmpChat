@@ -13,6 +13,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -31,7 +32,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.common.HarvestDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.noAccountAnnotatedString
@@ -187,29 +193,44 @@ fun ProfilePicture(
     pictureString: String,
     displayName: String
 ) {
-    val imageBytes = Base64.decode(pictureString, 0)
-    val picture = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-    Image(
-        bitmap = picture.asImageBitmap(),
-        contentDescription = stringResource(id = MR.strings.choose_project.resourceId,
-            formatArgs = arrayOf(displayName)),
+//    val imageBytes = Base64.decode(pictureString, 0)
+//    val picture = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+//    Image(
+//        bitmap = picture.asImageBitmap(),
+//        contentDescription = stringResource(id = MR.strings.choose_project.resourceId,
+//            formatArgs = arrayOf(displayName)),
+//        modifier = Modifier
+//            .padding(horizontal = 2.dp, vertical = 2.dp)
+//            .clip(CircleShape)
+//            .requiredSize(PROFILE_PICTURE_SIZE.dp)
+//    )
+    println("Image url : $pictureString")
+    AsyncImage(
+        model = pictureString,
         modifier = Modifier
             .padding(horizontal = 2.dp, vertical = 2.dp)
             .clip(CircleShape)
-            .requiredSize(PROFILE_PICTURE_SIZE.dp)
+            .requiredSize(PROFILE_PICTURE_SIZE.dp),
+        contentDescription = "Translated description of what the image contains"
     )
+
+    val painter = rememberAsyncImagePainter(model = pictureString)
+
+    Image(
+        modifier = Modifier
+            .padding(horizontal = 2.dp, vertical = 2.dp)
+            .clip(CircleShape)
+            .requiredSize(PROFILE_PICTURE_SIZE.dp),
+        //Use painter in Image composable
+        painter = painter,
+        contentDescription = "Cat"
+    )
+
+
 }
 
 @Composable
 fun DefaultProfilePicture(displayName: String) {
-//    Icon(
-//        imageVector = Icons.Default.Person,
-//        contentDescription = stringResource(id = MR.strings.choose_project.resourceId, formatArgs = arrayOf(displayName)),
-//        modifier = Modifier
-//            .padding(end = 8.dp, top = 8.dp, bottom = 8.dp)
-//            .clip(CircleShape)
-//            .requiredSize(PROFILE_PICTURE_SIZE.dp)
-//    )
 
     Image(
         modifier = Modifier

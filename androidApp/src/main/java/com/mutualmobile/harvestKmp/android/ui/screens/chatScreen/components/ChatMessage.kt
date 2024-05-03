@@ -1,12 +1,8 @@
+import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
@@ -19,15 +15,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.ChatColors
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.UserPic
 import com.mutualmobile.harvestKmp.domain.model.Message
+import com.mutualmobile.harvestKmp.domain.model.TextType
 
 @Composable
 fun Triangle(risingToTheRight: Boolean, background: Color) {
@@ -49,9 +51,9 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
 
         Row(verticalAlignment = Alignment.Bottom) {
             if (!isMyMessage) {
-                Column {
-                    UserPic(message.user)
-                }
+//                Column {
+//                    UserPic(message.user)
+//                }
                 Spacer(Modifier.size(2.dp))
                 Column {
                     Triangle(true, ChatColors.OTHERS_MESSAGE)
@@ -85,13 +87,33 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
                             }
                         }
                         Spacer(Modifier.size(3.dp))
-                        Text(
-                            text = message.text,
-                            style = MaterialTheme.typography.body1.copy(
-                                fontSize = 18.sp,
-                                letterSpacing = 0.sp
+                        if (message.type == TextType.TEXT){
+                            Text(
+                                text = message.text,
+                                style = MaterialTheme.typography.body1.copy(
+                                    fontSize = 18.sp,
+                                    letterSpacing = 0.sp
+                                )
                             )
-                        )
+                        } else {
+                            if (message.text.isNotEmpty()) {
+                                Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 16.dp)) {
+
+                                    val painter = rememberAsyncImagePainter(
+                                        ImageRequest
+                                            .Builder(LocalContext.current)
+                                            .data(data = message.text.toUri())
+                                            .build()
+                                    )
+                                    Image(
+                                        painter = painter,
+                                        contentDescription = "Selected image",
+                                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                }
+                            }
+                        }
                         Spacer(Modifier.size(4.dp))
                         Row(
                             horizontalArrangement = Arrangement.End,

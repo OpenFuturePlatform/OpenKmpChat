@@ -18,6 +18,7 @@ class ChatLocalImpl(override var driver: SqlDriver? = null) : ChatLocal {
             uid = input.id.toString(),
             userId = input.user.id,
             content = input.text,
+            type = input.type.name,
             time = input.seconds
         )
     }

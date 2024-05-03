@@ -6,21 +6,62 @@ import kotlinx.serialization.Serializable
 import kotlin.random.Random
 import kotlin.random.nextInt
 
+enum class TextType {
+    TEXT, ATTACHMENT
+}
 data class Message(
     val user: ChatUser,
+    val recipient: String,
     val text: String,
+    val type: TextType,
     val seconds: Long,
     val id: Long
 ) {
     constructor(
         user: ChatUser,
-        text: String
+        recipient: String,
+        text: String,
+        type: TextType
     ) : this(
         user = user,
+        recipient = recipient,
         text = text,
+        type = type,
         seconds = Clock.System.now().epochSeconds,
         id = Random.nextLong()
     )
+}
+
+data class GroupMessage(
+    val user: ChatUser,
+    val groupId: String,
+    val text: String,
+    val type: TextType,
+    val seconds: Long,
+    val id: Long
+) {
+    constructor(
+        user: ChatUser,
+        groupId: String,
+        text: String,
+        type: TextType
+    ) : this(
+        user = user,
+        groupId = groupId,
+        text = text,
+        type = type,
+        seconds = Clock.System.now().epochSeconds,
+        id = Random.nextLong()
+    )
+}
+
+data class GroupDetails(
+    val groupId: String,
+    val groupName: String,
+    val groupCreator: String,
+    val groupAvatar: String,
+    val participants: List<String>
+) {
 }
 
 @Serializable
@@ -31,6 +72,7 @@ data class MessagesState(
 data class ChatUser(
     val id: String,
     val name: String,
+    val email: String,
     val color: Color = ColorProvider.getColor(),
     val picture: ImageResource?
 )

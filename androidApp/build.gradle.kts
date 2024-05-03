@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
     defaultConfig {
         applicationId = "com.mutualmobile.harvestKmp.android"
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
         vectorDrawables {
@@ -53,6 +53,7 @@ android {
 
 dependencies {
     implementation(project(":shared"))
+    implementation("androidx.activity:activity-ktx:1.6.1")
     AndroidDependencies.platforms.forEach { platformDependency ->
         implementation(platform(platformDependency))
     }

@@ -19,4 +19,8 @@ val viewModelModule = module {
     single { UserHomeViewModel() }
     single { ChatRoomViewModel() }
     single { ChatViewModel(get()) }
+    single { ChatPrivateViewModel(get()) }
+    single { UserListViewModel()}
+    single { AddGroupViewModel()}
+    single { ContactProfileViewModel() }
 }

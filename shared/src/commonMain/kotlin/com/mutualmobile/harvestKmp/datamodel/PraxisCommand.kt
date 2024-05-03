@@ -14,6 +14,13 @@ object HarvestRoutes {
         const val orgIdentifier = "orgIdentifier"
         const val orgId = "orgId"
         const val id = "id"
+        const val recipient = "recipient"
+        const val participants = "participants"
+        const val sender = "sender"
+        const val chatUid = "chatUid"
+        const val isGroup = "isGroup"
+        const val profileId = "profileId"
+        const val groupId = "groupId"
     }
 
     object Screen {
@@ -41,25 +48,75 @@ object HarvestRoutes {
         const val FIND_WORKSPACE = "find-workspace"
         const val WORK_ENTRY = "work-entry"
         const val SELECT_WORK_TYPE = "select-work-type"
+
         const val USER_HOME = "user-home"
         const val CHAT = "chat"
-        const val CHAT_GPT = "chat-gpt"
-        fun String.listUsersWithProjectId(projectId: String?): String {
-            return this.plus(
-                BROWSER_QUERY + "${Keys.id}=${projectId ?: ""}"
-            )
-        }
+        const val CHAT_PRIVATE = "chat-private"
+        const val ADD_ACTION = "adds"
+        const val ADD_GROUP = "add-group"
+        const val ADD_MEMBER = "add-member"
+        const val CREATE_GROUP = "create-group"
+        const val CONTACT_PROFILE = "contact-profile"
 
-        fun String.listProjectsAssignedToUser(userId: String?): String {
-            return this.plus(
-                BROWSER_QUERY + "${Keys.id}=${userId ?: ""}"
-            )
-        }
+        const val CHAT_PRIVATE_WITH_SENDER_RECEIVER = CHAT_PRIVATE
+            .plus(BROWSER_QUERY)
+            .plus("${Keys.sender}={${Keys.sender}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.recipient}={${Keys.recipient}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.chatUid}={${Keys.chatUid}}")
+            .plus(BROWSER_AND)
+           .plus("${Keys.isGroup}={${Keys.isGroup}}")
+
+
+        const val CHAT_GPT = "chat-gpt"
+
+        const val GROUP_WITH_PARTICIPANTS = CREATE_GROUP
+            .plus(BROWSER_QUERY)
+            .plus("${Keys.participants}={${Keys.participants}}")
+
+        const val ADD_MEMBER_WITH_GROUP_ID = ADD_MEMBER
+            .plus(BROWSER_QUERY)
+            .plus("${Keys.groupId}={${Keys.groupId}}")
+
+        const val CONTACT_PROFILE_WITH_ID = CONTACT_PROFILE
+            .plus(BROWSER_QUERY)
+            .plus("${Keys.profileId}={${Keys.profileId}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.isGroup}={${Keys.isGroup}}")
+
 
         fun String.withOrgId(identifier: String?, id: String?): String {
             return this.plus(
                 BROWSER_QUERY + "${Keys.orgIdentifier}=${identifier ?: ""}" + BROWSER_AND +
                         "${Keys.orgId}=${id ?: ""}"
+            )
+        }
+
+        fun String.withRecipient(chatUid: String?, isGroup: Boolean?, recipient: String?, sender: String?): String {
+            return this.plus(
+                BROWSER_QUERY + "${Keys.recipient}=${recipient ?: ""}"
+                        + BROWSER_AND + "${Keys.sender}=${sender ?: ""}"
+                        + BROWSER_AND + "${Keys.chatUid}=${chatUid ?: ""}"
+                        + BROWSER_AND + "${Keys.isGroup}=${isGroup ?: false}"
+            )
+        }
+
+        fun String.withParticipants(participants: String?): String {
+            return this.plus(
+                BROWSER_QUERY + "${Keys.participants}=${participants ?: ""}"
+            )
+        }
+
+        fun String.withDetail(profileId: String?, isGroup: Boolean?): String {
+            return this.plus(
+                BROWSER_QUERY + "${Keys.profileId}=${profileId ?: ""}" + BROWSER_AND + "${Keys.isGroup}=${isGroup ?: false}"
+            )
+        }
+
+        fun String.withGroup(groupId: String?): String {
+            return this.plus(
+                BROWSER_QUERY + "${Keys.groupId}=${groupId ?: ""}"
             )
         }
     }

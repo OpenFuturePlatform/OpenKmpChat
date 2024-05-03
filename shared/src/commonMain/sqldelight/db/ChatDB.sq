@@ -2,11 +2,12 @@ CREATE TABLE harvest_chat(
     uid TEXT NOT NULL PRIMARY KEY,
     userId TEXT,
     content TEXT,
+    type TEXT,
     time INTEGER
 );
 
 insertChat:
-INSERT OR REPLACE INTO harvest_chat(uid, userId, content, time) VALUES(?,?,?,?);
+INSERT OR REPLACE INTO harvest_chat(uid, userId, content, type, time) VALUES(?,?,?, ?,?);
 
 selectAllChats:
 SELECT * FROM harvest_chat ORDER BY time DESC;

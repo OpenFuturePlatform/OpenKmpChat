@@ -1,12 +1,15 @@
 package com.mutualmobile.harvestKmp.domain.model
 
 import kotlinx.datetime.DateTimePeriod
+import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 
 /**
  * Similar to [ChatRoom] but stores only the necessary information to display and operate a "chat room card". This
  * object is only LOCAL and stores how the chat room will be displayed on the current device. The same chat room
  * may be displayed differently on different devices.
  */
+@Serializable
 data class DisplayChatRoom(
 
     /**
@@ -39,7 +42,7 @@ data class DisplayChatRoom(
      * The [Date] of the last message, or null if no message was ever sent. This is user to order groups
      * based on activity.
      */
-    var lastMessageTime: Long? = null,
+    var lastMessageTime: LocalDateTime? = null,
 
     /**
     * The text of the last message, or null if there was no message sent. This is used to show a preview

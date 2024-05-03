@@ -3,12 +3,14 @@ package com.mutualmobile.harvestKmp.android.ui
 //noinspection SuspiciousImport
 import android.R
 import android.animation.ObjectAnimator
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.LinearInterpolator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -26,6 +28,7 @@ import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -33,8 +36,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.navigation.NavigationItem
-import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.ChatGptScreen
-import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.ChatRoomScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.*
 import com.mutualmobile.harvestKmp.android.ui.screens.findWorkspaceScreen.FindWorkspaceScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.homeScreen.UserHomeScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.landingScreen.LandingScreen
@@ -47,6 +49,8 @@ import com.mutualmobile.harvestKmp.android.ui.screens.projectScreen.ProjectScree
 import com.mutualmobile.harvestKmp.android.ui.screens.settingsScreen.SettingsScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.NewOrgSignUpScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.SignUpScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.userScreen.ContactProfileScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.userScreen.UserListScreen
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.SetupSystemUiController
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
@@ -58,6 +62,7 @@ import org.koin.android.ext.android.get
 class MainActivity : ComponentActivity() {
     val mainActivityViewModel: MainActivityViewModel = get()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         setupSplashScreen()
         super.onCreate(savedInstanceState)
@@ -84,7 +89,7 @@ class MainActivity : ComponentActivity() {
                         //NavigationItem.Home,
                         NavigationItem.Chat,
                         NavigationItem.ChatGPT,
-                        NavigationItem.Project,
+                        NavigationItem.Contacts,
                         NavigationItem.Settings
                     )
 
@@ -154,24 +159,101 @@ class MainActivity : ComponentActivity() {
                                 SettingsScreen(navController = navController)
                             }
                             composable(HarvestRoutes.Screen.USER_HOME) {
-                                UserHomeScreen(
+                                UserHomeScreen(navController = navController, user = mainActivityViewModel.user)
+                            }
+                            composable(HarvestRoutes.Screen.ORG_USERS) {
+                                UserListScreen(
                                     navController = navController,
-                                    user = mainActivityViewModel.user
+                                    userState = mainActivityViewModel.getUserState
                                 )
                             }
                             composable(HarvestRoutes.Screen.CHAT) {
                                 ChatRoomScreen(
                                     navController = navController,
-                                    user = mainActivityViewModel.user,
-                                    modifier = Modifier
+                                    userState = mainActivityViewModel.getUserState
                                 )
                             }
                             composable(HarvestRoutes.Screen.CHAT_GPT) {
                                 ChatGptScreen(
                                     navController = navController,
-                                    user = mainActivityViewModel.user
+                                    user = mainActivityViewModel.user,
+                                    userState = mainActivityViewModel.getUserState
                                 )
                             }
+                            composable(HarvestRoutes.Screen.ADD_ACTION) {
+                                AddScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState
+                                )
+                            }
+                            composable(HarvestRoutes.Screen.ADD_GROUP) {
+                                AddToGroupScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState
+                                )
+                            }
+
+                            composable(
+                                HarvestRoutes.Screen.ADD_MEMBER_WITH_GROUP_ID,
+                                arguments = listOf(
+                                    navArgument(HarvestRoutes.Keys.groupId) { nullable = false },
+                                ),
+                            ) {
+                                AddMemberToGroupScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState,
+                                    groupId = it.arguments?.getString("groupId")
+                                )
+                            }
+
+                            composable(
+                                HarvestRoutes.Screen.CONTACT_PROFILE_WITH_ID,
+                                arguments = listOf(
+                                    navArgument(HarvestRoutes.Keys.profileId) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.isGroup) { nullable = true },
+                                ),
+                            ) {
+                                ContactProfileScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState,
+                                    profileId = it.arguments?.getString("profileId"),
+                                    isGroup = it.arguments?.getString("isGroup")
+                                )
+                            }
+
+                            composable(
+                                HarvestRoutes.Screen.CHAT_PRIVATE_WITH_SENDER_RECEIVER,
+                                arguments = listOf(
+                                    navArgument(HarvestRoutes.Keys.recipient) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.sender) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.chatUid) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.isGroup) { nullable = true },
+                                ),
+                            ) {
+                                ChatPrivateScreen(
+                                    navController = navController,
+                                    user = mainActivityViewModel.user,
+                                    userState = mainActivityViewModel.getUserState,
+                                    recipient = it.arguments?.getString("recipient"),
+                                    sender = it.arguments?.getString("sender"),
+                                    chatUid =  it.arguments?.getString("chatUid"),
+                                    isGroup =  it.arguments?.getString("isGroup")
+                                )
+                            }
+
+                            composable(
+                                HarvestRoutes.Screen.GROUP_WITH_PARTICIPANTS,
+                                arguments = listOf(
+                                    navArgument(HarvestRoutes.Keys.participants) { nullable = true },
+                                ),
+                            ) {
+                                CreateGroupScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState,
+                                    _participants = it.arguments?.getString("participants")
+                                )
+                            }
+
                         }
                     }
 

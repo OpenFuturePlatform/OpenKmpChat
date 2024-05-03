@@ -27,6 +27,7 @@ object CommonMainDependencies {
         "org.jetbrains.kotlinx:kotlinx-datetime:${CommonDependencyVersions.kotlinxDateTime}",
         "org.jetbrains.kotlinx:kotlinx-serialization-core:${CommonDependencyVersions.kotlinxSerialization}",
         "org.jetbrains.kotlinx:kotlinx-coroutines-core:${CommonDependencyVersions.coroutines}",
+        "com.google.code.gson:gson:2.10.1"
     )
 
     val api = listOf(

@@ -30,7 +30,7 @@ import kotlinx.datetime.Instant
 import java.net.ConnectException
 
 class ChatViewModel(
-    private val client: RealtimeMessagingClient
+    client: RealtimeMessagingClient
 ) : ViewModel() {
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -64,7 +64,12 @@ class ChatViewModel(
         with(getChatDataModel) {
             dataFlow.onEach { newChatState ->
                 if (newChatState is PraxisDataModel.SuccessState<*>) {
-                    chats = chats.plus(newChatState.data as List<Message>)
+                    println("NEW STATE CHAT GPT WITH ${newChatState.data}")
+                    val newMessage = newChatState.data as List<Message>
+                    chats = if (newMessage.size > 1)
+                        newMessage
+                    else
+                        chats.plus(newMessage)
                 }
             }.launchIn(viewModelScope)
             activate()
@@ -73,13 +78,11 @@ class ChatViewModel(
 
     fun saveChat(message: Message) {
         getChatDataModel.saveChat(message)
-//        viewModelScope.launch {
-//            client.sendAction(ChatMessageRequest(message.user.id, message.user.id, message.text))
-//        }
     }
 
-    fun getUserChats(username: String){
-        getChatDataModel.getUserChats(username)
+    fun getUserChats(userState: PraxisDataModel.SuccessState<*>){
+        println("CURRENT GPR USER $userState")
+        getChatDataModel.getUserChats(username = (userState.data as GetUserResponse).firstName ?: "")
     }
 
 }

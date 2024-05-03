@@ -79,7 +79,8 @@ fun NewOrgSignUpScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colors.surface),
+                .background(MaterialTheme.colors.surface)
+                .padding(vertical = 60.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(

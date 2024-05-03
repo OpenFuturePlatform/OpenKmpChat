@@ -7,14 +7,20 @@ import com.mutualmobile.harvestKmp.data.local.HarvestUserLocalImpl
 import com.mutualmobile.harvestKmp.data.network.Constants
 import com.mutualmobile.harvestKmp.data.network.Endpoint
 import com.mutualmobile.harvestKmp.data.network.Endpoint.REFRESH_TOKEN
+import com.mutualmobile.harvestKmp.data.network.attachment.AttachmentApi
+import com.mutualmobile.harvestKmp.data.network.attachment.impl.AttachmentApiImpl
 import com.mutualmobile.harvestKmp.data.network.authUser.AuthApi
 import com.mutualmobile.harvestKmp.data.network.authUser.UserForgotPasswordApi
 import com.mutualmobile.harvestKmp.data.network.authUser.impl.AuthApiImpl
 import com.mutualmobile.harvestKmp.data.network.authUser.impl.UserForgotPasswordApiImpl
 import com.mutualmobile.harvestKmp.data.network.chat.ChatApi
+import com.mutualmobile.harvestKmp.data.network.chat.GroupApi
 import com.mutualmobile.harvestKmp.data.network.chat.RealtimeMessagingClient
+import com.mutualmobile.harvestKmp.data.network.chat.UserApi
 import com.mutualmobile.harvestKmp.data.network.chat.impl.ChatApiImpl
+import com.mutualmobile.harvestKmp.data.network.chat.impl.GroupApiImpl
 import com.mutualmobile.harvestKmp.data.network.chat.impl.KtorRealtimeMessagingClient
+import com.mutualmobile.harvestKmp.data.network.chat.impl.UserApiImpl
 import com.mutualmobile.harvestKmp.data.network.org.OrgApi
 import com.mutualmobile.harvestKmp.data.network.org.OrgProjectsApi
 import com.mutualmobile.harvestKmp.data.network.org.OrgUsersApi
@@ -35,8 +41,8 @@ import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.GetUserUseCas
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.LoginUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.LogoutUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.NewOrgSignUpUseCase
-import com.mutualmobile.harvestKmp.domain.usecases.chatApiUseCases.CreateMessagesUseCase
-import com.mutualmobile.harvestKmp.domain.usecases.chatApiUseCases.GetMessagesUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.chatApiUseCases.*
+import com.mutualmobile.harvestKmp.domain.usecases.groupApiUseCases.*
 import com.mutualmobile.harvestKmp.domain.usecases.orgApiUseCases.FindOrgByIdUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgApiUseCases.FindOrgByIdentifierUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.CreateProjectUseCase
@@ -93,6 +99,7 @@ fun initSharedDependencies() = startKoin {
         userProjectUseCaseModule,
         userWorkUseCaseModule,
         chatApiUseCaseModule,
+        groupApiUseCaseModule,
         platformModule()
     )
 }
@@ -111,6 +118,7 @@ fun initSqlDelightExperimentalDependencies() = startKoin {
         userProjectUseCaseModule,
         userWorkUseCaseModule,
         chatApiUseCaseModule,
+        groupApiUseCaseModule,
         platformModule()
     )
 }
@@ -140,6 +148,9 @@ val commonModule = module {
     single<UserProjectApi> { UserProjectApiImpl(get()) }
     single<UserWorkApi> { UserWorkApiImpl(get()) }
     single<ChatApi> { ChatApiImpl(get()) }
+    single<GroupApi> { GroupApiImpl(get()) }
+    single<UserApi> { UserApiImpl(get()) }
+    single<AttachmentApi> { AttachmentApiImpl(get()) }
     single { Settings() }
 }
 
@@ -159,8 +170,22 @@ val authApiUseCaseModule = module {
 }
 
 val chatApiUseCaseModule = module {
-    single { GetMessagesUseCase(get()) }
+    single { GetOwnMessagesUseCase(get()) }
     single { CreateMessagesUseCase(get()) }
+    single { GetGroupMessagesUseCase(get()) }
+    single { GetPrivateMessagesUseCase(get()) }
+    single { CreateGroupUseCase(get()) }
+    single { GetMessagesByUidUseCase(get()) }
+    single { CreateGroupMessagesUseCase(get()) }
+    single { GetGroupUseCase(get()) }
+    single { UploadAttachmentUseCase(get()) }
+}
+
+val groupApiUseCaseModule = module {
+    single { CreateGroupUseCase(get()) }
+    single { GetGroupUseCase(get()) }
+    single {  AddMemberUseCase(get()) }
+    single {  RemoveMemberUseCase(get()) }
 }
 
 val orgApiUseCaseModule = module {
@@ -179,6 +204,8 @@ val orgProjectsUseCaseModule = module {
 
 val orgUsersApiUseCaseModule = module {
     single { FindUsersInOrgUseCase(get()) }
+    single { GetAllContactsUseCase(get()) }
+    single { GetUserDetailUseCase(get()) }
 }
 
 val forgotPasswordApiUseCaseModule = module {
@@ -254,8 +281,26 @@ class UserWorkUseCaseComponent : KoinComponent {
 }
 
 class ChatApiUseCaseComponent : KoinComponent {
-    fun provideGetMessagesByRecipient(): GetMessagesUseCase = get()
+    fun provideGetMessagesByRecipient(): GetOwnMessagesUseCase = get()
+    fun provideGetMessagesByUid(): GetMessagesByUidUseCase = get()
     fun provideCreateMessages(): CreateMessagesUseCase = get()
+    fun provideCreateGroupMessages(): CreateGroupMessagesUseCase = get()
+    fun provideGroupMessagesByRecipient(): GetGroupMessagesUseCase = get()
+    fun providePrivateMessagesByRecipient(): GetPrivateMessagesUseCase = get()
+    //todo - move to another module
+    fun provideUploadAttachment(): UploadAttachmentUseCase = get()
+}
+
+class GroupApiUseCaseComponent : KoinComponent {
+    fun provideCreateGroup(): CreateGroupUseCase = get()
+    fun provideGetGroup(): GetGroupUseCase = get()
+    fun provideAddMemberGroup(): AddMemberUseCase = get()
+    fun provideRemoveMemberGroup(): RemoveMemberUseCase = get()
+}
+
+class UserApiUseCaseComponent : KoinComponent {
+    fun provideGetAllContacts(): GetAllContactsUseCase = get()
+    fun provideGetUserDetail(): GetUserDetailUseCase = get()
 }
 
 fun httpClient(

@@ -1,93 +1,107 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.chatScreen
 
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
-import androidx.compose.animation.AnimatedVisibility
+import android.annotation.SuppressLint
+import android.content.Context
+import android.os.Build
+import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
-import androidx.compose.material.R
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
-import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultGroupPicture
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultProfilePicture
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoadingIndicator
-import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.ProfilePicture
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.theme.Typography
-import com.mutualmobile.harvestKmp.android.ui.theme.spacing
+import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.ChatRoomViewModel
-import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
-import com.mutualmobile.harvestKmp.android.viewmodels.UserHomeViewModel
-import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
-import com.mutualmobile.harvestKmp.domain.model.DisplayChatRoom
-import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
+import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
+import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
+import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toJavaLocalDateTime
 import org.koin.androidx.compose.get
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 
-
+@RequiresApi(Build.VERSION_CODES.O)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ChatRoomScreen(
     navController: NavHostController,
     crVm: ChatRoomViewModel = get(),
-    user: GetUserResponse?,
-    modifier: Modifier
+    userState: PraxisDataModel.DataState
 ) {
 
     val scaffoldState = rememberScaffoldState()
-    val lazyColumnState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
 
-    val loading = crVm.loading.collectAsState()
+    val mContext = LocalContext.current
+
+    LaunchedEffect(crVm.currentNavigationCommand) {
+        when (crVm.currentNavigationCommand) {
+            is NavigationPraxisCommand -> {
+                val destination = (crVm.currentNavigationCommand as NavigationPraxisCommand).screen
+                crVm.resetAll {
+                    navController clearBackStackAndNavigateTo destination
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(userState) {
+        println("INITIAL FETCH CHAT ROOM ONLY")
+        when (userState) {
+            is PraxisDataModel.SuccessState<*> -> { crVm.getUserGroupChats(userState = userState) }
+            else -> Unit
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Open Chat") },
                 backgroundColor = MaterialTheme.colors.primary,
-                //modifier = modifier.navigationBarsPadding()
+                contentPadding = WindowInsets.statusBars.asPaddingValues()
             )
-        }
+        },
+        floatingActionButton = { FloatingActionButtonCompose(mContext, navController) },
+        floatingActionButtonPosition = FabPosition.End,
+        isFloatingActionButtonDocked = true,
+        scaffoldState = scaffoldState
     ) {
         OpenChatTheme {
             Surface {
                 Box(modifier = Modifier.fillMaxSize().then(Modifier.padding(it))) {
-                    Image(painterResource(MR.images.background.drawableResId), null, contentScale = ContentScale.Crop)
+                    Image(painterResource(MR.images.background.drawableResId), null, contentScale = ContentScale.FillHeight)
                     LoadingIndicator(loadingFlow = crVm.loading)
 
                     Column(
@@ -97,7 +111,6 @@ fun ChatRoomScreen(
                             ChatsBody(viewModel = crVm)
                         }
                     }
-
                 }
             }
         }
@@ -105,13 +118,13 @@ fun ChatRoomScreen(
 
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ChatsBody(viewModel: ChatRoomViewModel) {
     val chats = viewModel.chats.collectAsState()
     if(chats.value.isNotEmpty()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-                //.padding(start = 4.dp, end = 4.dp),
             //verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             itemsIndexed(chats.value) { position, chat ->
@@ -125,19 +138,13 @@ fun ChatsBody(viewModel: ChatRoomViewModel) {
                 } else {
                     OneToOneChatCard(
                         position = position,
-                        otherUserName = chat.displayUserName,
+                        otherUserName = chat.chatRoomName,
                         lastMessageText = chat.lastMessageText!!,
+                        lastMessageAt = chat.lastMessageTime,
                         otherUserPicture = chat.chatRoomPicture,
                         onChatClicked = viewModel::onChatClicked
                     )
                 }
-//                ChannelListItem(
-//                    position = position,
-//                    otherUserName = chat.displayUserName,
-//                    lastMessageText = chat.lastMessageText!!,
-//                    otherUserPicture = chat.chatRoomPicture,
-//                    onChatClicked = viewModel::onChatClicked
-//                )
                 Divider()
             }
             item {
@@ -216,11 +223,13 @@ fun GroupChatCard(
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun OneToOneChatCard(
     position: Int,
     otherUserName: String,
     lastMessageText: String,
+    lastMessageAt: LocalDateTime?,
     otherUserPicture: String?,
     onChatClicked: (Int) -> Unit
 ) {
@@ -237,15 +246,32 @@ fun OneToOneChatCard(
                     .fillMaxWidth()
                     .padding(start = 16.dp, top = 8.dp)
             ) {
-                if(otherUserPicture != null) {
-                    ProfilePicture(pictureString = otherUserPicture, displayName = otherUserName)
-                } else {
-                    DefaultProfilePicture(displayName = otherUserName)
+//                if(otherUserPicture != null) {
+//                    ProfilePicture(pictureString = otherUserPicture, displayName = otherUserName)
+//                } else {
+//                    DefaultProfilePicture(displayName = otherUserName)
+//                }
+                DefaultProfilePicture(displayName = otherUserName)
+                Column(modifier = Modifier.padding(start = 15.dp)) {
+                    Text(
+                        text = otherUserName,
+                        style = Typography.subtitle2,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
+                    Text(
+                        text = lastMessageText,
+                        style = MaterialTheme.typography.body2,
+                        maxLines = 1,
+                        textAlign = TextAlign.End,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
                 Text(
-                    text = otherUserName,
-                    style = Typography.subtitle2,
-                    modifier = Modifier.padding(start = 16.dp)
+                    text =  convertDateTimeToString( lastMessageAt!!),
+                    style = MaterialTheme.typography.overline,
+                    modifier = Modifier
+                        .padding(top = 35.dp)
                 )
             }
             Row(
@@ -253,60 +279,60 @@ fun OneToOneChatCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    //.padding(top = 8.dp, bottom = 8.dp)
+                    .padding(top = 8.dp, bottom = 8.dp)
             ) {
                 //displays last message
-                Text(
-                    text = lastMessageText,
-                    style = MaterialTheme.typography.body2,
-                    maxLines = 1,
-                    textAlign = TextAlign.Start,
-                    //overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
+//                Text(
+//                    text = lastMessageText,
+//                    style = MaterialTheme.typography.body2,
+//                    maxLines = 1,
+//                    textAlign = TextAlign.Right,
+//                    overflow = TextOverflow.Ellipsis,
+//                    modifier = Modifier.padding(start = 36.dp)
+//                )
+//                //message send time
+//                Text(
+//                    text =  lastMessageAt.toString(),
+//                    style = MaterialTheme.typography.overline,
+//                    modifier = Modifier
+//                        .padding(top = 2.dp)
+//                )
             }
 
         }
     }
 }
 
-@Composable
-fun ChannelListItem(position: Int,
-                    otherUserName: String,
-                    lastMessageText: String,
-                    otherUserPicture: String?,
-                    onChatClicked: (Int) -> Unit) {
-    Row( // 1
-        modifier = Modifier
-            .padding(horizontal = 8.dp, vertical = 8.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Avatar(otherUserPicture!!, otherUserName) // 2
-        Column(modifier = Modifier.padding(start = 8.dp)) { // 3
-            Text(
-                text = otherUserName,
-                style = TextStyle(fontWeight = FontWeight.Bold),
-                fontSize = 18.sp,
-            )
+@RequiresApi(Build.VERSION_CODES.O)
+fun convertDateTimeToString(date: LocalDateTime): String {
+    val CUSTOM_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+    return date.toJavaLocalDateTime().format(CUSTOM_FORMATTER)
+}
 
-            Text(
-                text = lastMessageText,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+@Composable
+fun FloatingActionButtonCompose(context: Context, navController: NavHostController){
+
+    FloatingActionButton(
+        shape = MaterialTheme.shapes.large.copy(CornerSize(percent = 40)),
+        backgroundColor = MaterialTheme.colors.primary,
+        contentColor = Color.White,
+        onClick = { navController.navigate(HarvestRoutes.Screen.ADD_ACTION) }
+    ) {
+        Icon(Icons.Default.Add, contentDescription = null)
     }
 }
 
 @Composable
-fun Avatar(pictureString: String, displayName: String) {
-    Image(
-        modifier = Modifier
-            .size(PROFILE_PICTURE_SIZE.dp)
-            .clip(CircleShape),
-        contentScale = ContentScale.Crop,
-        painter = painterResource(MR.images.stock2.drawableResId),
-        contentDescription = "User picture"
-    )
+fun OutlinedButtonCompose(context: Context){
+    OutlinedButton(
+        onClick = { Toast.makeText(context, "This is a Circular Button with a + Icon", Toast.LENGTH_LONG).show()},
+        modifier= Modifier.size(30.dp),
+        shape = CircleShape,
+        border= BorderStroke(1.dp, Color(0XFF0F9D58)),
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor =  Color.Blue)
+    ) {
+        // Adding an Icon "Add" inside the Button
+        Icon(Icons.Default.Add ,contentDescription = "content description", tint= Color(0XFF0F9D58))
+    }
 }
