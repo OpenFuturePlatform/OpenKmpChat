@@ -69,21 +69,7 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
             selectedImage = contentResolver.openInputStream(uri)!!.use { input ->
                 input.readBytes() // not good for RAM
             }
-            context.contentResolver.getType(uri)?.let { mimeType ->
-                val file = File(uri.path!!)
-                val requestBody = InputStreamRequestBody(context.contentResolver, uri)
-                val filePart = MultipartBody.Part.createFormData("file", file.name, requestBody)
-                //selectedImage = file.readBytes()
-                println("MIME: $mimeType")
-                println("File $file")
-                println("filepart: $filePart")
-            }
-//            val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r", null)
-//            parcelFileDescriptor?.let { pfd ->
-//                val file = File(pfd.fileDescriptor)
-//                val requestFile = RequestBody.create(MediaType.parse("image/*"), file)
-//                val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
-//            }
+
             sendMessage(uri.toString(), TextType.ATTACHMENT, selectedImage!!)
         }
     }

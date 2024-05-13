@@ -179,6 +179,7 @@ val chatApiUseCaseModule = module {
     single { CreateGroupMessagesUseCase(get()) }
     single { GetGroupUseCase(get()) }
     single { UploadAttachmentUseCase(get()) }
+    single { CreateAiMessagesUseCase(get()) }
 }
 
 val groupApiUseCaseModule = module {

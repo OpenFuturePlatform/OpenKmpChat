@@ -94,8 +94,10 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
             val aiMessage = AiMessage(sender = message.user.email, contentType = message.type, body = message.text)
             when (val response = createAiMessagesUseCase(message = aiMessage)) {
                 is NetworkResponse.Success -> {
-                    println("AIT RESPONSE: ${response.data}")
-                    _dataFlow.emit(SuccessState(response.data)) // TODO redundant
+                    println("AI RESPONSE: ${response.data}")
+                    val aiUser = ChatUser(name = "AI_ASSISTANT", id = "", email = "openai@openfuture.io", picture = null)
+                    val responseMessage = Message(user = aiUser, recipient = response.data.recipient, text = response.data.content, type = response.data.contentType)
+                    _dataFlow.emit(SuccessState(mutableListOf(responseMessage)))
                 }
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))

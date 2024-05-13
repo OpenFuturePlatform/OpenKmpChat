@@ -36,6 +36,7 @@ class ChatViewModel(
     val loading: StateFlow<Boolean> = _loading
 
     var chats by mutableStateOf(emptyList<Message>())
+    var canSendMessage: Boolean by mutableStateOf(true)
 
     private val getChatDataModel = ChatDataModel()
 
@@ -74,10 +75,6 @@ class ChatViewModel(
             }.launchIn(viewModelScope)
             activate()
         }
-    }
-
-    fun saveChat(message: Message) {
-        getChatDataModel.saveChat(message)
     }
 
     fun saveChatGptChat(message: Message) {
