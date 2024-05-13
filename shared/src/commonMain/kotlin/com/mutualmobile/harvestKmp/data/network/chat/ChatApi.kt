@@ -13,6 +13,7 @@ interface ChatApi {
     suspend fun getChatsByUid(chatUid: String, isGroup: Boolean): NetworkResponse<List<ChatMessageResponse>>
     suspend fun getUserHomeChats(username: String): NetworkResponse<List<DisplayChatRoom>>
     suspend fun saveChat(message: ChatMessageRequest): NetworkResponse<ChatMessageResponse>
+    suspend fun saveAiChat(message: ChatMessageRequest): NetworkResponse<ChatMessageResponse>
     suspend fun saveGroupChat(message: GroupChatMessageRequest): NetworkResponse<GroupChatMessageResponse>
     suspend fun createGroup(request: GroupCreateRequest): NetworkResponse<GroupCreateResponse>
     suspend fun getGroup(groupId: String): NetworkResponse<GroupDetailResponse>

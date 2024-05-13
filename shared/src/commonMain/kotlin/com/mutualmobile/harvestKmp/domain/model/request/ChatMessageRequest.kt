@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChatMessageRequest (
     val sender: String,
-    val recipient: String,
+    val recipient: String?,
     val body: String,
     val contentType: TextType
 )

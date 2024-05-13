@@ -63,6 +63,16 @@ class ChatApiImpl(
             }
         }
 
+    override suspend fun saveAiChat(message: ChatMessageRequest): NetworkResponse<ChatMessageResponse>  =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.CHATGPT_URL}"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(message)
+            }
+        }
+
     override suspend fun saveGroupChat(message: GroupChatMessageRequest): NetworkResponse<GroupChatMessageResponse> =
         getSafeNetworkResponse {
             httpClient.post(

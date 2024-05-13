@@ -87,8 +87,8 @@ class ChatPrivateViewModel(
         getChatPrivateDataModel.saveGroupChat(message)
     }
 
-    fun uploadAttachment(imageBytes: ByteArray, fileName: String, message: Message) {
-        getChatPrivateDataModel.saveAttachment(imageBytes = imageBytes, fileName = fileName, sender = message.user, recipient = message.recipient )
+    fun uploadAttachment(imageBytes: ByteArray, fileName: String, message: Message, isGroup: Boolean) {
+        getChatPrivateDataModel.saveAttachment(imageBytes = imageBytes, fileName = fileName, sender = message.user, recipient = message.recipient, isGroup = isGroup)
     }
 
     fun getPrivateChats(_chatUid: String, _isGroup: Boolean, _recipient: String, _sender: String){

@@ -1,7 +1,6 @@
 package com.mutualmobile.harvestKmp.domain.usecases.chatApiUseCases
 
 import com.mutualmobile.harvestKmp.data.network.chat.ChatApi
-import com.mutualmobile.harvestKmp.domain.model.GroupMessage
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.request.GroupChatMessageRequest
 import com.mutualmobile.harvestKmp.domain.model.response.GroupChatMessageResponse

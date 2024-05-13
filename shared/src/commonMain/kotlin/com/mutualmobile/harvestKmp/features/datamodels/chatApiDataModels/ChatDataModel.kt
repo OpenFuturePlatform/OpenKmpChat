@@ -5,10 +5,7 @@ import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
-import com.mutualmobile.harvestKmp.domain.model.ChatUser
-import com.mutualmobile.harvestKmp.domain.model.ColorProvider
-import com.mutualmobile.harvestKmp.domain.model.Message
-import com.mutualmobile.harvestKmp.domain.model.TextType
+import com.mutualmobile.harvestKmp.domain.model.*
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import dev.icerock.moko.graphics.Color
@@ -30,6 +27,7 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
     private val chatApiUseCaseComponent = ChatApiUseCaseComponent()
     private val getMessagesByRecipientUseCase = chatApiUseCaseComponent.provideGetMessagesByRecipient()
     private val createMessagesUseCase = chatApiUseCaseComponent.provideCreateMessages()
+    private val createAiMessagesUseCase = chatApiUseCaseComponent.provideCreateAiMessages()
     override fun activate() {
         println("LOCAL STORAGE ACTIVATE")
         //getChat()
@@ -83,6 +81,39 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
 
             val res = mutableListOf(message)
             _dataFlow.emit(SuccessState(res))
+        }
+    }
+
+    fun saveChatGptChat(message: Message) {
+
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+            val res = mutableListOf(message)
+            _dataFlow.emit(SuccessState(res))
+
+            val aiMessage = AiMessage(sender = message.user.email, contentType = message.type, body = message.text)
+            when (val response = createAiMessagesUseCase(message = aiMessage)) {
+                is NetworkResponse.Success -> {
+                    println("AIT RESPONSE: ${response.data}")
+                    _dataFlow.emit(SuccessState(response.data)) // TODO redundant
+                }
+                is NetworkResponse.Failure -> {
+                    _dataFlow.emit(ErrorState(response.throwable))
+                    intPraxisCommand.emit(
+                        ModalPraxisCommand(
+                            "Failed",
+                            response.throwable.message ?: "Failed to find chats"
+                        )
+                    )
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                    settings.clear()
+                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                }
+            }
+
         }
     }
 

@@ -132,7 +132,8 @@ sqldelight {
 }
 
 android {
-    compileSdk = 31
+    namespace = "com.mutualmobile.harvestKmp"
+    compileSdk = 33
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
         minSdk = 21

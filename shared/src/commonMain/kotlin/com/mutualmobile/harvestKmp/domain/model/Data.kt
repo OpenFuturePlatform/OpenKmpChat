@@ -32,28 +32,11 @@ data class Message(
     )
 }
 
-data class GroupMessage(
-    val user: ChatUser,
-    val groupId: String,
-    val text: String,
-    val type: TextType,
-    val seconds: Long,
-    val id: Long
-) {
-    constructor(
-        user: ChatUser,
-        groupId: String,
-        text: String,
-        type: TextType
-    ) : this(
-        user = user,
-        groupId = groupId,
-        text = text,
-        type = type,
-        seconds = Clock.System.now().epochSeconds,
-        id = Random.nextLong()
-    )
-}
+data class AiMessage(
+    val sender: String,
+    val contentType: TextType,
+    val body: String
+)
 
 data class GroupDetails(
     val groupId: String,

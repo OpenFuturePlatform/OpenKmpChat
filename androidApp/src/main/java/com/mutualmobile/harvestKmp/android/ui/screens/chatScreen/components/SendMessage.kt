@@ -50,7 +50,7 @@ import okhttp3.RequestBody
 import java.io.File
 
 @Composable
-fun SendMessage(sendMessage: (prompt: String, type: TextType) -> Unit) {
+fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteArray?) -> Unit) {
 
     var inputText by remember { mutableStateOf("") }
     var selectedImage by remember { mutableStateOf<ByteArray?>(null) }
@@ -64,6 +64,11 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType) -> Unit) {
         uri?.let {
             photoUri = uri
             println("PHOTO URL $uri")
+            val contentResolver = context.contentResolver
+
+            selectedImage = contentResolver.openInputStream(uri)!!.use { input ->
+                input.readBytes() // not good for RAM
+            }
             context.contentResolver.getType(uri)?.let { mimeType ->
                 val file = File(uri.path!!)
                 val requestBody = InputStreamRequestBody(context.contentResolver, uri)
@@ -79,7 +84,7 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType) -> Unit) {
 //                val requestFile = RequestBody.create(MediaType.parse("image/*"), file)
 //                val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
 //            }
-            sendMessage(uri.toString(), TextType.ATTACHMENT)
+            sendMessage(uri.toString(), TextType.ATTACHMENT, selectedImage!!)
         }
     }
     Row(
@@ -144,7 +149,7 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType) -> Unit) {
                         modifier = Modifier
                             .imePadding()
                             .clickable {
-                                sendMessage(inputText, TextType.TEXT)
+                                sendMessage(inputText, TextType.TEXT, null)
                                 inputText = ""
                                 selectedImage = null
                             },

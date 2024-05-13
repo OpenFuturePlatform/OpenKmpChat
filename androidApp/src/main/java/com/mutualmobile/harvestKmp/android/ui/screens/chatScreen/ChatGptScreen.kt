@@ -111,8 +111,8 @@ fun ChatApp(
                         Messages(messages, myUser)
                     }
                     if (displayTextField) {
-                        SendMessage { text, type ->
-                           viewModel.saveChat(Message(myUser, myUser.name, text, type))
+                        SendMessage { text, type, _ ->
+                           viewModel.saveChatGptChat(Message(myUser, myUser.name, text, type))
                         }
                     }
                 }

@@ -1,8 +1,8 @@
 package com.mutualmobile.harvestKmp.data.network
 
 object Endpoint {
-    //const val SPRING_BOOT_BASE_URL = "http://192.168.99.204:5001"
-    const val SPRING_BOOT_BASE_URL = "http://192.168.0.105:5001"
+    const val SPRING_BOOT_BASE_URL = "http://192.168.99.204:5001"
+    //const val SPRING_BOOT_BASE_URL = "http://192.168.0.102:5001"
     //const val SPRING_BOOT_BASE_URL = "http://35.199.50.38:8080"
 
 
@@ -50,6 +50,7 @@ object Endpoint {
     const val GET_LOG_WORK = "$USER_PROJECT/get-work-log"
 
     const val CHAT_URL = "$API_URL/messages"
+    const val CHATGPT_URL = "$API_URL/messages/assistant"
     const val GROUP_URL = "$API_URL/groups"
     const val ATTACHMENT_URL = "$API_URL/attachments"
     const val LIST_RECIPIENT_CHATS = "$CHAT_URL/recipient/"

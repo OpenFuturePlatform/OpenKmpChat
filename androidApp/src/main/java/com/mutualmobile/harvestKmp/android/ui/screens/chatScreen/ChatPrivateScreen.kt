@@ -30,6 +30,7 @@ import com.mutualmobile.harvestKmp.domain.model.ChatUser
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.TextType
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
+import kotlinx.datetime.Clock
 import org.koin.androidx.compose.get
 
 @Composable
@@ -145,11 +146,11 @@ fun ChatPrivateApp(
                         Messages(messages, myUser)
                     }
                     if (displayTextField) {
-                        SendMessage { text, type ->
-//                            if (type = TextType.ATTACHMENT){
-//                                viewModel.savePrivateChat()
-//                            }
-                            if (isGroup){
+                        SendMessage { text, type, imageByteArray ->
+                            val receiver = if (isGroup) groupChatId else recipient!!
+                            if (type == TextType.ATTACHMENT){
+                                viewModel.uploadAttachment(imageByteArray!!, Clock.System.now().epochSeconds.toString(), Message(myUser, recipient = receiver, text, type), isGroup )
+                            } else if (isGroup){
                                 viewModel.saveGroupChat(Message(myUser, recipient = groupChatId, text, type))
                             } else {
                                 viewModel.savePrivateChat(Message(myUser, recipient = recipient!!, text, type))

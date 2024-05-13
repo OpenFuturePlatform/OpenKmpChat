@@ -1,5 +1,6 @@
 package com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels
 
+import com.mutualmobile.harvestKmp.data.network.Endpoint
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withDetail
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withRecipient
@@ -211,14 +212,19 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
         }
     }
 
-    fun saveAttachment(imageBytes: ByteArray, fileName: String, sender: ChatUser, recipient: String) {
+    fun saveAttachment(imageBytes: ByteArray, fileName: String, sender: ChatUser, recipient: String, isGroup: Boolean) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
             when (val response = uploadAttachmentUseCase(imageBytes, fileName)) {
                 is NetworkResponse.Success -> {
-                    val res = mutableListOf(Message(sender, recipient = recipient, text = response.data, type = TextType.ATTACHMENT))
-                    _dataFlow.emit(SuccessState(res))
+                    println("Upload response ${response.data}")
+                    val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/${response.data}"
+                    val message = Message(sender, recipient = recipient, text = imageUrl, type = TextType.ATTACHMENT)
+                    if (isGroup)
+                        saveGroupChat(message)
+                    else
+                        savePrivateChat(message)
                 }
 
                 is NetworkResponse.Failure -> {

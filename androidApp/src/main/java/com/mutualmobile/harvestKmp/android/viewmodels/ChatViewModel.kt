@@ -80,6 +80,10 @@ class ChatViewModel(
         getChatDataModel.saveChat(message)
     }
 
+    fun saveChatGptChat(message: Message) {
+        getChatDataModel.saveChatGptChat(message)
+    }
+
     fun getUserChats(userState: PraxisDataModel.SuccessState<*>){
         println("CURRENT GPR USER $userState")
         getChatDataModel.getUserChats(username = (userState.data as GetUserResponse).firstName ?: "")

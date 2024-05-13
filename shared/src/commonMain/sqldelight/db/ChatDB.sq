@@ -3,11 +3,15 @@ CREATE TABLE harvest_chat(
     userId TEXT,
     content TEXT,
     type TEXT,
-    time INTEGER
+    time INTEGER,
+    isSent INTEGER
 );
 
 insertChat:
-INSERT OR REPLACE INTO harvest_chat(uid, userId, content, type, time) VALUES(?,?,?, ?,?);
+INSERT OR REPLACE INTO harvest_chat(uid, userId, content, type, time, isSent) VALUES(?,?,?, ?,?, ?);
+
+updateChat:
+UPDATE harvest_chat SET isSent = ? WHERE uid = ?;
 
 selectAllChats:
 SELECT * FROM harvest_chat ORDER BY time DESC;

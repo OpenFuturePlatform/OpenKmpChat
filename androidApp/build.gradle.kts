@@ -9,6 +9,7 @@ plugins {
 }
 
 android {
+    namespace = "com.mutualmobile.harvestKmp.android"
     compileSdk = 33
     defaultConfig {
         applicationId = "com.mutualmobile.harvestKmp.android"

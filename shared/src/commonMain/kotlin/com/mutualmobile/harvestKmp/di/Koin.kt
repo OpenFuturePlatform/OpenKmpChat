@@ -287,6 +287,7 @@ class ChatApiUseCaseComponent : KoinComponent {
     fun provideCreateGroupMessages(): CreateGroupMessagesUseCase = get()
     fun provideGroupMessagesByRecipient(): GetGroupMessagesUseCase = get()
     fun providePrivateMessagesByRecipient(): GetPrivateMessagesUseCase = get()
+    fun provideCreateAiMessages(): CreateAiMessagesUseCase = get()
     //todo - move to another module
     fun provideUploadAttachment(): UploadAttachmentUseCase = get()
 }
