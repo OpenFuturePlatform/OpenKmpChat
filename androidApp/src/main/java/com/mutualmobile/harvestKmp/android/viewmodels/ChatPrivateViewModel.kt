@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.data.network.chat.RealtimeMessagingClient
 import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.domain.model.Attachment
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.ChatPrivateDataModel
@@ -87,11 +88,29 @@ class ChatPrivateViewModel(
         getChatPrivateDataModel.saveGroupChat(message)
     }
 
-    fun uploadAttachment(imageBytes: ByteArray, fileName: String, message: Message, isGroup: Boolean) {
-        getChatPrivateDataModel.saveAttachment(imageBytes = imageBytes, fileName = fileName, sender = message.user, recipient = message.recipient, isGroup = isGroup)
+    fun uploadAttachment(
+        imageBytes: ByteArray,
+        imageCheckSum: String,
+        fileName: String,
+        message: Message,
+        isGroup: Boolean
+    ) {
+        getChatPrivateDataModel.saveAttachment(
+            imageBytes = imageBytes,
+            imageCheckSum = imageCheckSum,
+            fileName = fileName,
+            sender = message.user,
+            recipient = message.recipient,
+            isGroup = isGroup,
+            captionText = message.text
+        )
     }
 
-    fun getPrivateChats(_chatUid: String, _isGroup: Boolean, _recipient: String, _sender: String){
+//    fun uploadAttachment(attachment: Attachment, message: Message, isGroup: Boolean) {
+//        getChatPrivateDataModel.saveAttachment(attachment = attachment, sender = message.user, recipient = message.recipient, isGroup = isGroup)
+//    }
+
+    fun getPrivateChats(_chatUid: String, _isGroup: Boolean, _recipient: String, _sender: String) {
         println("PRIVATE SCREEN CALL CHAT LIST")
         recipient.value = _recipient
         sender.value = _sender
@@ -101,7 +120,7 @@ class ChatPrivateViewModel(
         getChatPrivateDataModel.getChat(_chatUid, _isGroup, _recipient, _sender)
     }
 
-    fun getPrivateChats(_recipient: String, _sender: String){
+    fun getPrivateChats(_recipient: String, _sender: String) {
         println("PRIVATE SCREEN CALL CHAT LIST")
         recipient.value = _recipient
         sender.value = _sender

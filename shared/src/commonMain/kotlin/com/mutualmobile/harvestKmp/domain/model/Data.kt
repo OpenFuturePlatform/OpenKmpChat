@@ -13,7 +13,9 @@ data class Message(
     val user: ChatUser,
     val recipient: String,
     val text: String,
+    val attachmentUrl: String,
     val type: TextType,
+    val isSent: Boolean,
     val seconds: Long,
     val id: Long
 ) {
@@ -21,12 +23,47 @@ data class Message(
         user: ChatUser,
         recipient: String,
         text: String,
+        attachmentUrl: String,
         type: TextType
     ) : this(
         user = user,
         recipient = recipient,
         text = text,
         type = type,
+        attachmentUrl = attachmentUrl,
+        isSent = false,
+        seconds = Clock.System.now().epochSeconds,
+        id = Random.nextLong()
+    )
+}
+
+data class Attachment(
+    val fileName: String,
+    var fileCheckSum: String,
+    val captionText: String,
+    var attachmentUrl: String,
+    var fileByteArray: ByteArray,
+    val fileType: String,
+    var isSent: Boolean,
+    val seconds: Long,
+    val id: Long
+) {
+    constructor(
+        fileName: String,
+        fileCheckSum: String,
+        captionText: String,
+        attachmentUrl: String,
+        fileByteArray: ByteArray,
+        fileType: String,
+        isSent: Boolean
+    ) : this(
+        fileName = fileName,
+        fileCheckSum = fileCheckSum,
+        captionText = captionText,
+        fileByteArray = fileByteArray,
+        fileType = fileType,
+        attachmentUrl = attachmentUrl,
+        isSent = isSent,
         seconds = Clock.System.now().epochSeconds,
         id = Random.nextLong()
     )

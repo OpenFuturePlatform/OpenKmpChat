@@ -1,0 +1,25 @@
+CREATE TABLE open_attachment(
+    uid TEXT NOT NULL PRIMARY KEY,
+    attachmentUrl TEXT,
+    captionText TEXT,
+    fileType TEXT,
+    fileName TEXT,
+    fileCheckSum TEXT,
+    time INTEGER,
+    isSent INTEGER
+);
+
+insertAttachment:
+INSERT OR REPLACE INTO open_attachment(uid, attachmentUrl, captionText, fileType, fileName, fileCheckSum, time, isSent) VALUES(?,?,?, ?,?, ?, ?,?);
+
+updateAttachment:
+UPDATE open_attachment SET isSent = ? WHERE uid = ?;
+
+selectAllAttachments:
+SELECT * FROM open_attachment ORDER BY time DESC;
+
+selectAttachmentByChecksum:
+SELECT * FROM open_attachment WHERE fileCheckSum = ?;
+
+deleteAllAttachments:
+DELETE FROM open_attachment;

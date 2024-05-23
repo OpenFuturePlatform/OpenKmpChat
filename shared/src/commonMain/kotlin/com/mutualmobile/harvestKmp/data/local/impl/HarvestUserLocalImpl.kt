@@ -1,5 +1,6 @@
-package com.mutualmobile.harvestKmp.data.local
+package com.mutualmobile.harvestKmp.data.local.impl
 
+import com.mutualmobile.harvestKmp.data.local.HarvestUserLocal
 import com.mutualmobile.harvestKmp.db.BaseIoDB
 import com.mutualmobile.harvestKmp.db.asFlow
 import com.mutualmobile.harvestKmp.db.mapToList

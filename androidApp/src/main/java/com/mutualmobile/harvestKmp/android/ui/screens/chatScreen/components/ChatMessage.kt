@@ -99,17 +99,25 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
                             if (message.text.isNotEmpty()) {
                                 Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 16.dp)) {
 
+                                    println("Message: $message")
                                     val painter = rememberAsyncImagePainter(
                                         ImageRequest
                                             .Builder(LocalContext.current)
-                                            .data(data = message.text.toUri())
+                                            .data(data = message.attachmentUrl.toUri())
                                             .build()
                                     )
                                     Image(
                                         painter = painter,
-                                        contentDescription = "Selected image",
+                                        contentDescription = message.text,
                                         modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
                                         contentScale = ContentScale.Crop,
+                                    )
+                                    Text(
+                                        text = message.text,
+                                        style = MaterialTheme.typography.body1.copy(
+                                            fontSize = 18.sp,
+                                            letterSpacing = 0.sp
+                                        )
                                     )
                                 }
                             }

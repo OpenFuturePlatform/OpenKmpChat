@@ -1,9 +1,11 @@
 package com.mutualmobile.harvestKmp.di
 
+import com.mutualmobile.harvestKmp.data.local.AttachmentLocal
 import com.mutualmobile.harvestKmp.data.local.ChatLocal
-import com.mutualmobile.harvestKmp.data.local.ChatLocalImpl
+import com.mutualmobile.harvestKmp.data.local.impl.ChatLocalImpl
 import com.mutualmobile.harvestKmp.data.local.HarvestUserLocal
-import com.mutualmobile.harvestKmp.data.local.HarvestUserLocalImpl
+import com.mutualmobile.harvestKmp.data.local.impl.AttachmentLocalImpl
+import com.mutualmobile.harvestKmp.data.local.impl.HarvestUserLocalImpl
 import com.mutualmobile.harvestKmp.data.network.Constants
 import com.mutualmobile.harvestKmp.data.network.Endpoint
 import com.mutualmobile.harvestKmp.data.network.Endpoint.REFRESH_TOKEN
@@ -130,6 +132,7 @@ val jsSqliteDeps = module {
 val localDBRepos = module {
     single<HarvestUserLocal> { HarvestUserLocalImpl(get()) }
     single<ChatLocal> { ChatLocalImpl(get()) }
+    single<AttachmentLocal> { AttachmentLocalImpl(get()) }
 }
 
 val networkModule = module {
@@ -229,6 +232,7 @@ val userWorkUseCaseModule = module {
 class SharedComponent : KoinComponent {
     fun provideHarvestUserLocal(): HarvestUserLocal = get()
     fun provideChatLocal(): ChatLocal = get()
+    fun provideAttachmentLocal(): AttachmentLocal = get()
     fun provideSettings(): Settings = get()
 }
 

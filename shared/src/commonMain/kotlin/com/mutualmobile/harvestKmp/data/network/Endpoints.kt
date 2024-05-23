@@ -1,8 +1,8 @@
 package com.mutualmobile.harvestKmp.data.network
 
 object Endpoint {
-    //const val SPRING_BOOT_BASE_URL = "http://192.168.99.204:5001"
-    const val SPRING_BOOT_BASE_URL = "http://192.168.0.102:5001"
+    const val SPRING_BOOT_BASE_URL = "http://192.168.102.204:5001"
+    //const val SPRING_BOOT_BASE_URL = "http://192.168.0.102:5001"
     //const val SPRING_BOOT_BASE_URL = "http://35.199.50.38:8080"
 
 
@@ -17,8 +17,6 @@ object Endpoint {
     const val LOGIN = "$UN_AUTH_API/login"
     const val FORGOT_PASSWORD = "$UN_AUTH_API/forgotPassword"
     const val RESET_PASSWORD_ENDPOINT = "$UN_AUTH_API/resetPassword"
-    const val SERVICE_LOCATIONS = "$UN_AUTH_API/locations"
-    const val EMAIL_VERIFY = "/emailVerify"
     const val FCM_TOKEN = "$API_URL/fcmToken"
     const val CHANGE_PASSWORD = "$API_URL/changePassword"
     const val LOGOUT = "$API_URL/logout"

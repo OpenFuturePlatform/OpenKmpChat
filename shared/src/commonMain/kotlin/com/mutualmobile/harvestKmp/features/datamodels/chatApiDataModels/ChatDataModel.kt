@@ -1,5 +1,6 @@
 package com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels
 
+import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
@@ -20,6 +21,9 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
 
     val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
+
+    var _canSendMessage = MutableSharedFlow<Boolean>()
+    val canSendMessage = _canSendMessage.asSharedFlow()
 
     var currentLoadingJob: Job? = null
     private val chatLocal = SharedComponent().provideChatLocal()
@@ -52,9 +56,11 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
                         .map {
                             Message(
                                 ChatUser(it.userId!!, "owner", email = it.userId,  picture = null),
-                                it.userId!!,
+                                it.userId,
                                 it.content!!,
+                                "",
                                 TextType.TEXT,
+                                false,
                                 it.time!!,
                                 it.uid.toLong()
                             )
@@ -90,14 +96,15 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
             _dataFlow.emit(LoadingState)
             val res = mutableListOf(message)
             _dataFlow.emit(SuccessState(res))
-
+            _canSendMessage.emit(false)
             val aiMessage = AiMessage(sender = message.user.email, contentType = message.type, body = message.text)
             when (val response = createAiMessagesUseCase(message = aiMessage)) {
                 is NetworkResponse.Success -> {
                     println("AI RESPONSE: ${response.data}")
                     val aiUser = ChatUser(name = "AI_ASSISTANT", id = "", email = "openai@openfuture.io", picture = null)
-                    val responseMessage = Message(user = aiUser, recipient = response.data.recipient, text = response.data.content, type = response.data.contentType)
+                    val responseMessage = Message(user = aiUser, recipient = response.data.recipient, text = response.data.content, attachmentUrl = "", type = response.data.contentType)
                     _dataFlow.emit(SuccessState(mutableListOf(responseMessage)))
+                    _canSendMessage.emit(true)
                 }
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
@@ -112,7 +119,7 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -138,7 +145,7 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
             is NetworkResponse.Unauthorized -> {
                 settings.clear()
                 intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                intPraxisCommand.emit(NavigationPraxisCommand(""))
+                intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
             }
         }
     }
@@ -155,7 +162,9 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
                             ChatUser(it.sender, it.sender, it.sender, ColorProvider.getColor(), null),
                             it.recipient,
                             it.content,
+                            "",
                             it.contentType,
+                            true,
                             it.receivedAt.nanosecond.toLong(),
                             it.id.toLong())
                     })) // TODO redundant
@@ -172,7 +181,7 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }

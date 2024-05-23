@@ -62,7 +62,7 @@ class GetUserDataModel :
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                     _dataFlow.emit(ErrorState(getUserResponse.throwable))
                 }
             }

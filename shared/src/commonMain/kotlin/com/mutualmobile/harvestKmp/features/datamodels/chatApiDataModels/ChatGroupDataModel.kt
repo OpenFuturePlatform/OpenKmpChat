@@ -73,7 +73,7 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
@@ -85,7 +85,8 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
-            when (val response = getGroupMessagesByRecipientUseCase(username = username)) {
+            when (val response =
+                getGroupMessagesByRecipientUseCase(username = username)) {
 
                 is NetworkResponse.Success -> {
                     println("GROUP RESPONSE ${response.data}")
@@ -105,7 +106,7 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }

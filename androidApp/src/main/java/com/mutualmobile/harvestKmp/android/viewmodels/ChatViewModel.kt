@@ -78,6 +78,7 @@ class ChatViewModel(
     }
 
     fun saveChatGptChat(message: Message) {
+        canSendMessage = false
         getChatDataModel.saveChatGptChat(message)
     }
 

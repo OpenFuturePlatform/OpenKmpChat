@@ -1,13 +1,10 @@
-package com.mutualmobile.harvestKmp.data.local
+package com.mutualmobile.harvestKmp.data.local.impl
 
+import com.mutualmobile.harvestKmp.data.local.ChatLocal
 import com.mutualmobile.harvestKmp.db.BaseIoDB
-import com.mutualmobile.harvestKmp.db.asFlow
-import com.mutualmobile.harvestKmp.db.mapToList
 import com.mutualmobile.harvestKmp.domain.model.Message
-import com.squareup.sqldelight.db.SqlCursor
 import com.squareup.sqldelight.db.SqlDriver
 import db.Harvest_chat
-import kotlinx.coroutines.flow.Flow
 
 class ChatLocalImpl(override var driver: SqlDriver? = null) : ChatLocal {
 

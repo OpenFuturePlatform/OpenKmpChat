@@ -26,6 +26,7 @@ import com.mutualmobile.harvestKmp.android.viewmodels.ChatPrivateViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.domain.model.Attachment
 import com.mutualmobile.harvestKmp.domain.model.ChatUser
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.TextType
@@ -68,7 +69,14 @@ fun ChatPrivateScreen(
         },
         scaffoldState = scaffoldState
     ) {
-        ChatPrivateApp(viewModel =  crVm, modifier = Modifier.padding(it), user = user, recipient = recipient, isGroup = isGroup == "true", groupChatId = chatUid!!)
+        ChatPrivateApp(
+            viewModel = crVm,
+            modifier = Modifier.padding(it),
+            user = user,
+            recipient = recipient,
+            isGroup = isGroup == "true",
+            groupChatId = chatUid!!
+        )
     }
 
     LaunchedEffect(crVm.currentNavigationCommand) {
@@ -86,12 +94,13 @@ fun ChatPrivateScreen(
 
         when (userState) {
             is PraxisDataModel.SuccessState<*> -> {
-                if (chatUid!! == recipient!!){
+                if (chatUid!! == recipient!!) {
                     crVm.getPrivateChats(recipient, sender!!)
                 } else {
                     crVm.getPrivateChats(chatUid, isGroup == "true", recipient, sender!!)
                 }
             }
+
             else -> Unit
         }
     }
@@ -106,7 +115,7 @@ fun ContactProfileNavigation(
 ) {
     Row(modifier = Modifier.fillMaxSize()
         .clickable { onChatClicked.invoke(chatUid!!, isGroup) }
-    )  {
+    ) {
         if (isGroup) {
             DefaultGroupPicture(displayName = "$recipient")
         } else {
@@ -119,6 +128,7 @@ fun ContactProfileNavigation(
         )
     }
 }
+
 @Composable
 fun ChatPrivateApp(
     displayTextField: Boolean = true,
@@ -146,14 +156,21 @@ fun ChatPrivateApp(
                         Messages(messages, myUser)
                     }
                     if (displayTextField) {
-                        SendMessage { text, type, imageByteArray ->
+                        SendMessage { text, type, imageByteArray, imageCheckSum ->
                             val receiver = if (isGroup) groupChatId else recipient!!
-                            if (type == TextType.ATTACHMENT){
-                                viewModel.uploadAttachment(imageByteArray!!, Clock.System.now().epochSeconds.toString(), Message(myUser, recipient = receiver, text, type), isGroup )
-                            } else if (isGroup){
-                                viewModel.saveGroupChat(Message(myUser, recipient = groupChatId, text, type))
+                            if (type == TextType.ATTACHMENT) {
+                                viewModel.uploadAttachment(
+                                    imageByteArray!!,
+                                    imageCheckSum!!,
+                                    Clock.System.now().epochSeconds.toString(),
+                                    Message(myUser, recipient = receiver, text, text, type),
+                                    isGroup
+                                )
+                                //viewModel.uploadAttachment(Attachment(fileCheckSum = "", fileByteArray = imageByteArray!!, fileType = "", captionText = text, isSent = false, attachmentUrl = "", fileName = ""), Message(myUser, recipient = receiver, text, text, type), isGroup )
+                            } else if (isGroup) {
+                                viewModel.saveGroupChat(Message(myUser, recipient = groupChatId, text, "", type))
                             } else {
-                                viewModel.savePrivateChat(Message(myUser, recipient = recipient!!, text, type))
+                                viewModel.savePrivateChat(Message(myUser, recipient = recipient!!, text, "", type))
                             }
                         }
                     }
@@ -161,7 +178,6 @@ fun ChatPrivateApp(
             }
         }
     }
-
 
 
 }

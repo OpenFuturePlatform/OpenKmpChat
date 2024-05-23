@@ -64,7 +64,7 @@ class UserListDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
@@ -99,7 +99,7 @@ class UserListDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 

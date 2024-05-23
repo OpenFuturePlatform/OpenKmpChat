@@ -110,11 +110,13 @@ fun ChatApp(
                     Box(Modifier.weight(1f)) {
                         Messages(messages, myUser)
                     }
+
                     if (displayTextField) {
-                        SendMessage { text, type, _ ->
-                           viewModel.saveChatGptChat(Message(myUser, myUser.name, text, type))
+                        SendMessage { text, type, _ , _->
+                           viewModel.saveChatGptChat(Message(myUser, myUser.name, text, "", type))
                         }
                     }
+
                 }
             }
         }

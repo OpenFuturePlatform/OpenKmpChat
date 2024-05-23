@@ -1,5 +1,6 @@
 package com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels
 
+import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
@@ -52,7 +53,7 @@ class ChangePasswordDataModel() :
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }.catch {

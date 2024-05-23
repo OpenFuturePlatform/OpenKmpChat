@@ -47,6 +47,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
     private val groupApiUseCaseComponent = GroupApiUseCaseComponent()
     private val getGroupUseCase = groupApiUseCaseComponent.provideGetGroup()
 
+    private val attachmentLocal = SharedComponent().provideAttachmentLocal()
+
     override fun activate() {
         println("LOCAL STORAGE PRIVATE ACTIVATE")
     }
@@ -78,7 +80,9 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                                 ChatUser(it.id, it.sender, it.sender, ColorProvider.getColor(), null),
                                 it.recipient,
                                 it.content,
+                                it.content,
                                 it.contentType,
+                                true,
                                 it.receivedAt.nanosecond.toLong(),
                                 it.id.toLong()
                             )
@@ -100,11 +104,12 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
     }
+
     fun getChat(_recipient: String?, _sender: String?) {
         currentLoadingJob?.cancel()
         recipient.value = _recipient!!
@@ -122,7 +127,9 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                                 ChatUser(it.id, it.sender, it.sender, ColorProvider.getColor(), null),
                                 it.recipient,
                                 it.content,
+                                it.content,
                                 it.contentType,
+                                true,
                                 it.receivedAt.nanosecond.toLong(),
                                 it.id.toLong()
                             )
@@ -144,11 +151,12 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
     }
+
     fun savePrivateChat(message: Message) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
@@ -157,7 +165,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
             when (val response = createPrivateMessagesUseCase(message = message)) {
                 is NetworkResponse.Success -> {
-                    //_dataFlow.emit(SuccessState(listOf(message))) // TODO redundant
+                    val res = mutableListOf(message)
+                    _dataFlow.emit(SuccessState(res))
                 }
 
                 is NetworkResponse.Failure -> {
@@ -173,21 +182,22 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
-            val res = mutableListOf(message)
-            _dataFlow.emit(SuccessState(res))
+
         }
     }
+
     fun saveGroupChat(message: Message) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
             when (val response = createGroupMessagesUseCase(message = message)) {
                 is NetworkResponse.Success -> {
-                    //_dataFlow.emit(SuccessState(listOf(message))) // TODO redundant
+                    val res = mutableListOf(message)
+                    _dataFlow.emit(SuccessState(res))
                 }
 
                 is NetworkResponse.Failure -> {
@@ -203,48 +213,92 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
-            val res = mutableListOf(message)
-            _dataFlow.emit(SuccessState(res))
+
         }
     }
 
-    fun saveAttachment(imageBytes: ByteArray, fileName: String, sender: ChatUser, recipient: String, isGroup: Boolean) {
+    fun saveAttachment(
+        imageBytes: ByteArray,
+        imageCheckSum: String,
+        fileName: String,
+        sender: ChatUser,
+        recipient: String,
+        isGroup: Boolean,
+        captionText: String
+    ) {
+        //fun saveAttachment(attachment: Attachment, sender: ChatUser, recipient: String, isGroup: Boolean) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
-            when (val response = uploadAttachmentUseCase(imageBytes, fileName)) {
-                is NetworkResponse.Success -> {
-                    println("Upload response ${response.data}")
-                    val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/${response.data}"
-                    val message = Message(sender, recipient = recipient, text = imageUrl, type = TextType.ATTACHMENT)
-                    if (isGroup)
-                        saveGroupChat(message)
-                    else
-                        savePrivateChat(message)
-                }
+            println("Hash attachment: $imageCheckSum")
+            val openAttachment = attachmentLocal.findByHash(imageCheckSum)
+            if (openAttachment != null) {
+                println("Fire local stored attachment details : $openAttachment")
+                val message = Message(
+                    sender,
+                    recipient = recipient,
+                    attachmentUrl = openAttachment.attachmentUrl!!,
+                    text = openAttachment.attachmentUrl,//captionText,
+                    type = TextType.ATTACHMENT
+                )
 
-                is NetworkResponse.Failure -> {
-                    _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
-                            "Failed",
-                            response.throwable.message ?: "Failed to find chats"
+                if (isGroup)
+                    saveGroupChat(message)
+                else
+                    savePrivateChat(message)
+
+            } else {
+                when (val response = uploadAttachmentUseCase(imageBytes, fileName, captionText)) {
+                    is NetworkResponse.Success -> {
+                        println("Upload response ${response.data}")
+                        val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/${response.data}"
+                        val message = Message(
+                            sender,
+                            recipient = recipient,
+                            attachmentUrl = imageUrl,
+                            text = captionText,
+                            type = TextType.ATTACHMENT
                         )
-                    )
-                }
+                        // SAVE FILE ON LOCAL STORAGE
+                        attachmentLocal.saveAttachment(
+                            Attachment(
+                                fileCheckSum = imageCheckSum,
+                                fileByteArray = imageBytes,
+                                fileType = "",
+                                captionText = captionText,
+                                isSent = true,
+                                attachmentUrl = imageUrl,
+                                fileName = ""
+                            )
+                        )
 
-                is NetworkResponse.Unauthorized -> {
-                    settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                        if (isGroup)
+                            saveGroupChat(message)
+                        else
+                            savePrivateChat(message)
+                    }
+
+                    is NetworkResponse.Failure -> {
+                        _dataFlow.emit(ErrorState(response.throwable))
+                        intPraxisCommand.emit(
+                            ModalPraxisCommand(
+                                "Failed",
+                                response.throwable.message ?: "Failed to find chats"
+                            )
+                        )
+                    }
+
+                    is NetworkResponse.Unauthorized -> {
+                        settings.clear()
+                        intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                        intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    }
                 }
             }
-
-
         }
     }
 
@@ -283,7 +337,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
