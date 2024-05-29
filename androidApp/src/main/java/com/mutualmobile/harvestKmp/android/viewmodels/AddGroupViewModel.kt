@@ -9,21 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.data.network.TAG
 import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.domain.model.GroupDetails
-import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
-import com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels.LoginDataModel
 import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.AddGroupDataModel
-import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.ChatGroupDataModel
-import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.GetGroupDataModel
-import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.UserListDataModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
-import kotlin.streams.toList
 
 class AddGroupViewModel : ViewModel() {
     var currentNavigationCommand: PraxisCommand? by mutableStateOf(null)

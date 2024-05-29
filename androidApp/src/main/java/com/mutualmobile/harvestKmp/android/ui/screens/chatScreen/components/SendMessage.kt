@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.ProgressIndicatorDefaults.IndicatorBackgroundOpacity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.rounded.Add
@@ -27,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.mutualmobile.harvestKmp.android.ui.theme.Dimens
+import com.mutualmobile.harvestKmp.android.ui.theme.PrimaryColor
+import com.mutualmobile.harvestKmp.android.ui.theme.SecondaryColor
+import com.mutualmobile.harvestKmp.android.ui.theme.TertiaryColor
 import com.mutualmobile.harvestKmp.android.ui.utils.HashUtils
 import com.mutualmobile.harvestKmp.android.ui.utils.ImagePicker
 import com.mutualmobile.harvestKmp.android.ui.utils.toComposeImageBitmap
@@ -86,9 +90,9 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colors.background)
-                        //.imePadding()
-                        //.wrapContentHeight(),
-                            ,
+                        .imePadding()
+                        .wrapContentHeight()
+                    ,
                     colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
                     value = imageCaptionText,
                     placeholder = {
@@ -127,20 +131,7 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
 
                     }
                 )
-//                IconButton(
-//                    onClick = { photoUri = null },
-//                    modifier = Modifier.size(48.dp).align(Alignment.BottomStart),
-//                ) {
-//                    Icon(Icons.Rounded.Delete, "Remove attached Image File")
-//                }
-//                IconButton(
-//                    onClick = {
-//                        sendMessage(photoUri.toString(), TextType.ATTACHMENT, selectedImage!!)
-//                    },
-//                    modifier = Modifier.size(48.dp).align(Alignment.BottomEnd),
-//                ) {
-//                    Icon(Icons.Rounded.Send, "Send Image File")
-//                }
+
             }
         } else {
 
@@ -251,10 +242,14 @@ private fun copy(source: InputStream, target: OutputStream) {
 }
 
 @Composable
-fun LinearProgressIndicator(
-    /*@FloatRange(from = 0.0, to = 1.0)*/
-    progress: Float,
-    modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colors.primary,
-    backgroundColor: Color = color.copy(alpha = IndicatorBackgroundOpacity)
-)
+fun CustomLinearProgressBar(){
+    Column(modifier = Modifier.fillMaxWidth()) {
+        LinearProgressIndicator(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(15.dp),
+            backgroundColor = Color.LightGray,
+            color = TertiaryColor //progress color
+        )
+    }
+}

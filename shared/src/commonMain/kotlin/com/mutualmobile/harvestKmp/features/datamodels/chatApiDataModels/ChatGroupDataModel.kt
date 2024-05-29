@@ -46,7 +46,8 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
 
     // NAVIGATE TO PRIVATE CHAT FROM LIST OF GROUP CHATS
     fun getUserPrivateChats(chatUid: String, isGroup: Boolean, recipient: String, sender: String) {
-        dataModelScope.launch {
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
             when (val response = getMessagesByUidUseCase(chatUid = chatUid, isGroup = isGroup)) {
                 is NetworkResponse.Success -> {
@@ -54,7 +55,12 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
 
                     intPraxisCommand.emit(
                         NavigationPraxisCommand(
-                            screen = HarvestRoutes.Screen.CHAT_PRIVATE.withRecipient(chatUid, isGroup, recipient, sender)
+                            screen = HarvestRoutes.Screen.CHAT_PRIVATE.withRecipient(
+                                chatUid,
+                                isGroup,
+                                recipient,
+                                sender
+                            )
                         )
                     )
 

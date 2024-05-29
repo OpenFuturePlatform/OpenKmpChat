@@ -52,7 +52,11 @@ object AndroidDependencies {
     "io.insert-koin:koin-androidx-compose:${CommonDependencyVersions.koin}"
   )
   val androidTestImplementation = listOf(
-    "androidx.compose.ui:ui-test-junit4:${AndroidDependencyVersions.compose}"
+    "androidx.compose.ui:ui-test-junit4:${AndroidDependencyVersions.compose}",
+    "androidx.fragment:fragment-testing:1.4.1",
+    "junit:junit:${CommonDependencyVersions.junit}",
+    "androidx.test:runner:1.4.0",
+    "io.ktor:ktor-client-mock:${CommonDependencyVersions.ktor}"
   )
   val debugImplementation = listOf(
     "androidx.compose.ui:ui-tooling:${AndroidDependencyVersions.compose}"
@@ -75,7 +79,8 @@ object AndroidMainDependencies {
 
 object AndroidTestDependencies {
   val implementation = listOf(
-    "junit:junit:${CommonDependencyVersions.junit}"
+    "junit:junit:${CommonDependencyVersions.junit}",
+    "io.ktor:ktor-client-mock:${CommonDependencyVersions.ktor}"
   )
   val kotlin = listOf(
     "test-junit"

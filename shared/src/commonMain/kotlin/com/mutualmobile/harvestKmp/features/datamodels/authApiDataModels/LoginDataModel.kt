@@ -46,7 +46,6 @@ class LoginDataModel :
             )) {
                 is NetworkResponse.Success -> {
                     _dataFlow.emit(SuccessState(loginResponse.data))
-                    println("token: ${loginResponse.data}")
                     saveToken(loginResponse)
                     intPraxisCommand.emit(
                         NavigationPraxisCommand(

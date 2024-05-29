@@ -63,10 +63,12 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
     fun getChat(_chatUid: String?, _isGroup: Boolean?, _recipient: String?, _sender: String?) {
         currentLoadingJob?.cancel()
+
         recipient.value = _recipient!!
         sender.value = _sender!!
         chatUid.value = _chatUid!!
         isGroup.value = _isGroup!!
+
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
             println("GET CHATS IN ACTIVATE with recipient: $_recipient and sender : $_sender")
@@ -83,6 +85,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                                 it.content,
                                 it.contentType,
                                 true,
+                                it.attachments,
                                 it.receivedAt.nanosecond.toLong(),
                                 it.id.toLong()
                             )
@@ -130,6 +133,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                                 it.content,
                                 it.contentType,
                                 true,
+                                it.attachments,
                                 it.receivedAt.nanosecond.toLong(),
                                 it.id.toLong()
                             )
@@ -165,6 +169,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
             when (val response = createPrivateMessagesUseCase(message = message)) {
                 is NetworkResponse.Success -> {
+                    println("Private chat saved successfully: ${response.data}")
                     val res = mutableListOf(message)
                     _dataFlow.emit(SuccessState(res))
                 }
@@ -186,7 +191,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 }
             }
 
-
+            _dataFlow.emit(Complete)
         }
     }
 
@@ -217,10 +222,11 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 }
             }
 
-
+            _dataFlow.emit(Complete)
         }
     }
 
+    //fun saveAttachment(attachment: Attachment, sender: ChatUser, recipient: String, isGroup: Boolean) {
     fun saveAttachment(
         imageBytes: ByteArray,
         imageCheckSum: String,
@@ -230,10 +236,9 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
         isGroup: Boolean,
         captionText: String
     ) {
-        //fun saveAttachment(attachment: Attachment, sender: ChatUser, recipient: String, isGroup: Boolean) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-
+            _dataFlow.emit(UploadLoadingState)
             println("Hash attachment: $imageCheckSum")
             val openAttachment = attachmentLocal.findByHash(imageCheckSum)
             if (openAttachment != null) {
@@ -245,7 +250,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                     text = openAttachment.attachmentUrl,//captionText,
                     type = TextType.ATTACHMENT
                 )
-
+                _dataFlow.emit(UploadCompleteState)
                 if (isGroup)
                     saveGroupChat(message)
                 else
@@ -255,6 +260,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 when (val response = uploadAttachmentUseCase(imageBytes, fileName, captionText)) {
                     is NetworkResponse.Success -> {
                         println("Upload response ${response.data}")
+                        _dataFlow.emit(UploadCompleteState)
                         val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/${response.data}"
                         val message = Message(
                             sender,
@@ -272,7 +278,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                                 captionText = captionText,
                                 isSent = true,
                                 attachmentUrl = imageUrl,
-                                fileName = ""
+                                fileName = fileName
                             )
                         )
 
@@ -299,6 +305,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                     }
                 }
             }
+
         }
     }
 

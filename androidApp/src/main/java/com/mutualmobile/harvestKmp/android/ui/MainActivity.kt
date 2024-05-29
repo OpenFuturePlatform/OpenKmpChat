@@ -28,7 +28,6 @@ import androidx.core.animation.doOnEnd
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -37,15 +36,11 @@ import androidx.navigation.navArgument
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.navigation.NavigationItem
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.*
-import com.mutualmobile.harvestKmp.android.ui.screens.findWorkspaceScreen.FindWorkspaceScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.homeScreen.UserHomeScreen
-import com.mutualmobile.harvestKmp.android.ui.screens.landingScreen.LandingScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoginScreen
-import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.NewEntryScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.onboradingScreen.OnBoardingScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.password.ChangePasswordScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.password.ForgotPasswordScreen
-import com.mutualmobile.harvestKmp.android.ui.screens.projectScreen.ProjectScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.settingsScreen.SettingsScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.NewOrgSignUpScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.SignUpScreen
@@ -126,25 +121,6 @@ class MainActivity : ComponentActivity() {
                                         mainActivityViewModel.fetchUser()
                                     },
                                 )
-                            }
-                            composable(HarvestRoutes.Screen.ORG_USER_DASHBOARD) {
-                                LandingScreen(
-                                    navController = navController,
-                                    userOrganization = mainActivityViewModel.userOrganization,
-                                    userState = mainActivityViewModel.getUserState
-                                )
-                            }
-                            composable(HarvestRoutes.Screen.FIND_WORKSPACE) {
-                                FindWorkspaceScreen(navController = navController)
-                            }
-                            composable(HarvestRoutes.Screen.ORG_PROJECTS) {
-                                ProjectScreen(
-                                    navController = navController,
-                                    userState = mainActivityViewModel.getUserState
-                                )
-                            }
-                            composable(HarvestRoutes.Screen.WORK_ENTRY) {
-                                NewEntryScreen(navController = navController, user = mainActivityViewModel.user)
                             }
                             composable(HarvestRoutes.Screen.SETTINGS) {
                                 SettingsScreen(navController = navController)

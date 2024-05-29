@@ -49,7 +49,8 @@ class AddGroupDataModel : PraxisDataModel(), KoinComponent {
     fun createGroup(groupName: String, creator: String, participants: List<String>) {
         println("CREATE GROUP REQUEST with $groupName and $participants")
         val groupCreateRequest = GroupCreateRequest(name = groupName, creator = creator, participants = participants)
-        dataModelScope.launch(exceptionHandler) {
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch(exceptionHandler) {
             _dataFlow.emit(LoadingState)
 
             when (val createGroupResponse = createGroupUseCase(groupCreateRequest)) {
@@ -88,7 +89,8 @@ class AddGroupDataModel : PraxisDataModel(), KoinComponent {
     }
 
     fun addMember(groupId: String, members: List<String>) {
-        dataModelScope.launch {
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
             when (val response = addMemberGroupUseCase(request = GroupMemberUpdateRequest(groupId = groupId, users = members))) {

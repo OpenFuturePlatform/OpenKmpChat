@@ -2,7 +2,7 @@ package com.mutualmobile.harvestKmp.data.network
 
 object Endpoint {
     const val SPRING_BOOT_BASE_URL = "http://192.168.102.204:5001"
-    //const val SPRING_BOOT_BASE_URL = "http://192.168.0.102:5001"
+    //const val SPRING_BOOT_BASE_URL = "http://192.168.0.104:5001"
     //const val SPRING_BOOT_BASE_URL = "http://35.199.50.38:8080"
 
 

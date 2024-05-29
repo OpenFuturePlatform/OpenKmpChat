@@ -16,6 +16,7 @@ data class Message(
     val attachmentUrl: String,
     val type: TextType,
     val isSent: Boolean,
+    val attachmentIds: List<Int>?,
     val seconds: Long,
     val id: Long
 ) {
@@ -31,6 +32,7 @@ data class Message(
         text = text,
         type = type,
         attachmentUrl = attachmentUrl,
+        attachmentIds = emptyList(),
         isSent = false,
         seconds = Clock.System.now().epochSeconds,
         id = Random.nextLong()

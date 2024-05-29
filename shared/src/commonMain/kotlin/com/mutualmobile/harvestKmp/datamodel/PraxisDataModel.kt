@@ -33,6 +33,8 @@ abstract class PraxisDataModel(
 
     sealed class DataState
     object LoadingState : DataState()
+    object UploadLoadingState : DataState()
+    object UploadCompleteState : DataState()
     object EmptyState : DataState()
     object Complete : DataState()
     data class SuccessState<T>(

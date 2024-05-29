@@ -58,32 +58,43 @@ class ChatViewModel(
 
     init {
         getCurrentUserChats()
+        canSendMessage = true
     }
 
     private fun getCurrentUserChats() {
         _loading.value = true
         with(getChatDataModel) {
             dataFlow.onEach { newChatState ->
+                println("NEW STATE CHAT GPT : $newChatState")
                 if (newChatState is PraxisDataModel.SuccessState<*>) {
                     println("NEW STATE CHAT GPT WITH ${newChatState.data}")
                     val newMessage = newChatState.data as List<Message>
+
+                    if (newMessage.isEmpty()){
+                        canSendMessage = true
+                    }
                     chats = if (newMessage.size > 1)
                         newMessage
                     else
                         chats.plus(newMessage)
                 }
+                if (newChatState is PraxisDataModel.LoadingState){
+                    canSendMessage = false
+                }
+                if (newChatState is PraxisDataModel.Complete){
+                    canSendMessage = true
+                }
             }.launchIn(viewModelScope)
             activate()
         }
+        _loading.value = false
     }
 
     fun saveChatGptChat(message: Message) {
-        canSendMessage = false
         getChatDataModel.saveChatGptChat(message)
     }
 
     fun getUserChats(userState: PraxisDataModel.SuccessState<*>){
-        println("CURRENT GPR USER $userState")
         getChatDataModel.getUserChats(username = (userState.data as GetUserResponse).firstName ?: "")
     }
 

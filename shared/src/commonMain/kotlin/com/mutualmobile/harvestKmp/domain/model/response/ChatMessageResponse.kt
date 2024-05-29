@@ -11,5 +11,6 @@ data class ChatMessageResponse(
     val recipient: String,
     val content: String,
     val contentType: TextType,
-    val receivedAt: LocalDateTime
+    val receivedAt: LocalDateTime,
+    val attachments: List<Int>?
 )

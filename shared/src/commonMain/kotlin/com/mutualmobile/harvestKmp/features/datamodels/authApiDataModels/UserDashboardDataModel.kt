@@ -37,11 +37,11 @@ class UserDashboardDataModel() :
         dataModelScope.launch(exceptionHandler) {
             _dataFlow.emit(LoadingState)
             when (val getUserResponse = getUserUseCase()) {
-                is NetworkResponse.Success -> {
+                is Success -> {
                     harvestUserLocal.saveUser(getUserResponse.data)
                     _dataFlow.emit(SuccessState(getUserResponse.data))
                 }
-                is NetworkResponse.Failure -> {
+                is Failure -> {
                     print("GetUser Failed, ${getUserResponse.throwable.message}")
                     _dataFlow.emit(ErrorState(getUserResponse.throwable))
                 }

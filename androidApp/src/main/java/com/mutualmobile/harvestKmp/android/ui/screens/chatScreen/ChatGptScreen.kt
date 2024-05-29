@@ -1,6 +1,8 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.chatScreen
 
+import CustomLinearProgressBar
 import SendMessage
+import android.annotation.SuppressLint
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -32,6 +34,7 @@ import org.koin.androidx.compose.get
 
 
 val store = CoroutineScope(SupervisorJob()).createStore()
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ChatGptScreen(
     navController: NavHostController,
@@ -55,7 +58,7 @@ fun ChatGptScreen(
             )
         }
     ) {
-        ChatApp(viewModel =  crVm, modifier = Modifier.padding(it), user = user)
+        ChatApp(viewModel =  crVm,  user = user)
     }
 
     LaunchedEffect(Unit) {
@@ -72,7 +75,6 @@ fun ChatGptScreen(
 fun ChatApp(
     displayTextField: Boolean = true,
     viewModel: ChatViewModel = get(),
-    modifier: Modifier,
     user: GetUserResponse?
 ) {
 
@@ -80,6 +82,10 @@ fun ChatApp(
     mainActivityViewModel.user
     val myUser = ChatUser(user?.id!!, user.firstName!!, email = user.email!!, picture = null)
     val messages = viewModel.chats
+    val canSendMessage = viewModel.canSendMessage
+
+    println("Can send message: $canSendMessage")
+
     val state by viewModel.state.collectAsState()
     val isConnecting by viewModel.isConnecting.collectAsState()
     val showConnectionError by viewModel.showConnectionError.collectAsState()
@@ -107,10 +113,14 @@ fun ChatApp(
 //                        )
 //                    }
 
+
                     Box(Modifier.weight(1f)) {
                         Messages(messages, myUser)
                     }
 
+                    if (!canSendMessage){
+                        CustomLinearProgressBar()
+                    }
                     if (displayTextField) {
                         SendMessage { text, type, _ , _->
                            viewModel.saveChatGptChat(Message(myUser, myUser.name, text, "", type))

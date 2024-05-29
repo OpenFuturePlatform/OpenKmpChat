@@ -16,7 +16,6 @@ class LoginViewModel : ViewModel() {
     var currentPassword by mutableStateOf("")
 
     var currentNavigationCommand: PraxisCommand? by mutableStateOf(null)
-
     var currentLoginState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
 
     private val loginDataModel = LoginDataModel()

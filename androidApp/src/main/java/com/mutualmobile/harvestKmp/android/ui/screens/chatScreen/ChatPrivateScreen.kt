@@ -1,6 +1,8 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.chatScreen
 
+import CustomLinearProgressBar
 import SendMessage
+import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -46,8 +48,9 @@ fun ChatPrivateScreen(
     chatUid: String?
 ) {
     println("CHAT PRIVATE SCREEN with recipient: $recipient and sender: $sender and chatId: $chatUid")
+    println("CanSendMessage : ${crVm.canSendMessage}")
     val scaffoldState = rememberScaffoldState()
-
+    val canSendMessage = crVm.canSendMessage
     Scaffold(
         topBar = {
             TopAppBar(
@@ -71,6 +74,7 @@ fun ChatPrivateScreen(
     ) {
         ChatPrivateApp(
             viewModel = crVm,
+            canSendMessage = canSendMessage,
             modifier = Modifier.padding(it),
             user = user,
             recipient = recipient,
@@ -129,10 +133,12 @@ fun ContactProfileNavigation(
     }
 }
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @Composable
 fun ChatPrivateApp(
     displayTextField: Boolean = true,
     viewModel: ChatPrivateViewModel = get(),
+    canSendMessage: Boolean,
     modifier: Modifier,
     user: GetUserResponse?,
     isGroup: Boolean,
@@ -155,6 +161,9 @@ fun ChatPrivateApp(
                     Box(Modifier.weight(1f)) {
                         Messages(messages, myUser)
                     }
+                    if (!canSendMessage) {
+                        CustomLinearProgressBar()
+                    }
                     if (displayTextField) {
                         SendMessage { text, type, imageByteArray, imageCheckSum ->
                             val receiver = if (isGroup) groupChatId else recipient!!
@@ -166,7 +175,6 @@ fun ChatPrivateApp(
                                     Message(myUser, recipient = receiver, text, text, type),
                                     isGroup
                                 )
-                                //viewModel.uploadAttachment(Attachment(fileCheckSum = "", fileByteArray = imageByteArray!!, fileType = "", captionText = text, isSent = false, attachmentUrl = "", fileName = ""), Message(myUser, recipient = receiver, text, text, type), isGroup )
                             } else if (isGroup) {
                                 viewModel.saveGroupChat(Message(myUser, recipient = groupChatId, text, "", type))
                             } else {
@@ -178,6 +186,4 @@ fun ChatPrivateApp(
             }
         }
     }
-
-
 }

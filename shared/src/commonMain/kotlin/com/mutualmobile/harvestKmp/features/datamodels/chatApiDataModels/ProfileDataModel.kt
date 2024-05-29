@@ -51,8 +51,8 @@ class ProfileDataModel : PraxisDataModel(), KoinComponent {
     fun getGroup(groupId: String) {
         println("GET GROUP REQUEST with $groupId")
         contactProfileId.value = groupId
-
-        dataModelScope.launch(exceptionHandler) {
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch(exceptionHandler) {
             _dataFlow.emit(LoadingState)
 
             when (val getGroupResponse = getGroupUseCase(
@@ -166,7 +166,8 @@ class ProfileDataModel : PraxisDataModel(), KoinComponent {
     }
 
     fun getUserPrivateChats(recipient: String, sender: String) {
-        dataModelScope.launch {
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
             when (val response = getPrivateMessagesByRecipientUseCase(receiver = recipient, sender = sender)) {
                 is NetworkResponse.Success -> {

@@ -26,10 +26,11 @@ class ChatPrivateViewModel(
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
-    val recipient = MutableStateFlow("")
-    val sender = MutableStateFlow("")
-    val chatUid = MutableStateFlow("")
-    val isGroup = MutableStateFlow(false)
+    var canSendMessage: Boolean by mutableStateOf(true)
+    private val recipient = MutableStateFlow("")
+    private val sender = MutableStateFlow("")
+    private val chatUid = MutableStateFlow("")
+    private val isGroup = MutableStateFlow(false)
 
     /**
      * The [User] in the chat room who is currently logged in, in other words the one using the app.
@@ -65,14 +66,21 @@ class ChatPrivateViewModel(
         _loading.value = true
         with(getChatPrivateDataModel) {
             dataFlow.onEach { newChatState ->
-                println("PRIVATE CHAT STATE")
+                println("PRIVATE CHAT STATE $newChatState")
                 if (newChatState is PraxisDataModel.SuccessState<*>) {
                     println("NEW STATE CHAT PRIVATE WITH ${newChatState.data}")
                     val newMessage = newChatState.data as List<Message>
+
                     chats = if (newMessage.size > 1)
                         newMessage
                     else
                         chats.plus(newMessage)
+                }
+                if (newChatState is PraxisDataModel.UploadLoadingState){
+                    canSendMessage = false
+                }
+                if (newChatState is PraxisDataModel.UploadCompleteState){
+                    canSendMessage = true
                 }
             }.launchIn(viewModelScope)
             activate()
