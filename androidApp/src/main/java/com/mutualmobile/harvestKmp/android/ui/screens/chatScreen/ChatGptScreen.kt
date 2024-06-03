@@ -3,37 +3,33 @@ package com.mutualmobile.harvestKmp.android.ui.screens.chatScreen
 import CustomLinearProgressBar
 import SendMessage
 import android.annotation.SuppressLint
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.Messages
-import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.createStore
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.viewmodels.ChatViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.domain.model.ChatUser
 import com.mutualmobile.harvestKmp.domain.model.Message
-import com.mutualmobile.harvestKmp.domain.model.TextType
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import org.koin.android.ext.android.get
 import org.koin.androidx.compose.get
 
 
-val store = CoroutineScope(SupervisorJob()).createStore()
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ChatGptScreen(
@@ -42,12 +38,6 @@ fun ChatGptScreen(
     user: GetUserResponse?,
     userState: PraxisDataModel.DataState
 ) {
-
-    val scaffoldState = rememberScaffoldState()
-    val lazyColumnState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-
-    val loading = crVm.loading.collectAsState()
 
     Scaffold(
         topBar = {

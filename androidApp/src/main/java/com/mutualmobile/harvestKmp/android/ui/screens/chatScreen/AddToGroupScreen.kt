@@ -4,26 +4,19 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.List
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,18 +24,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
-import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultProfilePicture
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoadingIndicator
-import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.ProfilePicture
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
-import com.mutualmobile.harvestKmp.android.ui.theme.Typography
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.AddGroupViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.UserListViewModel
@@ -66,10 +54,6 @@ fun AddToGroupScreen(
 
     val context = LocalContext.current
     val scaffoldState = rememberScaffoldState()
-    val lazyColumnState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-
-    val loading = agVm.loading.collectAsState()
 
     println("ADD GROUP SCREEN")
     val participants = agVm.participants
@@ -108,7 +92,7 @@ fun AddToGroupScreen(
                 contentPadding = WindowInsets.statusBars.asPaddingValues()
             )
         },
-        floatingActionButton = { FloatingActionCreateGroupButtonCompose(context, navController, participants) },
+        floatingActionButton = { FloatingActionCreateGroupButtonCompose(navController, participants) },
         floatingActionButtonPosition = FabPosition.End,
         isFloatingActionButtonDocked = true,
         scaffoldState = scaffoldState
@@ -149,7 +133,7 @@ fun ContactList(viewModel: UserListViewModel, addGroupViewModel: AddGroupViewMod
     val participants = addGroupViewModel.participants
 
 
-    customListView(addGroupViewModel, context)
+    CustomListView(addGroupViewModel, context)
 
     if(contacts.value.isNotEmpty()) {
         Text(
@@ -194,7 +178,7 @@ fun ContactList(viewModel: UserListViewModel, addGroupViewModel: AddGroupViewMod
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun customListView(agVm: AddGroupViewModel, context: Context) {
+fun CustomListView(agVm: AddGroupViewModel, context: Context) {
     println("PARTICIPANTS ")
     LazyRow {
         itemsIndexed(agVm.participants) { index, item ->
@@ -245,7 +229,7 @@ fun customListView(agVm: AddGroupViewModel, context: Context) {
 }
 
 @Composable
-fun FloatingActionCreateGroupButtonCompose(context: Context, navController: NavHostController, users: List<User>){
+fun FloatingActionCreateGroupButtonCompose(navController: NavHostController, users: List<User>){
 
     FloatingActionButton(
         shape = MaterialTheme.shapes.large.copy(CornerSize(percent = 40)),

@@ -1,19 +1,13 @@
-import android.net.Uri
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
@@ -27,11 +21,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.ChatColors
-import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.UserPic
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.TextType
 
@@ -103,11 +95,11 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
                             if (message.text.isNotEmpty()) {
                                 Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 16.dp)) {
 
-                                    println("Message: $message")
+                                    println("Message: ${message.attachmentUrl}")
                                     val painter = rememberAsyncImagePainter(
                                         ImageRequest
                                             .Builder(LocalContext.current)
-                                            .data(data = message.attachmentUrl.toUri())
+                                            .data(data = message.attachmentUrl)
                                             .build()
                                     )
                                     Image(
@@ -116,13 +108,19 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
                                         modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
                                         contentScale = ContentScale.Crop,
                                     )
-                                    Text(
-                                        text = message.text,
-                                        style = MaterialTheme.typography.body1.copy(
-                                            fontSize = 18.sp,
-                                            letterSpacing = 0.sp
-                                        )
-                                    )
+//                                    AsyncImage(
+//                                        model = ImageRequest.Builder(LocalContext.current)
+//                                            .data("https://mercury.bid.cars/0-30821485/2016-Toyota-Highlander-5TDJKRFH4GS332367-2.jpg")
+//                                            .build(),
+//                                        contentDescription = "ImageRequest example",
+//                                    )
+//                                    Text(
+//                                        text = message.text,
+//                                        style = MaterialTheme.typography.body1.copy(
+//                                            fontSize = 18.sp,
+//                                            letterSpacing = 0.sp
+//                                        )
+//                                    )
                                 }
                             }
                         }
@@ -180,52 +178,52 @@ class TriangleEdgeShape(val risingToTheRight: Boolean) : Shape {
 val dotSize = 10.dp // made it bigger for demo
 val delayUnit = 300 // you can change delay to change animation speed
 
-@Composable
-fun DotsPulsing() {
-
-    @Composable
-    fun Dot(
-        scale: Float
-    ) = Spacer(
-        Modifier
-            .size(dotSize)
-            .scale(scale)
-            .background(
-                color = MaterialTheme.colors.primary,
-                shape = CircleShape
-            )
-    )
-
-    val infiniteTransition = rememberInfiniteTransition()
-
-    @Composable
-    fun animateScaleWithDelay(delay: Int) = infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = keyframes {
-                durationMillis = delayUnit * 4
-                0f at delay with LinearEasing
-                1f at delay + delayUnit with LinearEasing
-                0f at delay + delayUnit * 2
-            }
-        )
-    )
-
-    val scale1 by animateScaleWithDelay(0)
-    val scale2 by animateScaleWithDelay(delayUnit)
-    val scale3 by animateScaleWithDelay(delayUnit * 2)
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        val spaceSize = 2.dp
-
-        Dot(scale1)
-        Spacer(Modifier.width(spaceSize))
-        Dot(scale2)
-        Spacer(Modifier.width(spaceSize))
-        Dot(scale3)
-    }
-}
+//@Composable
+//fun DotsPulsing() {
+//
+//    @Composable
+//    fun Dot(
+//        scale: Float
+//    ) = Spacer(
+//        Modifier
+//            .size(dotSize)
+//            .scale(scale)
+//            .background(
+//                color = MaterialTheme.colors.primary,
+//                shape = CircleShape
+//            )
+//    )
+//
+//    val infiniteTransition = rememberInfiniteTransition()
+//
+//    @Composable
+//    fun animateScaleWithDelay(delay: Int) = infiniteTransition.animateFloat(
+//        initialValue = 0f,
+//        targetValue = 0f,
+//        animationSpec = infiniteRepeatable(
+//            animation = keyframes {
+//                durationMillis = delayUnit * 4
+//                0f at delay with LinearEasing
+//                1f at delay + delayUnit with LinearEasing
+//                0f at delay + delayUnit * 2
+//            }
+//        )
+//    )
+//
+//    val scale1 by animateScaleWithDelay(0)
+//    val scale2 by animateScaleWithDelay(delayUnit)
+//    val scale3 by animateScaleWithDelay(delayUnit * 2)
+//
+//    Row(
+//        verticalAlignment = Alignment.CenterVertically,
+//        horizontalArrangement = Arrangement.Center
+//    ) {
+//        val spaceSize = 2.dp
+//
+//        Dot(scale1)
+//        Spacer(Modifier.width(spaceSize))
+//        Dot(scale2)
+//        Spacer(Modifier.width(spaceSize))
+//        Dot(scale3)
+//    }
+//}
