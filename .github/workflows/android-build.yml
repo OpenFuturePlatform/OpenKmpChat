@@ -1,0 +1,46 @@
+name: Android Build
+
+# Controls when the workflow will run
+on:
+#  pull_request:
+#    branches: ["main", "develop"]
+#  push:
+#    branches: ["main", "develop"]
+  workflow_dispatch:
+
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4.1.1
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4.0.0
+        with:
+          java-version: '11'
+          distribution: 'zulu'
+
+      # Setup Gradle with specific version
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2.3.3
+        with:
+          gradle-version: 7.4.2
+
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+
+      # Runs a single command using the runners shell
+      - name: Build with Gradle
+        run: gradle build
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3.1.3
+        with:
+          name: OpenChatKmp.apk
+          path: app/build/outputs/apk/debug/app-debug.apk

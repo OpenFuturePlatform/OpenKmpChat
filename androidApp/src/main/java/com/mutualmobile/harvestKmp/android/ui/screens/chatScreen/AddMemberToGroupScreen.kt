@@ -4,26 +4,19 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.List
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,27 +24,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
-import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultProfilePicture
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoadingIndicator
-import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.ProfilePicture
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
-import com.mutualmobile.harvestKmp.android.ui.theme.Typography
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.AddGroupViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.UserListViewModel
 import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
-import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withParticipants
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.domain.model.request.User
 import org.koin.androidx.compose.get
 
 
@@ -143,7 +128,7 @@ fun MemberList(viewModel: UserListViewModel, addGroupViewModel: AddGroupViewMode
     val currentUser = viewModel.currentUser.collectAsState()
     val participants = addGroupViewModel.participants
 
-    customMemberListView(addGroupViewModel, context)
+    CustomMemberListView(addGroupViewModel, context)
 
     if(contacts.value.isNotEmpty()) {
         Text(
@@ -188,7 +173,7 @@ fun MemberList(viewModel: UserListViewModel, addGroupViewModel: AddGroupViewMode
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun customMemberListView(agVm: AddGroupViewModel, context: Context) {
+fun CustomMemberListView(agVm: AddGroupViewModel, context: Context) {
     LazyRow {
         itemsIndexed(agVm.participants) { index, item ->
             Card(
