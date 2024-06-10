@@ -66,10 +66,10 @@ class ChatViewModel(
         with(getChatDataModel) {
             dataFlow.onEach { newChatState ->
                 println("NEW STATE CHAT GPT : $newChatState")
+
                 if (newChatState is PraxisDataModel.SuccessState<*>) {
                     println("NEW STATE CHAT GPT WITH ${newChatState.data}")
                     val newMessage = newChatState.data as List<Message>
-
                     if (newMessage.isEmpty()){
                         canSendMessage = true
                     }
@@ -77,13 +77,12 @@ class ChatViewModel(
                         newMessage
                     else
                         chats.plus(newMessage)
-                }
-                if (newChatState is PraxisDataModel.LoadingState){
+                } else if (newChatState is PraxisDataModel.LoadingState){
                     canSendMessage = false
-                }
-                if (newChatState is PraxisDataModel.Complete){
+                } else if (newChatState is PraxisDataModel.Complete){
                     canSendMessage = true
                 }
+
             }.launchIn(viewModelScope)
             activate()
         }

@@ -8,10 +8,14 @@ import com.mutualmobile.harvestKmp.features.NetworkResponse
 
 class CreateGroupMessagesUseCase(private val chatApi: ChatApi) {
     suspend operator fun invoke(message: Message): NetworkResponse<GroupChatMessageResponse> {
-        return chatApi.saveGroupChat(GroupChatMessageRequest(
-            sender = message.user.email,
-            groupId = message.recipient,
-            body = message.text,
-            contentType = message.type))
+        return chatApi.saveGroupChat(
+            GroupChatMessageRequest(
+                sender = message.user.email,
+                groupId = message.recipient,
+                body = message.text,
+                contentType = message.type,
+                attachments = message.attachmentIds
+            )
+        )
     }
 }

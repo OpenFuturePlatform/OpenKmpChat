@@ -8,5 +8,6 @@ data class ChatMessageRequest (
     val sender: String,
     val recipient: String?,
     val body: String,
-    val contentType: TextType
+    val contentType: TextType,
+    val attachments: List<Int>?
 )

@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
@@ -69,6 +71,7 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
             )
         }
     }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -135,19 +138,23 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
             }
         } else {
 
-            TextField(
-                label = { Text("Label") },
+            OutlinedTextField(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    //.padding(8.dp)
                     .background(MaterialTheme.colors.background)
-                    .imePadding()
-                    .wrapContentHeight(),
+                    //.imePadding()
+                    //.wrapContentHeight()
+                    .fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
+                enabled = true,
                 value = inputText,
                 placeholder = {
                     Text("Type message...")
                 },
-                keyboardOptions = KeyboardOptions.Default,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Default,
+                ),
                 onValueChange = {
                     inputText = it
                 },
@@ -168,7 +175,7 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
                     if (inputText.isNotEmpty()) {
                         Row(
                             modifier = Modifier
-                                .imePadding()
+                                //.imePadding()
                                 .clickable {
                                     sendMessage(inputText, TextType.TEXT, null, null)
                                     inputText = ""

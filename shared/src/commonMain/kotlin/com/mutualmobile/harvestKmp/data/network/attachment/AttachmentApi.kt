@@ -5,5 +5,6 @@ import com.mutualmobile.harvestKmp.features.NetworkResponse
 
 interface AttachmentApi {
     suspend fun uploadFile(attachment: Attachment): NetworkResponse<String>
-    suspend fun uploadFile(imageBytes: ByteArray, fileName: String, captionText: String): NetworkResponse<String>
+    suspend fun uploadFile(imageBytes: ByteArray, fileName: String, captionText: String): NetworkResponse<Int>
+    suspend fun downloadFile(id: Int): NetworkResponse<ByteArray>
 }

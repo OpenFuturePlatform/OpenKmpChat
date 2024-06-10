@@ -25,6 +25,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.ImageLoader
+import coil.compose.rememberAsyncImagePainter
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 
 @Composable
@@ -71,5 +73,17 @@ fun UserPic(user: ChatUser) {
         contentScale = ContentScale.Crop,
         painter = painter,
         contentDescription = "User picture"
+    )
+}
+
+@Composable
+fun ImageComponent(imageUrl: String, imageLoader: ImageLoader, contentDescription: String) {
+    // Use Coil's Image component with rememberAsyncImagePainter for asynchronous image loading
+    Image(
+        painter = rememberAsyncImagePainter(model = imageUrl, imageLoader = imageLoader),
+        contentDescription = contentDescription,
+        modifier = Modifier
+            .padding(all = 16.dp)
+            .size(200.dp)
     )
 }

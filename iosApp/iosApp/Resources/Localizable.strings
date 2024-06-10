@@ -1,4 +1,4 @@
-/* 
+/*
   Localizable.strings
   iosApp
 
@@ -8,7 +8,7 @@
 
 
 // Launch Screen
-"launch-title" = "OPEN CHAT";
+"launch-title" = "OPENAIX";
 
 "launch-text-1" = "Simple, AI based chat with on/off blockchain capability";
 "launch-text-2" = "Track time easily, wherever you are";

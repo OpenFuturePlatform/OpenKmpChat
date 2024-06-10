@@ -88,7 +88,7 @@ fun ChatRoomScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Open Chat") },
+                title = { Text("OpenAiX") },
                 backgroundColor = MaterialTheme.colors.primary,
                 contentPadding = WindowInsets.statusBars.asPaddingValues()
             )

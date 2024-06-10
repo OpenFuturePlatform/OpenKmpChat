@@ -10,7 +10,7 @@ class UploadAttachmentUseCase(private val attachmentApi: AttachmentApi) {
 //        //eturn attachmentApi.uploadFile(attachment.fileByteArray, attachment.fileName, attachment.captionText)
 //    }
 
-    suspend operator fun invoke(imageBytes: ByteArray, fileName: String, captionText: String): NetworkResponse<String> {
+    suspend operator fun invoke(imageBytes: ByteArray, fileName: String, captionText: String): NetworkResponse<Int> {
         return attachmentApi.uploadFile(imageBytes, fileName, captionText)
     }
 }

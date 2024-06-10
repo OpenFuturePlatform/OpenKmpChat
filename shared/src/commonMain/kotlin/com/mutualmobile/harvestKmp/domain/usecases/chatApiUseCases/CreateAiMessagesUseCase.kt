@@ -9,6 +9,14 @@ import com.mutualmobile.harvestKmp.features.NetworkResponse
 
 class CreateAiMessagesUseCase(private val chatApi: ChatApi) {
     suspend operator fun invoke(message: AiMessage): NetworkResponse<ChatMessageResponse> {
-        return chatApi.saveAiChat(ChatMessageRequest(sender = message.sender, recipient = null, body = message.body, contentType = message.contentType))
+        return chatApi.saveAiChat(
+            ChatMessageRequest(
+                sender = message.sender,
+                recipient = null,
+                body = message.body,
+                contentType = message.contentType,
+                attachments = emptyList()
+            )
+        )
     }
 }

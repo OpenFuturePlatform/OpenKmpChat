@@ -16,10 +16,7 @@ import com.mutualmobile.harvestKmp.features.NetworkResponse
 import dev.icerock.moko.graphics.Color
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
@@ -43,6 +40,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
     private val getMessagesByUidUseCase = chatApiUseCaseComponent.provideGetMessagesByUid()
 
     private val uploadAttachmentUseCase = chatApiUseCaseComponent.provideUploadAttachment()
+    private val dowloadAttachmentUseCase = chatApiUseCaseComponent.provideDownloadAttachment()
 
     private val groupApiUseCaseComponent = GroupApiUseCaseComponent()
     private val getGroupUseCase = groupApiUseCaseComponent.provideGetGroup()
@@ -81,7 +79,6 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                             Message(
                                 ChatUser(it.id, it.sender, it.sender, ColorProvider.getColor(), null),
                                 it.recipient,
-                                it.content,
                                 it.content,
                                 it.contentType,
                                 true,
@@ -129,7 +126,6 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                             Message(
                                 ChatUser(it.id, it.sender, it.sender, ColorProvider.getColor(), null),
                                 it.recipient,
-                                it.content,
                                 it.content,
                                 it.contentType,
                                 true,
@@ -246,7 +242,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 val message = Message(
                     sender,
                     recipient = recipient,
-                    attachmentUrl = openAttachment.attachmentUrl!!,
+                    attachmentIds = listOf(openAttachment.attachmentUrl!!.toInt()),
                     text = openAttachment.attachmentUrl,//captionText,
                     type = TextType.ATTACHMENT
                 )
@@ -261,11 +257,11 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                     is NetworkResponse.Success -> {
                         println("Upload response ${response.data}")
                         _dataFlow.emit(UploadCompleteState)
-                        val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/${response.data}"
+                        //val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/${response.data}"
                         val message = Message(
                             sender,
                             recipient = recipient,
-                            attachmentUrl = imageUrl,
+                            attachmentIds = listOf(response.data),
                             text = captionText,
                             type = TextType.ATTACHMENT
                         )
@@ -277,7 +273,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                                 fileType = "",
                                 captionText = captionText,
                                 isSent = true,
-                                attachmentUrl = imageUrl,
+                                attachmentUrl = response.data.toString(),
                                 fileName = fileName
                             )
                         )
@@ -306,6 +302,20 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                 }
             }
 
+        }
+    }
+
+    suspend fun dowloadAttachment(id: Int) : ByteArray {
+        return when (val response =
+                dowloadAttachmentUseCase(
+                   id = id
+                )) {
+                is NetworkResponse.Success -> {
+                    response.data
+                }
+
+            is NetworkResponse.Failure -> TODO()
+            is NetworkResponse.Unauthorized -> TODO()
         }
     }
 

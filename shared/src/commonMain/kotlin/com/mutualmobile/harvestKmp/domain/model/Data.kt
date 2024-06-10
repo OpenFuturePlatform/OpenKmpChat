@@ -13,7 +13,6 @@ data class Message(
     val user: ChatUser,
     val recipient: String,
     val text: String,
-    val attachmentUrl: String,
     val type: TextType,
     val isSent: Boolean,
     val attachmentIds: List<Int>?,
@@ -24,15 +23,14 @@ data class Message(
         user: ChatUser,
         recipient: String,
         text: String,
-        attachmentUrl: String,
+        attachmentIds: List<Int>?,
         type: TextType
     ) : this(
         user = user,
         recipient = recipient,
         text = text,
         type = type,
-        attachmentUrl = attachmentUrl,
-        attachmentIds = emptyList(),
+        attachmentIds = attachmentIds,
         isSent = false,
         seconds = Clock.System.now().epochSeconds,
         id = Random.nextLong()

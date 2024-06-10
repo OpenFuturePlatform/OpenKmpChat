@@ -17,7 +17,7 @@ class AttachmentApiImpl(
         getSafeNetworkResponse {
 
             httpClient.post(
-                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}"
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/upload"
             ) {
                 setBody(
                     MultiPartFormDataContent(
@@ -39,10 +39,10 @@ class AttachmentApiImpl(
             }
         }
 
-    override suspend fun uploadFile(imageBytes: ByteArray, fileName: String, captionText: String): NetworkResponse<String> =
+    override suspend fun uploadFile(imageBytes: ByteArray, fileName: String, captionText: String): NetworkResponse<Int> =
         getSafeNetworkResponse {
             httpClient.post(
-                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}"
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/upload"
             ) {
                 setBody(
                     MultiPartFormDataContent(
@@ -61,6 +61,16 @@ class AttachmentApiImpl(
                             )
                         })
                 )
+            }
+        }
+
+    override suspend fun downloadFile(id: Int): NetworkResponse<ByteArray> =
+        getSafeNetworkResponse {
+
+            httpClient.get(
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/$id"
+            ) {
+                contentType(ContentType.Application.OctetStream)
             }
         }
 }

@@ -56,8 +56,15 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
             when (val response = createAiMessagesUseCase(message = aiMessage)) {
                 is NetworkResponse.Success -> {
                     println("AI RESPONSE: ${response.data}")
-                    val aiUser = ChatUser(name = "AI_ASSISTANT", id = "", email = "openai@openfuture.io", picture = null)
-                    val responseMessage = Message(user = aiUser, recipient = response.data.recipient, text = response.data.content, attachmentUrl = "", type = response.data.contentType)
+                    val aiUser =
+                        ChatUser(name = "AI_ASSISTANT", id = "", email = "openai@openfuture.io", picture = null)
+                    val responseMessage = Message(
+                        user = aiUser,
+                        recipient = response.data.recipient,
+                        text = response.data.content,
+                        attachmentIds = emptyList(),
+                        type = response.data.contentType
+                    )
                     _dataFlow.emit(SuccessState(mutableListOf(responseMessage)))
                     _dataFlow.emit(Complete)
                 }
@@ -82,7 +89,7 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
         }
     }
 
-    fun getUserChats(username: String){
+    fun getUserChats(username: String) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
@@ -94,14 +101,15 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
                             ChatUser(it.sender, it.sender, it.sender, ColorProvider.getColor(), null),
                             it.recipient,
                             it.content,
-                            "",
                             it.contentType,
                             true,
                             it.attachments,
                             it.receivedAt.nanosecond.toLong(),
-                            it.id.toLong())
+                            it.id.toLong()
+                        )
                     })) // TODO redundant
                 }
+
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
                     intPraxisCommand.emit(
@@ -111,6 +119,7 @@ class ChatDataModel : PraxisDataModel(), KoinComponent {
                         )
                     )
                 }
+
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
                     intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))

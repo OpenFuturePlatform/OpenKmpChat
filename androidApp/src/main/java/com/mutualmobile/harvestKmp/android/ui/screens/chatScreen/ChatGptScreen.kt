@@ -1,6 +1,7 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.chatScreen
 
 import CustomLinearProgressBar
+import DotsPulsing
 import SendMessage
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
@@ -13,10 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
+import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.Messages
@@ -47,8 +50,7 @@ fun ChatGptScreen(
                 contentPadding = WindowInsets.statusBars.asPaddingValues()
             )
         }
-    ) {
-        ChatApp(viewModel =  crVm,  user = user)
+    ) {  scaffoldPadding -> ChatApp(viewModel =  crVm,  user = user, paddingValues = scaffoldPadding)
     }
 
     LaunchedEffect(Unit) {
@@ -61,11 +63,13 @@ fun ChatGptScreen(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChatApp(
     displayTextField: Boolean = true,
     viewModel: ChatViewModel = get(),
-    user: GetUserResponse?
+    user: GetUserResponse?,
+    paddingValues: PaddingValues
 ) {
 
     val mainActivityViewModel: MainActivityViewModel = get()
@@ -76,44 +80,31 @@ fun ChatApp(
 
     println("Can send message: $canSendMessage")
 
-    val state by viewModel.state.collectAsState()
-    val isConnecting by viewModel.isConnecting.collectAsState()
-    val showConnectionError by viewModel.showConnectionError.collectAsState()
-
-
     OpenChatTheme {
         Surface {
-            Box(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier
+                .fillMaxSize()
+            ) {
                 Image(painterResource(MR.images.background.drawableResId), null, contentScale = ContentScale.FillHeight)
                 Column(
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier
+                        .imePadding()
+                        .wrapContentHeight()
+                        .fillMaxHeight()
+                        .fillMaxSize()
                 ) {
-//                    if (isConnecting) {
-//                        Text(
-//                            text = "Connecting...", modifier = Modifier
-//                                .padding(16.dp)
-//                                .fillMaxWidth(), textAlign = TextAlign.Center
-//                        )
-//                    }
-//                    if (!isConnecting) {
-//                        Text(
-//                            text = "Connected", modifier = Modifier
-//                                .padding(16.dp)
-//                                .fillMaxWidth(), textAlign = TextAlign.Center
-//                        )
-//                    }
-
 
                     Box(Modifier.weight(1f)) {
                         Messages(messages, myUser)
                     }
 
                     if (!canSendMessage){
-                        CustomLinearProgressBar()
+                        //CustomLinearProgressBar()
+                        DotsPulsing()
                     }
                     if (displayTextField) {
                         SendMessage { text, type, _ , _->
-                           viewModel.saveChatGptChat(Message(myUser, myUser.name, text, "", type))
+                           viewModel.saveChatGptChat(Message(myUser, myUser.name, text, emptyList(), type))
                         }
                     }
 

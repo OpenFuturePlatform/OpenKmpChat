@@ -172,13 +172,15 @@ fun ChatPrivateApp(
                                     imageByteArray!!,
                                     imageCheckSum!!,
                                     Clock.System.now().epochSeconds.toString(),
-                                    Message(myUser, recipient = receiver, text, text, type),
+                                    Message(myUser, recipient = receiver, text, emptyList(), type),
                                     isGroup
                                 )
-                            } else if (isGroup) {
-                                viewModel.saveGroupChat(Message(myUser, recipient = groupChatId, text, "", type))
-                            } else {
-                                viewModel.savePrivateChat(Message(myUser, recipient = recipient!!, text, "", type))
+                            }
+                            else if (isGroup) {
+                                viewModel.saveGroupChat(Message(myUser, recipient = groupChatId, text, emptyList(), type))
+                            }
+                            else {
+                                viewModel.savePrivateChat(Message(myUser, recipient = recipient!!, text, emptyList(), type))
                             }
                         }
                     }

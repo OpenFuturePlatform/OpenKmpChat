@@ -68,7 +68,6 @@ class ChatPrivateViewModel(
             dataFlow.onEach { newChatState ->
                 println("PRIVATE CHAT STATE $newChatState")
                 if (newChatState is PraxisDataModel.SuccessState<*>) {
-                    println("NEW STATE CHAT PRIVATE WITH ${newChatState.data}")
                     val newMessage = newChatState.data as List<Message>
 
                     chats = if (newMessage.size > 1)
@@ -76,10 +75,12 @@ class ChatPrivateViewModel(
                     else
                         chats.plus(newMessage)
                 }
-                if (newChatState is PraxisDataModel.UploadLoadingState){
+
+                else if (newChatState is PraxisDataModel.UploadLoadingState){
                     canSendMessage = false
                 }
-                if (newChatState is PraxisDataModel.UploadCompleteState){
+
+                else if (newChatState is PraxisDataModel.UploadCompleteState){
                     canSendMessage = true
                 }
             }.launchIn(viewModelScope)
@@ -112,6 +113,12 @@ class ChatPrivateViewModel(
             isGroup = isGroup,
             captionText = message.text
         )
+    }
+
+    suspend fun downloadAttachment(
+        id: Int
+    ) : ByteArray {
+        return getChatPrivateDataModel.dowloadAttachment(id)
     }
 
 //    fun uploadAttachment(attachment: Attachment, message: Message, isGroup: Boolean) {
