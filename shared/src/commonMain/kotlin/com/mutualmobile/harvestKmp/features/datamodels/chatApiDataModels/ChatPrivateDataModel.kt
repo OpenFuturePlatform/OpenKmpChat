@@ -1,9 +1,7 @@
 package com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels
 
-import com.mutualmobile.harvestKmp.data.network.Endpoint
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withDetail
-import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withRecipient
 import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
@@ -11,13 +9,13 @@ import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.GroupApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.domain.model.*
-import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
-import dev.icerock.moko.graphics.Color
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toInstant
 import org.koin.core.component.KoinComponent
 
 class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
@@ -83,7 +81,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
                                 it.contentType,
                                 true,
                                 it.attachments,
-                                it.receivedAt.nanosecond.toLong(),
+                                it.receivedAt.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
                                 it.id.toLong()
                             )
                         }.toList())
@@ -255,9 +253,9 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
             } else {
                 when (val response = uploadAttachmentUseCase(imageBytes, fileName, captionText)) {
                     is NetworkResponse.Success -> {
-                        println("Upload response ${response.data}")
+                        println("Upload response : ${response.data}")
                         _dataFlow.emit(UploadCompleteState)
-                        //val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/${response.data}"
+
                         val message = Message(
                             sender,
                             recipient = recipient,
@@ -305,7 +303,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
         }
     }
 
-    suspend fun dowloadAttachment(id: Int) : ByteArray {
+    suspend fun downloadAttachment(id: Int) : ByteArray {
         return when (val response =
                 dowloadAttachmentUseCase(
                    id = id

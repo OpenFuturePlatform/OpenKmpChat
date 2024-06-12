@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.data.network.chat.RealtimeMessagingClient
 import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.domain.model.Attachment
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.ChatPrivateDataModel
@@ -118,7 +117,7 @@ class ChatPrivateViewModel(
     suspend fun downloadAttachment(
         id: Int
     ) : ByteArray {
-        return getChatPrivateDataModel.dowloadAttachment(id)
+        return getChatPrivateDataModel.downloadAttachment(id)
     }
 
 //    fun uploadAttachment(attachment: Attachment, message: Message, isGroup: Boolean) {

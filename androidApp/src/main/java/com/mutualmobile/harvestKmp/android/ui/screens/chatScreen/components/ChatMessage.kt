@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
@@ -107,44 +108,44 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
                                     letterSpacing = 0.sp
                                 )
                             )
-                        }
-                        else {
+                        }  else {
                             println("Message: ${message}")
-                            Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 16.dp)) {
 
-                                if (message.attachmentIds?.size!! > 0)
-                                    println("Message has attachments")
+                            Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 4.dp)) {
+
                                 message.attachmentIds?.forEach {
                                     run {
-                                        val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/$it"
+                                        val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/download/$it"
                                         println("Attachment url: $imageUrl")
 
-//                                        val imageLoader = ImageLoader.Builder(LocalContext.current)
-//                                            .build()
-//                                        ImageComponent(imageUrl = IMAGE_PNG_URL, imageLoader = imageLoader, contentDescription = "")
+                                        AsyncImage(
+                                            model = imageUrl,
+                                            contentDescription = "",
+                                            modifier = Modifier.fillMaxWidth().aspectRatio(1f)
+                                            )
 
-
-//                                        val painter = rememberAsyncImagePainter(
-//                                            ImageRequest
-//                                                .Builder(LocalContext.current)
-//                                                .data(data = "https://upload.wikimedia.org/wikipedia/commons/4/4c/Android_Marshmallow.png")
-//                                                .size(coil.size.Size.ORIGINAL)
-//                                                .build()
-//                                        )
-                                        val painter =
-                                            rememberImagePainter(data = "https://images.unsplash.com/photo-1628373383885-4be0bc0172fa?ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&ixlib=rb-1.2.1&auto=format&fit=crop&w=1301&q=80")
+                                        val painter = rememberAsyncImagePainter(
+                                            ImageRequest
+                                                .Builder(LocalContext.current)
+                                                .data(data = imageUrl)
+                                                .size(coil.size.Size.ORIGINAL)
+                                                .build()
+                                        )
 
                                         Image(
                                             painter = painter,
                                             contentDescription = message.text,
-                                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
+                                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(2.dp)),
                                             contentScale = ContentScale.Crop,
                                         )
+
+
                                     }
                                 }
 
                             }
                         }
+
                         Spacer(Modifier.size(4.dp))
                         Row(
                             horizontalArrangement = Arrangement.End,
