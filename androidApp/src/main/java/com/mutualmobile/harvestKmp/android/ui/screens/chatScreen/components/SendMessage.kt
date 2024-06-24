@@ -143,8 +143,8 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
                 modifier = Modifier
                     //.padding(8.dp)
                     .background(MaterialTheme.colors.background)
-                    //.imePadding()
-                    //.wrapContentHeight()
+                    .imePadding()
+                    .wrapContentHeight()
                     .fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
                 enabled = true,

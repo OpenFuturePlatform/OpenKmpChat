@@ -1,6 +1,7 @@
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -8,15 +9,15 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Outline
-import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.*
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -49,13 +50,11 @@ fun Triangle(risingToTheRight: Boolean, background: Color) {
     )
 }
 
-const val IMAGE_PNG_URL = "https://upload.wikimedia.org/wikipedia/commons/4/4c/Android_Marshmallow.png"
-const val IMAGE_SVG_URL =
-    "https://upload.wikimedia.org/wikipedia/commons/e/e0/Android_robot_%282014-2019%29.svg"
-const val GIF_URL =
-    "https://upload.wikimedia.org/wikipedia/commons/c/cb/Android_easter_eggs_%28version_2.3_to_10%29.gif"
+
 @Composable
 fun ChatMessage(isMyMessage: Boolean, message: Message) {
+    val scale = remember { mutableStateOf(1f) }
+    val rotationState = remember { mutableStateOf(1f) }
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = if (isMyMessage) Alignment.CenterEnd else Alignment.CenterStart
@@ -108,36 +107,52 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
                                     letterSpacing = 0.sp
                                 )
                             )
-                        }  else {
+                        } else {
                             println("Message: ${message}")
 
-                            Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 4.dp)) {
+                            Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 4.dp)
+                                .clip(RectangleShape) // Clip the box content
+                                .pointerInput(Unit) {
+                                    detectTransformGestures { _, _, zoom, rotation ->
+                                        scale.value *= zoom
+                                        rotationState.value += rotation
+                                    }
+                                }) {
 
                                 message.attachmentIds?.forEach {
                                     run {
-                                        val imageUrl = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/download/$it"
+                                        val imageUrl =
+                                            "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ATTACHMENT_URL}/download/$it"
                                         println("Attachment url: $imageUrl")
 
                                         AsyncImage(
                                             model = imageUrl,
-                                            contentDescription = "",
-                                            modifier = Modifier.fillMaxWidth().aspectRatio(1f)
-                                            )
-
-                                        val painter = rememberAsyncImagePainter(
-                                            ImageRequest
-                                                .Builder(LocalContext.current)
-                                                .data(data = imageUrl)
-                                                .size(coil.size.Size.ORIGINAL)
-                                                .build()
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .align(Alignment.Center) // keep the image centralized into the Box
+                                                .graphicsLayer(
+                                                    // adding some zoom limits (min 50%, max 200%)
+                                                    scaleX = maxOf(.5f, minOf(3f, scale.value)),
+                                                    scaleY = maxOf(.5f, minOf(3f, scale.value)),
+                                                    rotationZ = rotationState.value
+                                                ),
+                                            contentDescription = ""
                                         )
 
-                                        Image(
-                                            painter = painter,
-                                            contentDescription = message.text,
-                                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(2.dp)),
-                                            contentScale = ContentScale.Crop,
-                                        )
+//                                        val painter = rememberAsyncImagePainter(
+//                                            ImageRequest
+//                                                .Builder(LocalContext.current)
+//                                                .data(data = imageUrl)
+//                                                .size(coil.size.Size.ORIGINAL)
+//                                                .build()
+//                                        )
+//
+//                                        Image(
+//                                            painter = painter,
+//                                            contentDescription = message.text,
+//                                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(2.dp)),
+//                                            contentScale = ContentScale.Crop,
+//                                        )
 
 
                                     }

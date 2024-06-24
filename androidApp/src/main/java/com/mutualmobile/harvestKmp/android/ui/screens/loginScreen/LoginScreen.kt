@@ -238,8 +238,17 @@ fun DefaultProfilePicture(displayName: String) {
             .clip(CircleShape),
         contentScale = ContentScale.Crop,
         painter = painterResource(MR.images.stock2.drawableResId),
-        contentDescription = "User picture"
+        contentDescription = displayName
     )
+
+//    AsyncImage(
+//        modifier = Modifier
+//            .size(PROFILE_PICTURE_SIZE.dp)
+//            .clip(CircleShape),
+//        contentScale = ContentScale.Crop,
+//        model = "https://xsgames.co/randomusers/avatar.php?g=male",
+//        contentDescription = displayName
+//    )
 }
 
 @Composable

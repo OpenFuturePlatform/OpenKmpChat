@@ -58,6 +58,7 @@ object AndroidDependencies {
     "androidx.fragment:fragment-testing:1.4.1",
     "junit:junit:${CommonDependencyVersions.junit}",
     "androidx.test:runner:1.4.0",
+    "app.cash.turbine:turbine:1.1.0",
     "io.ktor:ktor-client-mock:${CommonDependencyVersions.ktor}"
   )
   val debugImplementation = listOf(

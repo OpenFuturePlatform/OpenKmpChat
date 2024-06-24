@@ -4,14 +4,11 @@ import com.mutualmobile.harvestKmp.data.network.Endpoint
 import com.mutualmobile.harvestKmp.data.network.chat.ChatApi
 import com.mutualmobile.harvestKmp.data.network.getSafeNetworkResponse
 import com.mutualmobile.harvestKmp.domain.model.DisplayChatRoom
-import com.mutualmobile.harvestKmp.domain.model.request.ChatMessageRequest
-import com.mutualmobile.harvestKmp.domain.model.request.GroupChatMessageRequest
-import com.mutualmobile.harvestKmp.domain.model.request.GroupCreateRequest
+import com.mutualmobile.harvestKmp.domain.model.request.*
 import com.mutualmobile.harvestKmp.domain.model.response.*
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import io.ktor.client.*
 import io.ktor.client.request.*
-import io.ktor.client.request.forms.*
 import io.ktor.http.*
 
 class ChatApiImpl(
@@ -99,6 +96,46 @@ class ChatApiImpl(
                 urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.GROUP_URL}/$groupId"
             ) {
                 contentType(ContentType.Application.Json)
+            }
+        }
+
+    override suspend fun saveAssistantNotes(message: AssistantRequest): NetworkResponse<AssistantNotesResponse> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ASSISTANT_URL}/generateNotes"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(message)
+            }
+        }
+
+    override suspend fun saveAssistantReminders(message: AssistantRequest): NetworkResponse<AssistantReminderResponse> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ASSISTANT_URL}/generateReminders"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(message)
+            }
+        }
+
+    override suspend fun saveAssistantToDos(message: AssistantRequest): NetworkResponse<AssistantTodosResponse> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ASSISTANT_URL}/generateTodos"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(message)
+            }
+        }
+
+    override suspend fun getAssistantNotes(message: GetAssistantRequest): NetworkResponse<List<AssistantNotesResponse>>  =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ASSISTANT_URL}/notes"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(message)
             }
         }
 }

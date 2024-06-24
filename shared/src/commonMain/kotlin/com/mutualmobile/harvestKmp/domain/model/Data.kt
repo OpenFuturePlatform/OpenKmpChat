@@ -14,7 +14,7 @@ data class Message(
     val recipient: String,
     val text: String,
     val type: TextType,
-    val isSent: Boolean,
+    var isSent: Boolean,
     val attachmentIds: List<Int>?,
     val seconds: Long,
     val id: Long

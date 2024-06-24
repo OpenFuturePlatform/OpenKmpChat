@@ -6,14 +6,12 @@ import SendMessage
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -42,11 +40,64 @@ fun ChatGptScreen(
     userState: PraxisDataModel.DataState
 ) {
 
+    // 1
+    var menuExpanded by remember {
+        mutableStateOf(false)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Chat Assistant") },
                 backgroundColor = MaterialTheme.colors.primary,
+                actions = {
+                    // 3
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            imageVector = Icons.Filled.Search,
+                            contentDescription = "Search",
+                        )
+                    }
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(
+                            imageVector = Icons.Filled.FavoriteBorder,
+                            contentDescription = "Favorite",
+                        )
+                    }
+                    // 4
+                    IconButton(onClick = { menuExpanded = !menuExpanded }) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = "More",
+                        )
+                    }
+                    // 5
+                    DropdownMenu(
+                        expanded = menuExpanded,
+                        onDismissRequest = { menuExpanded = false },
+                    ) {
+                        // 6
+                        DropdownMenuItem(
+
+                            content = {
+                                Text("Refresh")
+                            },
+                            onClick = { /* TODO */ },
+                        )
+                        DropdownMenuItem(
+                            content = {
+                                Text("Settings")
+                            },
+                            onClick = { /* TODO */ },
+                        )
+                        DropdownMenuItem(
+                            content = {
+                                Text("About")
+                            },
+                            onClick = { /* TODO */ },
+                        )
+                    }
+                },
                 contentPadding = WindowInsets.statusBars.asPaddingValues()
             )
         }

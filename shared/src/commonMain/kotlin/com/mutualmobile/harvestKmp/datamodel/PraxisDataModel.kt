@@ -40,7 +40,9 @@ abstract class PraxisDataModel(
     data class SuccessState<T>(
         val data: T,
     ) : DataState()
-
+    data class AssistantSuccessState<T>(
+        val data: T,
+    ) : DataState()
     class ErrorState(var throwable: Throwable) : DataState()
     object LogoutInProgress : DataState()
 }

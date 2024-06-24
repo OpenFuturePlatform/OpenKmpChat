@@ -1,9 +1,7 @@
 package com.mutualmobile.harvestKmp.data.network.chat
 
 import com.mutualmobile.harvestKmp.domain.model.DisplayChatRoom
-import com.mutualmobile.harvestKmp.domain.model.request.ChatMessageRequest
-import com.mutualmobile.harvestKmp.domain.model.request.GroupChatMessageRequest
-import com.mutualmobile.harvestKmp.domain.model.request.GroupCreateRequest
+import com.mutualmobile.harvestKmp.domain.model.request.*
 import com.mutualmobile.harvestKmp.domain.model.response.*
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 
@@ -17,4 +15,8 @@ interface ChatApi {
     suspend fun saveGroupChat(message: GroupChatMessageRequest): NetworkResponse<GroupChatMessageResponse>
     suspend fun createGroup(request: GroupCreateRequest): NetworkResponse<GroupCreateResponse>
     suspend fun getGroup(groupId: String): NetworkResponse<GroupDetailResponse>
+    suspend fun saveAssistantNotes(message: AssistantRequest): NetworkResponse<AssistantNotesResponse>
+    suspend fun saveAssistantReminders(message: AssistantRequest): NetworkResponse<AssistantReminderResponse>
+    suspend fun saveAssistantToDos(message: AssistantRequest): NetworkResponse<AssistantTodosResponse>
+    suspend fun getAssistantNotes(message: GetAssistantRequest): NetworkResponse<List<AssistantNotesResponse>>
 }

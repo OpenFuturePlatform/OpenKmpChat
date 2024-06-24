@@ -2,6 +2,7 @@ package com.mutualmobile.harvestKmp.android.viewmodels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,11 +11,13 @@ import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.request.User
+import com.mutualmobile.harvestKmp.domain.model.response.AssistantNotesResponse
 import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.ChatPrivateDataModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import java.util.*
 
 class ChatPrivateViewModel(
     client: RealtimeMessagingClient
@@ -26,6 +29,10 @@ class ChatPrivateViewModel(
     val loading: StateFlow<Boolean> = _loading
 
     var canSendMessage: Boolean by mutableStateOf(true)
+
+    var assistantNotesReady: Boolean by mutableStateOf(false)
+    var assistantNotes by mutableStateOf(emptyList<AssistantNotesResponse>())
+
     private val recipient = MutableStateFlow("")
     private val sender = MutableStateFlow("")
     private val chatUid = MutableStateFlow("")
@@ -40,6 +47,14 @@ class ChatPrivateViewModel(
     var chats by mutableStateOf(emptyList<Message>())
 
     private val getChatPrivateDataModel = ChatPrivateDataModel()
+
+    var addAssistantNoteState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+        private set
+    var isAssistantConfirmDialogVisible by mutableStateOf(false)
+    var assistantConfirmChatId by mutableStateOf("")
+    var assistantConfirmIsGroup by mutableStateOf("")
+    var assistantStartDate by mutableStateOf("" )
+    var assistantEndDate by mutableStateOf("" )
 
     init {
         println("ChatPrivateViewModel call init")
@@ -81,6 +96,11 @@ class ChatPrivateViewModel(
 
                 else if (newChatState is PraxisDataModel.UploadCompleteState){
                     canSendMessage = true
+                }
+
+                else if (newChatState is PraxisDataModel.AssistantSuccessState<*>){
+                    assistantNotes  = newChatState.data as List<AssistantNotesResponse>
+                    assistantNotesReady = true
                 }
             }.launchIn(viewModelScope)
             activate()
@@ -151,6 +171,34 @@ class ChatPrivateViewModel(
         currentNavigationCommand = null
         currentPrivateChatState = PraxisDataModel.EmptyState
         onComplete()
+    }
+
+    fun addAssistantNotes(){
+        println("Assistant start Date : $assistantStartDate and end Date : $assistantEndDate")
+        if (assistantConfirmChatId != "" && assistantConfirmIsGroup != "") {
+            getChatPrivateDataModel.saveAssistantNotes(assistantConfirmChatId, assistantConfirmIsGroup == "true", startDate = assistantStartDate, endDate = assistantEndDate)
+        }
+    }
+
+    fun getAssistantNotes(
+        chatId: String,
+        isGroup: Boolean
+    ){
+        getChatPrivateDataModel.getAssistantNotes(chatId, isGroup)
+    }
+
+    fun addAssistantReminders(
+        chatId: String,
+        isGroup: Boolean
+    ){
+        getChatPrivateDataModel.saveAssistantReminders(chatId, isGroup)
+    }
+
+    fun addAssistantToDos(
+        chatId: String,
+        isGroup: Boolean
+    ){
+        getChatPrivateDataModel.saveAssistantTodos(chatId, isGroup)
     }
 
 }

@@ -9,14 +9,16 @@ import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.GroupApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.domain.model.*
+import com.mutualmobile.harvestKmp.domain.model.request.AssistantRequest
+import com.mutualmobile.harvestKmp.domain.model.request.GetAssistantRequest
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
+import kotlinx.datetime.*
 import org.koin.core.component.KoinComponent
+import kotlin.time.Duration
 
 class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
@@ -36,6 +38,10 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
     private val createGroupMessagesUseCase = chatApiUseCaseComponent.provideCreateGroupMessages()
     private val getPrivateMessagesByRecipientUseCase = chatApiUseCaseComponent.providePrivateMessagesByRecipient()
     private val getMessagesByUidUseCase = chatApiUseCaseComponent.provideGetMessagesByUid()
+    private val createAssistantNotesUseCase = chatApiUseCaseComponent.provideCreateAssistantNotes()
+    private val getAssistantNotesUseCase = chatApiUseCaseComponent.provideGetAssistantNotes()
+    private val createAssistantRemindersUseCase = chatApiUseCaseComponent.provideCreateAssistantReminders()
+    private val createAssistantTodosUseCase = chatApiUseCaseComponent.provideCreateAssistantTodos()
 
     private val uploadAttachmentUseCase = chatApiUseCaseComponent.provideUploadAttachment()
     private val dowloadAttachmentUseCase = chatApiUseCaseComponent.provideDownloadAttachment()
@@ -158,12 +164,13 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
     fun savePrivateChat(message: Message) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-
+            println("Save Private Chat: $message")
             chatLocal.saveChat(message)
 
             when (val response = createPrivateMessagesUseCase(message = message)) {
                 is NetworkResponse.Success -> {
                     println("Private chat saved successfully: ${response.data}")
+                    message.isSent = true
                     val res = mutableListOf(message)
                     _dataFlow.emit(SuccessState(res))
                 }
@@ -220,7 +227,144 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
         }
     }
 
-    //fun saveAttachment(attachment: Attachment, sender: ChatUser, recipient: String, isGroup: Boolean) {
+    fun saveAssistantNotes(chatId: String, isGroup: Boolean, startDate: String, endDate: String){
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+
+
+            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0,0,0) //LocalDateTime.now()
+            val endTime: LocalDateTime = LocalDate.parse(endDate).atTime(0,0,0) //datetime.minus(24, DateTimeUnit.HOUR)
+
+            when (val response = createAssistantNotesUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
+                is NetworkResponse.Success -> {
+                    println("AssistantNotes saved successfully: ${response.data}")
+                    val res = response.data
+                    _dataFlow.emit(AssistantSuccessState(res))
+                }
+
+                is NetworkResponse.Failure -> {
+                    _dataFlow.emit(ErrorState(response.throwable))
+                    intPraxisCommand.emit(
+                        ModalPraxisCommand(
+                            "Failed",
+                            response.throwable.message ?: "Failed to find chats"
+                        )
+                    )
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                    settings.clear()
+                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                }
+            }
+
+            _dataFlow.emit(Complete)
+        }
+    }
+
+    fun getAssistantNotes(chatId: String, isGroup: Boolean){
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+
+            when (val response = getAssistantNotesUseCase(message = GetAssistantRequest(chatId, isGroup))) {
+                is NetworkResponse.Success -> {
+                    println("AssistantNotes get successfully: ${response.data}")
+                    val res = response.data
+                    _dataFlow.emit(AssistantSuccessState(res))
+                }
+
+                is NetworkResponse.Failure -> {
+                    _dataFlow.emit(ErrorState(response.throwable))
+                    intPraxisCommand.emit(
+                        ModalPraxisCommand(
+                            "Failed",
+                            response.throwable.message ?: "Failed to find chats"
+                        )
+                    )
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                    settings.clear()
+                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                }
+            }
+
+            _dataFlow.emit(Complete)
+        }
+    }
+
+    fun saveAssistantReminders(chatId: String, isGroup: Boolean){
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+
+            val datetime: LocalDateTime = LocalDateTime.now()
+            val dateTimeYesterday: LocalDateTime = datetime.minus(24, DateTimeUnit.HOUR)
+
+            when (val response = createAssistantRemindersUseCase(message = AssistantRequest(chatId, isGroup, dateTimeYesterday, datetime))) {
+                is NetworkResponse.Success -> {
+                    println("AssistantReminders saved successfully: ${response.data}")
+                    val res = mutableListOf(response.data)
+                    _dataFlow.emit(AssistantSuccessState(res))
+                }
+
+                is NetworkResponse.Failure -> {
+                    _dataFlow.emit(ErrorState(response.throwable))
+                    intPraxisCommand.emit(
+                        ModalPraxisCommand(
+                            "Failed",
+                            response.throwable.message ?: "Failed to find chats"
+                        )
+                    )
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                    settings.clear()
+                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                }
+            }
+
+            _dataFlow.emit(Complete)
+        }
+    }
+
+    fun saveAssistantTodos(chatId: String, isGroup: Boolean){
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+
+            val datetime: LocalDateTime = LocalDateTime.now()
+            val dateTimeYesterday: LocalDateTime = datetime.minus(24, DateTimeUnit.HOUR)
+
+            when (val response = createAssistantTodosUseCase(message = AssistantRequest(chatId, isGroup, dateTimeYesterday, datetime))) {
+                is NetworkResponse.Success -> {
+                    println("AssistantTodos saved successfully: ${response.data}")
+                    val res = mutableListOf(response.data)
+                    _dataFlow.emit(AssistantSuccessState(res))
+                }
+
+                is NetworkResponse.Failure -> {
+                    _dataFlow.emit(ErrorState(response.throwable))
+                    intPraxisCommand.emit(
+                        ModalPraxisCommand(
+                            "Failed",
+                            response.throwable.message ?: "Failed to find chats"
+                        )
+                    )
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                    settings.clear()
+                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                }
+            }
+
+            _dataFlow.emit(Complete)
+        }
+    }
+
     fun saveAttachment(
         imageBytes: ByteArray,
         imageCheckSum: String,
@@ -358,4 +502,24 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
         }
     }
+}
+
+fun LocalDateTime.Companion.now(): LocalDateTime {
+    return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+}
+fun LocalDate.Companion.now(): LocalDate {
+    return LocalDateTime.now().date
+}
+
+fun LocalDateTime.plus(value: Long, unit: DateTimeUnit.TimeBased): LocalDateTime {
+    val timeZone = TimeZone.currentSystemDefault()
+    return this.toInstant(timeZone)
+        .plus(value, unit)
+        .toLocalDateTime(timeZone)
+}
+fun LocalDateTime.minus(value: Long, unit: DateTimeUnit.TimeBased): LocalDateTime {
+    val timeZone = TimeZone.currentSystemDefault()
+    return this.toInstant(timeZone)
+        .minus(value, unit)
+        .toLocalDateTime(timeZone)
 }

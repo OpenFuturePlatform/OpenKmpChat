@@ -184,6 +184,10 @@ val chatApiUseCaseModule = module {
     single { UploadAttachmentUseCase(get()) }
     single { DownloadAttachmentUseCase(get()) }
     single { CreateAiMessagesUseCase(get()) }
+    single { CreateAssistantNotesUseCase(get()) }
+    single { CreateAssistantRemindersUseCase(get()) }
+    single { CreateAssistantToDosUseCase(get()) }
+    single { GetAssistantNotesUseCase(get()) }
 }
 
 val groupApiUseCaseModule = module {
@@ -297,6 +301,10 @@ class ChatApiUseCaseComponent : KoinComponent {
     //todo - move to another module
     fun provideUploadAttachment(): UploadAttachmentUseCase = get()
     fun provideDownloadAttachment(): DownloadAttachmentUseCase = get()
+    fun provideCreateAssistantNotes(): CreateAssistantNotesUseCase = get()
+    fun provideCreateAssistantReminders(): CreateAssistantRemindersUseCase = get()
+    fun provideCreateAssistantTodos(): CreateAssistantToDosUseCase = get()
+    fun provideGetAssistantNotes(): GetAssistantNotesUseCase = get()
 }
 
 class GroupApiUseCaseComponent : KoinComponent {
