@@ -44,10 +44,9 @@ fun ContactProfileScreen(
     navController: NavHostController,
     cpVm: ContactProfileViewModel = get(),
     profileId: String?,
-    isGroup: String?,
     userState: PraxisDataModel.DataState
 ) {
-    println("CONTACT PROFILE SCREEN with $profileId and $isGroup")
+    println("CONTACT PROFILE SCREEN with $profileId")
     val scaffoldState = rememberScaffoldState()
 
     LaunchedEffect(cpVm.currentNavigationCommand) {
@@ -63,7 +62,7 @@ fun ContactProfileScreen(
 
     LaunchedEffect(userState) {
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> { cpVm.getGroupDetails(groupId = profileId!!, userState) }
+            is PraxisDataModel.SuccessState<*> -> { cpVm.getUserDetails(userId = profileId!!, userState) }
             else -> Unit
         }
     }
@@ -78,7 +77,6 @@ fun ContactProfileScreen(
                 },
                 title = {
                     ProfileNavigation(
-                        isGroup = isGroup == "true",
                         recipient = cpVm.currentProfileName
                     )
                 },
@@ -99,7 +97,7 @@ fun ContactProfileScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Box(Modifier.weight(1f)) {
-                            GroupDetailBody(viewModel = cpVm, isGroup = isGroup == "true", navController = navController)
+                            ProfileDetailBody(viewModel = cpVm, navController = navController)
                         }
                     }
 
@@ -127,16 +125,13 @@ fun ContactProfileScreen(
 
 @Composable
 fun ProfileNavigation(
-    isGroup: Boolean,
     recipient: String?
 ) {
     Row(modifier = Modifier.fillMaxSize()
     )  {
-        if (isGroup) {
-            DefaultGroupPicture(displayName = "$recipient")
-        } else {
-            DefaultProfilePicture(displayName = "$recipient")
-        }
+
+        DefaultProfilePicture(displayName = "$recipient")
+
         Text(
             text = "$recipient",
             modifier = Modifier.padding(start = 10.dp),
@@ -146,170 +141,15 @@ fun ProfileNavigation(
 }
 
 @Composable
-fun  GroupDetailBody(viewModel: ContactProfileViewModel, isGroup: Boolean, navController: NavHostController) {
-    val participants = viewModel.participants
-    val groupId = viewModel.currentGroupId
-    val currentUser = viewModel.currentUser.collectAsState()
-
-    println("PARTICIPANTS : $participants  and Current User: ${currentUser.value.email}")
+fun  ProfileDetailBody(viewModel: ContactProfileViewModel, navController: NavHostController) {
 
     Column(
         modifier = Modifier.fillMaxSize(),
-        //verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Column(modifier = Modifier.padding(top = 15.dp)) {
-            if (isGroup) {
-                DefaultGroupPicture(displayName = viewModel.currentProfileName)
-            } else {
-                DefaultProfilePicture(displayName = viewModel.currentProfileName)
-            }
-        }
-        Column(modifier = Modifier) {
-            Text(
-                text = viewModel.currentProfileName,
-                style = Typography.subtitle2,
-                modifier = Modifier
-                    //.fillMaxWidth()
-                    .padding(bottom = 5.dp)
-                    .align(alignment = Alignment.CenterHorizontally)
-            )
-            Text(
-                text = "Group: ${viewModel.participants.size} participants",
-                style = Typography.subtitle2,
-                modifier = Modifier.padding(bottom = 5.dp)
-            )
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(top = 100.dp),
-    ) {
-        AddMemberCard(navController, viewModel, groupId)
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize().padding(top = 160.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (participants.isNotEmpty()) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-                    .padding(start = 4.dp, end = 4.dp),
-                //verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                itemsIndexed(participants) { _, contact ->
-
-                    ParticipantCard(
-                        cpVm = viewModel,
-                        otherUser = contact,
-                        groupId = groupId,
-                        currentUser = currentUser.value,
-                        onChatClicked = viewModel::onMemberClicked
-                    )
-
-                    Divider()
-                }
-                item {
-                    Box(Modifier.height(70.dp))
-                }
-            }
-        } else {
-            Text(
-                text = "NO USERS",
-                modifier = Modifier
-                    .padding(top = 50.dp)
-                    .fillMaxWidth(),
-                style = MaterialTheme.typography.subtitle1,
-                textAlign = TextAlign.Center
-            )
-        }
-    }
-}
-
-
-
-@Composable
-fun ParticipantCard(
-    cpVm: ContactProfileViewModel,
-    otherUser: String,
-    currentUser: User,
-    groupId: String,
-    onChatClicked: (String) -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            //.padding(all = 4.dp)
-            .clickable {
-                onChatClicked.invoke(otherUser)
-            }
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
-            ) {
-
-                DefaultProfilePicture(displayName = otherUser)
-                val suffix = if (otherUser == currentUser.email) "You - " else ""
-                Text(
-                    text = suffix + otherUser,
-                    style = Typography.subtitle2,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-                Icon(Icons.Default.Delete, contentDescription = null,
-                    modifier = Modifier.align(alignment = Alignment.CenterVertically)
-                        .clickable {
-                            cpVm.isDeleteDialogVisible = true
-                            cpVm.deleteMemberId = otherUser
-                            cpVm.deleteMemberGroupId = groupId
-                    })
-
-            }
-
-        }
-    }
-}
-
-@Composable
-fun AddMemberCard(
-    navController: NavHostController,
-    viewModel: ContactProfileViewModel,
-    groupId: String
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(all = 10.dp)
-            .clickable {
-            }
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
-                    .clickable {
-                        navController.navigate(HarvestRoutes.Screen.ADD_MEMBER.withGroup(groupId = groupId))
-                    }
-            ) {
-
-                Icon(Icons.Default.Add, contentDescription = null)
-                Text(
-                    text = "Add new member",
-                    style = Typography.subtitle2,
-                    modifier = Modifier.padding(start = 16.dp)
-                )
-
-            }
-
+        Column(modifier = Modifier.padding(top = 15.dp)) {
+            DefaultProfilePicture(displayName = viewModel.currentProfileName)
         }
     }
 }

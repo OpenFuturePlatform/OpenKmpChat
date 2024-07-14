@@ -138,4 +138,24 @@ class ChatApiImpl(
                 setBody(message)
             }
         }
+
+    override suspend fun getAssistantReminders(message: GetAssistantRequest): NetworkResponse<List<AssistantReminderResponse>> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ASSISTANT_URL}/reminders"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(message)
+            }
+        }
+
+    override suspend fun getAssistantToDos(message: GetAssistantRequest): NetworkResponse<List<AssistantTodosResponse>> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.ASSISTANT_URL}/todos"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(message)
+            }
+        }
 }

@@ -8,6 +8,7 @@ import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.GroupApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
+import com.mutualmobile.harvestKmp.di.UserApiUseCaseComponent
 import com.mutualmobile.harvestKmp.domain.model.*
 import com.mutualmobile.harvestKmp.domain.model.request.AssistantRequest
 import com.mutualmobile.harvestKmp.domain.model.request.GetAssistantRequest
@@ -41,13 +42,17 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
     private val createAssistantNotesUseCase = chatApiUseCaseComponent.provideCreateAssistantNotes()
     private val getAssistantNotesUseCase = chatApiUseCaseComponent.provideGetAssistantNotes()
     private val createAssistantRemindersUseCase = chatApiUseCaseComponent.provideCreateAssistantReminders()
+    private val getAssistantRemindersUseCase = chatApiUseCaseComponent.provideGetAssistantReminders()
     private val createAssistantTodosUseCase = chatApiUseCaseComponent.provideCreateAssistantTodos()
+    private val getAssistantToDosUseCase = chatApiUseCaseComponent.provideGetAssistantToDos()
 
     private val uploadAttachmentUseCase = chatApiUseCaseComponent.provideUploadAttachment()
     private val dowloadAttachmentUseCase = chatApiUseCaseComponent.provideDownloadAttachment()
 
     private val groupApiUseCaseComponent = GroupApiUseCaseComponent()
     private val getGroupUseCase = groupApiUseCaseComponent.provideGetGroup()
+    private val userApiUseCaseComponent = UserApiUseCaseComponent()
+    private val getUserDetailUseCase = userApiUseCaseComponent.provideGetUserDetail()
 
     private val attachmentLocal = SharedComponent().provideAttachmentLocal()
 
@@ -238,7 +243,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
             when (val response = createAssistantNotesUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
                 is NetworkResponse.Success -> {
                     println("AssistantNotes saved successfully: ${response.data}")
-                    val res = response.data
+                    val res = mutableListOf(response.data)
                     _dataFlow.emit(AssistantSuccessState(res))
                 }
 
@@ -295,18 +300,18 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
         }
     }
 
-    fun saveAssistantReminders(chatId: String, isGroup: Boolean){
+    fun saveAssistantReminders(chatId: String, isGroup: Boolean, startDate: String, endDate: String){
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
-            val datetime: LocalDateTime = LocalDateTime.now()
-            val dateTimeYesterday: LocalDateTime = datetime.minus(24, DateTimeUnit.HOUR)
+            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0,0,0) //LocalDateTime.now()
+            val endTime: LocalDateTime = LocalDate.parse(endDate).atTime(0,0,0) //datetime.minus(24, DateTimeUnit.HOUR)
 
-            when (val response = createAssistantRemindersUseCase(message = AssistantRequest(chatId, isGroup, dateTimeYesterday, datetime))) {
+            when (val response = createAssistantRemindersUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
                 is NetworkResponse.Success -> {
                     println("AssistantReminders saved successfully: ${response.data}")
                     val res = mutableListOf(response.data)
-                    _dataFlow.emit(AssistantSuccessState(res))
+                    _dataFlow.emit(AssistantReminderSuccessState(res))
                 }
 
                 is NetworkResponse.Failure -> {
@@ -330,18 +335,82 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
         }
     }
 
-    fun saveAssistantTodos(chatId: String, isGroup: Boolean){
+    fun getAssistantReminders(chatId: String, isGroup: Boolean){
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
-            val datetime: LocalDateTime = LocalDateTime.now()
-            val dateTimeYesterday: LocalDateTime = datetime.minus(24, DateTimeUnit.HOUR)
+            when (val response = getAssistantRemindersUseCase(message = GetAssistantRequest(chatId, isGroup))) {
+                is NetworkResponse.Success -> {
+                    println("AssistantReminders get successfully: ${response.data}")
+                    val res = response.data
+                    _dataFlow.emit(AssistantReminderSuccessState(res))
+                }
 
-            when (val response = createAssistantTodosUseCase(message = AssistantRequest(chatId, isGroup, dateTimeYesterday, datetime))) {
+                is NetworkResponse.Failure -> {
+                    _dataFlow.emit(ErrorState(response.throwable))
+                    intPraxisCommand.emit(
+                        ModalPraxisCommand(
+                            "Failed",
+                            response.throwable.message ?: "Failed to find chats"
+                        )
+                    )
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                    settings.clear()
+                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                }
+            }
+
+            _dataFlow.emit(Complete)
+        }
+    }
+
+    fun saveAssistantTodos(chatId: String, isGroup: Boolean, startDate: String, endDate: String){
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+
+            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0,0,0) //LocalDateTime.now()
+            val endTime: LocalDateTime = LocalDate.parse(endDate).atTime(0,0,0) //datetime.minus(24, DateTimeUnit.HOUR)
+
+            when (val response = createAssistantTodosUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
                 is NetworkResponse.Success -> {
                     println("AssistantTodos saved successfully: ${response.data}")
                     val res = mutableListOf(response.data)
-                    _dataFlow.emit(AssistantSuccessState(res))
+                    _dataFlow.emit(AssistantTodoSuccessState(res))
+                }
+
+                is NetworkResponse.Failure -> {
+                    _dataFlow.emit(ErrorState(response.throwable))
+                    intPraxisCommand.emit(
+                        ModalPraxisCommand(
+                            "Failed",
+                            response.throwable.message ?: "Failed to find chats"
+                        )
+                    )
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                    settings.clear()
+                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                }
+            }
+
+            _dataFlow.emit(Complete)
+        }
+    }
+
+    fun getAssistantTodos(chatId: String, isGroup: Boolean){
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+
+            when (val response = getAssistantToDosUseCase(message = GetAssistantRequest(chatId, isGroup))) {
+                is NetworkResponse.Success -> {
+                    println("AssistantToDos get successfully: ${response.data}")
+                    val res = response.data
+                    _dataFlow.emit(AssistantTodoSuccessState(res))
                 }
 
                 is NetworkResponse.Failure -> {
@@ -467,59 +536,77 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
         dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
-            when (val response = getGroupUseCase(groupId = contactId)) {
-                is NetworkResponse.Success -> {
+            if (isGroup) {
 
-                    val profileScreen =
-                        HarvestRoutes.Screen.CONTACT_PROFILE.withDetail(profileId = contactId, isGroup = isGroup)
+                when (val response = getGroupUseCase(groupId = contactId)) {
+                    is NetworkResponse.Success -> {
 
-                    println("Group detail response: ${response.data} for $contactId and $isGroup with screen: $profileScreen")
+                        val profileScreen =
+                            HarvestRoutes.Screen.GROUP_PROFILE.withDetail(profileId = contactId, isGroup = isGroup)
 
-                    intPraxisCommand.emit(
-                        NavigationPraxisCommand(
-                            screen = profileScreen
+                        println("Group detail response: ${response.data} for $contactId and $isGroup with screen: $profileScreen")
+
+                        intPraxisCommand.emit(
+                            NavigationPraxisCommand(
+                                screen = profileScreen
+                            )
                         )
-                    )
 
+                    }
+
+                    is NetworkResponse.Failure -> {
+                        _dataFlow.emit(ErrorState(response.throwable))
+                        intPraxisCommand.emit(
+                            ModalPraxisCommand(
+                                "Failed",
+                                response.throwable.message ?: "Failed to find chats"
+                            )
+                        )
+                    }
+
+                    is NetworkResponse.Unauthorized -> {
+                        settings.clear()
+                        intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                        intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    }
                 }
 
-                is NetworkResponse.Failure -> {
-                    _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
-                            "Failed",
-                            response.throwable.message ?: "Failed to find chats"
-                        )
-                    )
-                }
+            } else {
 
-                is NetworkResponse.Unauthorized -> {
-                    settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                when (val response = getUserDetailUseCase(email = contactId)) {
+                    is NetworkResponse.Success -> {
+
+                        val profileScreen =
+                            HarvestRoutes.Screen.CONTACT_PROFILE.withDetail(profileId = contactId, isGroup = isGroup)
+
+                        println("User detail response: ${response.data} for $contactId and $isGroup with screen: $profileScreen")
+
+                        intPraxisCommand.emit(
+                            NavigationPraxisCommand(
+                                screen = profileScreen
+                            )
+                        )
+
+                    }
+
+                    is NetworkResponse.Failure -> {
+                        _dataFlow.emit(ErrorState(response.throwable))
+                        intPraxisCommand.emit(
+                            ModalPraxisCommand(
+                                "Failed",
+                                response.throwable.message ?: "Failed to find chats"
+                            )
+                        )
+                    }
+
+                    is NetworkResponse.Unauthorized -> {
+                        settings.clear()
+                        intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
+                        intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    }
                 }
             }
 
         }
     }
-}
-
-fun LocalDateTime.Companion.now(): LocalDateTime {
-    return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-}
-fun LocalDate.Companion.now(): LocalDate {
-    return LocalDateTime.now().date
-}
-
-fun LocalDateTime.plus(value: Long, unit: DateTimeUnit.TimeBased): LocalDateTime {
-    val timeZone = TimeZone.currentSystemDefault()
-    return this.toInstant(timeZone)
-        .plus(value, unit)
-        .toLocalDateTime(timeZone)
-}
-fun LocalDateTime.minus(value: Long, unit: DateTimeUnit.TimeBased): LocalDateTime {
-    val timeZone = TimeZone.currentSystemDefault()
-    return this.toInstant(timeZone)
-        .minus(value, unit)
-        .toLocalDateTime(timeZone)
 }

@@ -12,6 +12,8 @@ import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.domain.model.response.AssistantNotesResponse
+import com.mutualmobile.harvestKmp.domain.model.response.AssistantReminderResponse
+import com.mutualmobile.harvestKmp.domain.model.response.AssistantTodosResponse
 import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.ChatPrivateDataModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -32,6 +34,9 @@ class ChatPrivateViewModel(
 
     var assistantNotesReady: Boolean by mutableStateOf(false)
     var assistantNotes by mutableStateOf(emptyList<AssistantNotesResponse>())
+    var assistantReminders by mutableStateOf(emptyList<AssistantReminderResponse>())
+    var assistantTodos by mutableStateOf(emptyList<AssistantTodosResponse>())
+    var currentAssistantType by mutableStateOf("")
 
     private val recipient = MutableStateFlow("")
     private val sender = MutableStateFlow("")
@@ -48,13 +53,15 @@ class ChatPrivateViewModel(
 
     private val getChatPrivateDataModel = ChatPrivateDataModel()
 
-    var addAssistantNoteState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
-        private set
-    var isAssistantConfirmDialogVisible by mutableStateOf(false)
+    var isAssistantNotesDialogVisible by mutableStateOf(false)
+    var isAssistantRemindersDialogVisible by mutableStateOf(false)
+    var isAssistantToDosDialogVisible by mutableStateOf(false)
+
     var assistantConfirmChatId by mutableStateOf("")
     var assistantConfirmIsGroup by mutableStateOf("")
     var assistantStartDate by mutableStateOf("" )
     var assistantEndDate by mutableStateOf("" )
+
 
     init {
         println("ChatPrivateViewModel call init")
@@ -101,6 +108,17 @@ class ChatPrivateViewModel(
                 else if (newChatState is PraxisDataModel.AssistantSuccessState<*>){
                     assistantNotes  = newChatState.data as List<AssistantNotesResponse>
                     assistantNotesReady = true
+                    currentAssistantType = "NOTES"
+                }
+                else if (newChatState is PraxisDataModel.AssistantReminderSuccessState<*>){
+                    assistantReminders  = newChatState.data as List<AssistantReminderResponse>
+                    assistantNotesReady = true
+                    currentAssistantType = "REMINDERS"
+                }
+                else if (newChatState is PraxisDataModel.AssistantTodoSuccessState<*>){
+                    assistantTodos  = newChatState.data as List<AssistantTodosResponse>
+                    assistantNotesReady = true
+                    currentAssistantType = "TODOS"
                 }
             }.launchIn(viewModelScope)
             activate()
@@ -187,18 +205,32 @@ class ChatPrivateViewModel(
         getChatPrivateDataModel.getAssistantNotes(chatId, isGroup)
     }
 
-    fun addAssistantReminders(
-        chatId: String,
-        isGroup: Boolean
-    ){
-        getChatPrivateDataModel.saveAssistantReminders(chatId, isGroup)
+    fun addAssistantReminders(){
+        println("Assistant start Date : $assistantStartDate and end Date : $assistantEndDate")
+        if (assistantConfirmChatId != "" && assistantConfirmIsGroup != "") {
+            getChatPrivateDataModel.saveAssistantReminders(assistantConfirmChatId, assistantConfirmIsGroup == "true", startDate = assistantStartDate, endDate = assistantEndDate)
+        }
     }
 
-    fun addAssistantToDos(
+    fun getAssistantReminders(
         chatId: String,
         isGroup: Boolean
     ){
-        getChatPrivateDataModel.saveAssistantTodos(chatId, isGroup)
+        getChatPrivateDataModel.getAssistantReminders(chatId, isGroup)
+    }
+
+    fun addAssistantToDos(){
+        println("Assistant start Date : $assistantStartDate and end Date : $assistantEndDate")
+        if (assistantConfirmChatId != "" && assistantConfirmIsGroup != "") {
+            getChatPrivateDataModel.saveAssistantTodos(assistantConfirmChatId, assistantConfirmIsGroup == "true", startDate = assistantStartDate, endDate = assistantEndDate)
+        }
+    }
+
+    fun getAssistantToDos(
+        chatId: String,
+        isGroup: Boolean
+    ){
+        getChatPrivateDataModel.getAssistantTodos(chatId, isGroup)
     }
 
 }

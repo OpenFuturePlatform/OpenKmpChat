@@ -1,0 +1,20 @@
+CREATE TABLE open_wallet(
+    uid TEXT NOT NULL PRIMARY KEY,
+    userId TEXT,
+    address TEXT,
+    privateKey TEXT,
+    blockchainType TEXT,
+    time INTEGER
+);
+
+insertWallet:
+INSERT OR REPLACE INTO open_wallet(uid, userId, address, privateKey, blockchainType, time) VALUES(?,?,?,?,?,?);
+
+selectAllWallets:
+SELECT * FROM open_wallet ORDER BY time DESC;
+
+selectAllUserWallets:
+SELECT * FROM open_wallet WHERE userId = ?;
+
+deleteAllWallets:
+DELETE FROM open_wallet;

@@ -41,11 +41,14 @@ import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoginScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.onboradingScreen.OnBoardingScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.password.ChangePasswordScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.password.ForgotPasswordScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.taskScreen.TaskScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.settingsScreen.SettingsScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.NewOrgSignUpScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.SignUpScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.userScreen.ContactProfileScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.userScreen.GroupProfileScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.userScreen.UserListScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.WalletScreen
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.SetupSystemUiController
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
@@ -85,6 +88,7 @@ class MainActivity : ComponentActivity() {
                         NavigationItem.Chat,
                         NavigationItem.ChatGPT,
                         NavigationItem.Contacts,
+                        NavigationItem.Task,
                         NavigationItem.Settings
                     )
 
@@ -186,10 +190,23 @@ class MainActivity : ComponentActivity() {
                                 HarvestRoutes.Screen.CONTACT_PROFILE_WITH_ID,
                                 arguments = listOf(
                                     navArgument(HarvestRoutes.Keys.profileId) { nullable = true },
-                                    navArgument(HarvestRoutes.Keys.isGroup) { nullable = true },
                                 ),
                             ) {
                                 ContactProfileScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState,
+                                    profileId = it.arguments?.getString("profileId")
+                                )
+                            }
+
+                            composable(
+                                HarvestRoutes.Screen.GROUP_PROFILE_WITH_ID,
+                                arguments = listOf(
+                                    navArgument(HarvestRoutes.Keys.profileId) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.isGroup) { nullable = true },
+                                ),
+                            ) {
+                                GroupProfileScreen(
                                     navController = navController,
                                     userState = mainActivityViewModel.getUserState,
                                     profileId = it.arguments?.getString("profileId"),
@@ -227,6 +244,20 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     userState = mainActivityViewModel.getUserState,
                                     _participants = it.arguments?.getString("participants")
+                                )
+                            }
+
+                            composable(HarvestRoutes.Screen.TASK) {
+                                TaskScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState
+                                )
+                            }
+
+                            composable(HarvestRoutes.Screen.USER_WALLET) {
+                                WalletScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState
                                 )
                             }
 

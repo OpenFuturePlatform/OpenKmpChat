@@ -11,8 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -25,6 +24,7 @@ import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.Messages
 import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantDatePickerDialog
+import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantNoteDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.CommonAlertDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultGroupPicture
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultProfilePicture
@@ -59,12 +59,17 @@ fun ChatPrivateScreen(
     chatUid: String?
 ) {
     val context = LocalContext.current
-    println("CHAT PRIVATE SCREEN with recipient: $recipient and sender: $sender and chatId: $chatUid")
-    println("CanSendMessage : ${crVm.canSendMessage}")
+
     val scaffoldState = rememberScaffoldState()
     val canSendMessage = crVm.canSendMessage
 
-    var menuExpanded by remember {
+    var notesMenuExpanded by remember {
+        mutableStateOf(false)
+    }
+    var remindersMenuExpanded by remember {
+        mutableStateOf(false)
+    }
+    var todosMenuExpanded by remember {
         mutableStateOf(false)
     }
 
@@ -86,15 +91,27 @@ fun ChatPrivateScreen(
                 },
                 actions = {
 
-                    IconButton(onClick = { menuExpanded = !menuExpanded }) {
+                    IconButton(onClick = {remindersMenuExpanded = !remindersMenuExpanded }) {
                         Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = "More",
+                            imageVector = Icons.Filled.DateRange,
+                            contentDescription = "Reminders"
+                        )
+                    }
+                    IconButton(onClick = {notesMenuExpanded = !notesMenuExpanded }) {
+                        Icon(
+                            imageVector = Icons.Filled.Create,
+                            contentDescription = "Notes"
+                        )
+                    }
+                    IconButton(onClick = { todosMenuExpanded = !todosMenuExpanded }) {
+                        Icon(
+                            imageVector = Icons.Filled.List,
+                            contentDescription = "ToDos",
                         )
                     }
                     DropdownMenu(
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false },
+                        expanded = notesMenuExpanded,
+                        onDismissRequest = { notesMenuExpanded = false },
                     ) {
                         DropdownMenuItem(
 
@@ -111,23 +128,61 @@ fun ChatPrivateScreen(
                                 Text("Take Notes")
                             },
                             onClick = {
-                                //crVm.addAssistantNotes(chatUid!!, isGroup == "true")
-                                crVm.isAssistantConfirmDialogVisible = true
+                                crVm.isAssistantNotesDialogVisible = true
                                 crVm.assistantConfirmChatId = chatUid!!
                                 crVm.assistantConfirmIsGroup = isGroup!!
                             },
                         )
+
+                    }
+                    DropdownMenu(
+                        expanded = remindersMenuExpanded,
+                        onDismissRequest = { remindersMenuExpanded = false },
+                    ) {
                         DropdownMenuItem(
+
+                            content = {
+                                Text("Get Reminders")
+                            },
+                            onClick = {
+                                crVm.getAssistantReminders(chatUid!!, isGroup == "true")
+                            },
+                        )
+                        DropdownMenuItem(
+
                             content = {
                                 Text("Take Reminders")
                             },
-                            onClick = { crVm.addAssistantReminders(chatUid!!, isGroup == "true") },
+                            onClick = {
+                                crVm.isAssistantRemindersDialogVisible = true
+                                crVm.assistantConfirmChatId = chatUid!!
+                                crVm.assistantConfirmIsGroup = isGroup!!
+                            },
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = todosMenuExpanded,
+                        onDismissRequest = { todosMenuExpanded = false },
+                    ) {
+                        DropdownMenuItem(
+
+                            content = {
+                                Text("Get ToDos")
+                            },
+                            onClick = {
+                                crVm.getAssistantToDos(chatUid!!, isGroup == "true")
+                            },
                         )
                         DropdownMenuItem(
+
                             content = {
                                 Text("Take ToDos")
                             },
-                            onClick = { crVm.addAssistantToDos(chatUid!!, isGroup == "true") },
+                            onClick = {
+                                crVm.isAssistantToDosDialogVisible = true
+                                crVm.assistantConfirmChatId = chatUid!!
+                                crVm.assistantConfirmIsGroup = isGroup!!
+                            },
                         )
                     }
                 },
@@ -173,18 +228,16 @@ fun ChatPrivateScreen(
         }
     }
 
-    if (crVm.isAssistantConfirmDialogVisible) {
-        println("ADD NOTES FOR ${crVm.assistantConfirmChatId}")
-
+    if (crVm.isAssistantNotesDialogVisible) {
         AssistantDatePickerDialog(
             onDismiss = {
-                crVm.isAssistantConfirmDialogVisible = false
+                crVm.isAssistantNotesDialogVisible = false
                 crVm.assistantConfirmChatId = ""
                 crVm.assistantConfirmIsGroup = ""
             },
             onConfirm = {
                 crVm.addAssistantNotes()
-                crVm.isAssistantConfirmDialogVisible = false
+                crVm.isAssistantNotesDialogVisible = false
                 crVm.assistantConfirmChatId = ""
                 crVm.assistantConfirmIsGroup = ""
                 Toast.makeText(
@@ -203,20 +256,85 @@ fun ChatPrivateScreen(
 
         )
     }
+    if (crVm.isAssistantRemindersDialogVisible) {
+        AssistantDatePickerDialog(
+            onDismiss = {
+                crVm.isAssistantRemindersDialogVisible = false
+                crVm.assistantConfirmChatId = ""
+                crVm.assistantConfirmIsGroup = ""
+            },
+            onConfirm = {
+                crVm.addAssistantReminders()
+                crVm.isAssistantRemindersDialogVisible = false
+                crVm.assistantConfirmChatId = ""
+                crVm.assistantConfirmIsGroup = ""
+                Toast.makeText(
+                    context,
+                    "STARTED GETTING REMINDERS",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            titleProvider = { MR.strings.assistant_datepicker_title.get() },
+            startDateProvider = {
+                crVm.assistantStartDate = serverDateFormatter.format(it)
+            },
+            endDateProvider = {
+                crVm.assistantEndDate = serverDateFormatter.format(it)
+            }
+
+        )
+    }
+    if (crVm.isAssistantToDosDialogVisible) {
+        AssistantDatePickerDialog(
+            onDismiss = {
+                crVm.isAssistantToDosDialogVisible = false
+                crVm.assistantConfirmChatId = ""
+                crVm.assistantConfirmIsGroup = ""
+            },
+            onConfirm = {
+                crVm.addAssistantToDos()
+                crVm.isAssistantToDosDialogVisible = false
+                crVm.assistantConfirmChatId = ""
+                crVm.assistantConfirmIsGroup = ""
+                Toast.makeText(
+                    context,
+                    "STARTED GETTING TODOS",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            titleProvider = { MR.strings.assistant_datepicker_title.get() },
+            startDateProvider = {
+                crVm.assistantStartDate = serverDateFormatter.format(it)
+            },
+            endDateProvider = {
+                crVm.assistantEndDate = serverDateFormatter.format(it)
+            }
+
+        )
+    }
 
     if (crVm.assistantNotesReady) {
 
-        CommonAlertDialog(
+        AssistantNoteDialog(
             onDismiss = {
                 crVm.assistantNotesReady = false
                 crVm.assistantNotes = emptyList()
+                crVm.assistantTodos = emptyList()
+                crVm.assistantReminders = emptyList()
+                crVm.currentAssistantType = ""
             },
             onConfirm = {
                 crVm.assistantNotesReady = false
                 crVm.assistantNotes = emptyList()
+                crVm.assistantTodos = emptyList()
+                crVm.assistantReminders = emptyList()
+                crVm.currentAssistantType = ""
             },
             titleProvider = { MR.strings.assistant_notes.get() },
-            bodyTextProvider = {  crVm.assistantNotes.map { a -> a.notes }.toString() }
+            currentAssistant = crVm.currentAssistantType,
+            assistantNotes = crVm.assistantNotes,
+            assistantReminders = crVm.assistantReminders,
+            assistantTodos = crVm.assistantTodos
         )
 
     }
@@ -230,7 +348,12 @@ fun ContactProfileNavigation(
     onChatClicked: (String, Boolean) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxSize()
-        .clickable { onChatClicked.invoke(chatUid!!, isGroup) }
+        .clickable {
+            if (isGroup)
+                onChatClicked.invoke(chatUid!!, true)
+            else
+                onChatClicked.invoke(recipient!!, false)
+        }
     ) {
         if (isGroup) {
             DefaultGroupPicture(displayName = "$recipient")

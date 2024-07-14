@@ -14,6 +14,7 @@ sealed class NavigationItem(
 
     object Home : NavigationItem(HarvestRoutes.Screen.USER_HOME, "Home", Icons.Rounded.Home)
     object Chat : NavigationItem(HarvestRoutes.Screen.CHAT, "Chat", Icons.Rounded.Send)
+    object Task : NavigationItem(HarvestRoutes.Screen.TASK, "Task", Icons.Rounded.List)
     object ChatGPT : NavigationItem(HarvestRoutes.Screen.CHAT_GPT, "Chat GPT", Icons.Rounded.Search)
     object
       Contacts : NavigationItem(HarvestRoutes.Screen.ORG_USERS, "Contacts", Icons.Rounded.AccountBox)

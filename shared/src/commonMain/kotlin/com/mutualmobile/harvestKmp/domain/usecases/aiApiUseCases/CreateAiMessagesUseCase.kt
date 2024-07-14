@@ -1,4 +1,4 @@
-package com.mutualmobile.harvestKmp.domain.usecases.chatApiUseCases
+package com.mutualmobile.harvestKmp.domain.usecases.aiApiUseCases
 
 import com.mutualmobile.harvestKmp.data.network.chat.ChatApi
 import com.mutualmobile.harvestKmp.domain.model.AiMessage

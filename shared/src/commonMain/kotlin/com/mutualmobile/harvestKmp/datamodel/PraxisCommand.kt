@@ -50,13 +50,16 @@ object HarvestRoutes {
         const val SELECT_WORK_TYPE = "select-work-type"
 
         const val USER_HOME = "user-home"
+        const val USER_WALLET = "user-wallet"
         const val CHAT = "chat"
+        const val TASK = "task"
         const val CHAT_PRIVATE = "chat-private"
         const val ADD_ACTION = "adds"
         const val ADD_GROUP = "add-group"
         const val ADD_MEMBER = "add-member"
         const val CREATE_GROUP = "create-group"
         const val CONTACT_PROFILE = "contact-profile"
+        const val GROUP_PROFILE = "contact-profile"
 
         const val CHAT_PRIVATE_WITH_SENDER_RECEIVER = CHAT_PRIVATE
             .plus(BROWSER_QUERY)
@@ -80,6 +83,10 @@ object HarvestRoutes {
             .plus("${Keys.groupId}={${Keys.groupId}}")
 
         const val CONTACT_PROFILE_WITH_ID = CONTACT_PROFILE
+            .plus(BROWSER_QUERY)
+            .plus("${Keys.profileId}={${Keys.profileId}}")
+
+        const val GROUP_PROFILE_WITH_ID = GROUP_PROFILE
             .plus(BROWSER_QUERY)
             .plus("${Keys.profileId}={${Keys.profileId}}")
             .plus(BROWSER_AND)

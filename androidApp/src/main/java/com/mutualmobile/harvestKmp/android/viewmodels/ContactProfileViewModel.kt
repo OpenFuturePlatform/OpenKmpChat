@@ -85,7 +85,7 @@ class ContactProfileViewModel : ViewModel() {
 
                 }
             }.launchIn(viewModelScope)
-            activate()
+            //activate()
         }
     }
 
@@ -93,6 +93,11 @@ class ContactProfileViewModel : ViewModel() {
         val userResponse = userState.data as GetUserResponse
         _currentUser.value = User(id = userResponse.id, firstName = userResponse.firstName, lastName = userResponse.lastName, email = userResponse.email)
         getProfileDataModel.getGroup(groupId)
+    }
+
+    fun getUserDetails(userId: String, userState: PraxisDataModel.SuccessState<*>){
+        val userResponse = userState.data as GetUserResponse
+        _currentUser.value = User(id = userResponse.id, firstName = userResponse.firstName, lastName = userResponse.lastName, email = userResponse.email)
     }
 
     fun removeMemberClicked(onCompleted: () -> Unit = {}){

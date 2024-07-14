@@ -46,7 +46,7 @@ fun SettingsScreen(navController: NavHostController) {
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding(),
         ) {
-            NotificationsSection()
+            //NotificationsSection()
             AccountSection(navController = navController)
             AboutHarvestSection()
         }

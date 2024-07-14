@@ -1,4 +1,5 @@
 package com.mutualmobile.harvestKmp.domain.model
+import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import dev.icerock.moko.graphics.Color
 import dev.icerock.moko.resources.ImageResource
 import kotlinx.datetime.Clock
@@ -35,6 +36,29 @@ data class Message(
         seconds = Clock.System.now().epochSeconds,
         id = Random.nextLong()
     )
+}
+data class Wallet(
+    val userId: String,
+    val address: String,
+    val privateKey: String,
+    val blockchainType: BlockchainType,
+    val seconds: Long,
+    val id: Long
+){
+    constructor(
+        userId: String,
+        address: String,
+        privateKey: String,
+        blockchainType: BlockchainType,
+    ) : this(
+        userId = userId,
+        address = address,
+        privateKey = privateKey,
+        blockchainType = blockchainType,
+        seconds = Clock.System.now().epochSeconds,
+        id = Random.nextLong()
+    )
+
 }
 
 data class Attachment(

@@ -19,4 +19,6 @@ interface ChatApi {
     suspend fun saveAssistantReminders(message: AssistantRequest): NetworkResponse<AssistantReminderResponse>
     suspend fun saveAssistantToDos(message: AssistantRequest): NetworkResponse<AssistantTodosResponse>
     suspend fun getAssistantNotes(message: GetAssistantRequest): NetworkResponse<List<AssistantNotesResponse>>
+    suspend fun getAssistantReminders(message: GetAssistantRequest): NetworkResponse<List<AssistantReminderResponse>>
+    suspend fun getAssistantToDos(message: GetAssistantRequest): NetworkResponse<List<AssistantTodosResponse>>
 }

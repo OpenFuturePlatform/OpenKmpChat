@@ -4,8 +4,10 @@ import com.mutualmobile.harvestKmp.data.local.AttachmentLocal
 import com.mutualmobile.harvestKmp.data.local.ChatLocal
 import com.mutualmobile.harvestKmp.data.local.impl.ChatLocalImpl
 import com.mutualmobile.harvestKmp.data.local.HarvestUserLocal
+import com.mutualmobile.harvestKmp.data.local.WalletLocal
 import com.mutualmobile.harvestKmp.data.local.impl.AttachmentLocalImpl
 import com.mutualmobile.harvestKmp.data.local.impl.HarvestUserLocalImpl
+import com.mutualmobile.harvestKmp.data.local.impl.WalletLocalImpl
 import com.mutualmobile.harvestKmp.data.network.Constants
 import com.mutualmobile.harvestKmp.data.network.Endpoint
 import com.mutualmobile.harvestKmp.data.network.Endpoint.REFRESH_TOKEN
@@ -15,14 +17,8 @@ import com.mutualmobile.harvestKmp.data.network.authUser.AuthApi
 import com.mutualmobile.harvestKmp.data.network.authUser.UserForgotPasswordApi
 import com.mutualmobile.harvestKmp.data.network.authUser.impl.AuthApiImpl
 import com.mutualmobile.harvestKmp.data.network.authUser.impl.UserForgotPasswordApiImpl
-import com.mutualmobile.harvestKmp.data.network.chat.ChatApi
-import com.mutualmobile.harvestKmp.data.network.chat.GroupApi
-import com.mutualmobile.harvestKmp.data.network.chat.RealtimeMessagingClient
-import com.mutualmobile.harvestKmp.data.network.chat.UserApi
-import com.mutualmobile.harvestKmp.data.network.chat.impl.ChatApiImpl
-import com.mutualmobile.harvestKmp.data.network.chat.impl.GroupApiImpl
-import com.mutualmobile.harvestKmp.data.network.chat.impl.KtorRealtimeMessagingClient
-import com.mutualmobile.harvestKmp.data.network.chat.impl.UserApiImpl
+import com.mutualmobile.harvestKmp.data.network.chat.*
+import com.mutualmobile.harvestKmp.data.network.chat.impl.*
 import com.mutualmobile.harvestKmp.data.network.org.OrgApi
 import com.mutualmobile.harvestKmp.data.network.org.OrgProjectsApi
 import com.mutualmobile.harvestKmp.data.network.org.OrgUsersApi
@@ -36,6 +32,7 @@ import com.mutualmobile.harvestKmp.data.network.org.impl.UserWorkApiImpl
 import com.mutualmobile.harvestKmp.domain.model.response.LoginResponse
 import com.mutualmobile.harvestKmp.domain.usecases.CurrentUserLoggedInUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.SaveSettingsUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.aiApiUseCases.*
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.ChangePasswordUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.ExistingOrgSignUpUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases.FcmTokenUseCase
@@ -60,6 +57,11 @@ import com.mutualmobile.harvestKmp.domain.usecases.userProjectUseCases.AssignPro
 import com.mutualmobile.harvestKmp.domain.usecases.userProjectUseCases.DeleteWorkTimeUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userProjectUseCases.GetUserAssignedProjectsUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userProjectUseCases.LogWorkTimeUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.userTaskUseCases.GetUserTasksUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.userTaskUseCases.SaveUserTasksUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.userWalletUseCases.DecryptWalletUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.userWalletUseCases.GenerateWalletUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.userWalletUseCases.GetWalletUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userWorkUseCases.GetWorkLogsForDateRangeUseCase
 import com.russhwolf.settings.Settings
 import io.ktor.client.HttpClient
@@ -102,6 +104,8 @@ fun initSharedDependencies() = startKoin {
         userWorkUseCaseModule,
         chatApiUseCaseModule,
         groupApiUseCaseModule,
+        userTaskUseCaseModule,
+        userWalletUseCaseModule,
         platformModule()
     )
 }
@@ -121,6 +125,8 @@ fun initSqlDelightExperimentalDependencies() = startKoin {
         userWorkUseCaseModule,
         chatApiUseCaseModule,
         groupApiUseCaseModule,
+        userTaskUseCaseModule,
+        userWalletUseCaseModule,
         platformModule()
     )
 }
@@ -133,6 +139,7 @@ val localDBRepos = module {
     single<HarvestUserLocal> { HarvestUserLocalImpl(get()) }
     single<ChatLocal> { ChatLocalImpl(get()) }
     single<AttachmentLocal> { AttachmentLocalImpl(get()) }
+    single<WalletLocal> { WalletLocalImpl(get()) }
 }
 
 val networkModule = module {
@@ -154,6 +161,8 @@ val commonModule = module {
     single<GroupApi> { GroupApiImpl(get()) }
     single<UserApi> { UserApiImpl(get()) }
     single<AttachmentApi> { AttachmentApiImpl(get()) }
+    single<TaskApi> { TaskApiImpl(get()) }
+    single<WalletApi> { WalletApiImpl(get()) }
     single { Settings() }
 }
 
@@ -188,6 +197,8 @@ val chatApiUseCaseModule = module {
     single { CreateAssistantRemindersUseCase(get()) }
     single { CreateAssistantToDosUseCase(get()) }
     single { GetAssistantNotesUseCase(get()) }
+    single { GetAssistantRemindersUseCase(get()) }
+    single { GetAssistantToDosUseCase(get()) }
 }
 
 val groupApiUseCaseModule = module {
@@ -233,12 +244,23 @@ val userWorkUseCaseModule = module {
     single { GetWorkLogsForDateRangeUseCase(get()) }
 }
 
+val userTaskUseCaseModule = module {
+    single { SaveUserTasksUseCase(get()) }
+    single { GetUserTasksUseCase(get()) }
+}
+
+val userWalletUseCaseModule = module {
+    single { GenerateWalletUseCase(get()) }
+    single { DecryptWalletUseCase(get()) }
+    single { GetWalletUseCase(get()) }
+}
 
 class SharedComponent : KoinComponent {
     fun provideHarvestUserLocal(): HarvestUserLocal = get()
     fun provideChatLocal(): ChatLocal = get()
     fun provideAttachmentLocal(): AttachmentLocal = get()
     fun provideSettings(): Settings = get()
+    fun provideWalletLocal(): WalletLocal = get()
 }
 
 class UseCasesComponent : KoinComponent {
@@ -286,6 +308,17 @@ class UserProjectUseCaseComponent : KoinComponent {
     fun provideGetUserAssignedProjectsUseCase(): GetUserAssignedProjectsUseCase = get()
 }
 
+class UserTaskUseCaseComponent : KoinComponent {
+    fun provideSaveUserTasksUseCase(): SaveUserTasksUseCase = get()
+    fun provideGetUserTasksUseCase(): GetUserTasksUseCase = get()
+}
+
+class UserWalletUseCaseComponent : KoinComponent {
+    fun provideGenerateWalletUseCase(): GenerateWalletUseCase = get()
+    fun provideDecryptWalletUseCase(): DecryptWalletUseCase = get()
+    fun provideGetWalletUseCase(): GetWalletUseCase = get()
+}
+
 class UserWorkUseCaseComponent : KoinComponent {
     fun provideGetWorkLogsForDateRangeUseCase(): GetWorkLogsForDateRangeUseCase = get()
 }
@@ -305,6 +338,8 @@ class ChatApiUseCaseComponent : KoinComponent {
     fun provideCreateAssistantReminders(): CreateAssistantRemindersUseCase = get()
     fun provideCreateAssistantTodos(): CreateAssistantToDosUseCase = get()
     fun provideGetAssistantNotes(): GetAssistantNotesUseCase = get()
+    fun provideGetAssistantReminders(): GetAssistantRemindersUseCase = get()
+    fun provideGetAssistantToDos(): GetAssistantToDosUseCase = get()
 }
 
 class GroupApiUseCaseComponent : KoinComponent {

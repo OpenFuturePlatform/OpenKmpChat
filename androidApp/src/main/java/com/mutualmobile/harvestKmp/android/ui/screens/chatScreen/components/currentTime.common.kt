@@ -1,11 +1,12 @@
-import kotlinx.datetime.Instant
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
+import com.mutualmobile.harvestKmp.utils.now
+import kotlinx.datetime.*
 
 
 fun timeToString(seconds: Long): String {
     val instant: Instant = Instant.fromEpochMilliseconds(seconds)
     val localTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+    val now = LocalDateTime.now()
+    val durationDiff = now.toInstant(TimeZone.currentSystemDefault()).minus(instant)
 
     val m = localTime.minute
     val h = localTime.hour
@@ -21,9 +22,9 @@ fun timeToString(seconds: Long): String {
     } else {
         h.toString()
     }
-
-    if (h < 10)
+    if (durationDiff.inWholeDays < 1)
         return "$hh:$mm"
+
     return "$d $hh:$mm"
 }
 

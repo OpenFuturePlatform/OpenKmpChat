@@ -6,7 +6,7 @@ import com.mutualmobile.harvestKmp.domain.model.response.UserDetailResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 
 class GetUserDetailUseCase(private val userApi: UserApi) {
-    suspend operator fun invoke(username: String, email: String): NetworkResponse<UserDetailResponse> {
-        return userApi.getUserDetail(UserDetailRequest(username, email))
+    suspend operator fun invoke(email: String): NetworkResponse<UserDetailResponse> {
+        return userApi.getUserDetail(UserDetailRequest(email))
     }
 }

@@ -23,4 +23,6 @@ val viewModelModule = module {
     single { UserListViewModel()}
     single { AddGroupViewModel()}
     single { ContactProfileViewModel() }
+    single { TaskScreenViewModel() }
+    single { WalletScreenViewModel() }
 }

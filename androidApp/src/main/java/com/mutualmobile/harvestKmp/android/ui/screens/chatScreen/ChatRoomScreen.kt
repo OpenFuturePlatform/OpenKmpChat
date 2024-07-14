@@ -252,6 +252,7 @@ fun OneToOneChatCard(
 //                    DefaultProfilePicture(displayName = otherUserName)
 //                }
                 DefaultProfilePicture(displayName = otherUserName)
+
                 Column(modifier = Modifier.padding(start = 15.dp)) {
                     Text(
                         text = otherUserName,
@@ -322,17 +323,3 @@ fun FloatingActionButtonCompose(context: Context, navController: NavHostControll
     }
 }
 
-@Composable
-fun OutlinedButtonCompose(context: Context){
-    OutlinedButton(
-        onClick = { Toast.makeText(context, "This is a Circular Button with a + Icon", Toast.LENGTH_LONG).show()},
-        modifier= Modifier.size(30.dp),
-        shape = CircleShape,
-        border= BorderStroke(1.dp, Color(0XFF0F9D58)),
-        contentPadding = PaddingValues(0.dp),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor =  Color.Blue)
-    ) {
-        // Adding an Icon "Add" inside the Button
-        Icon(Icons.Default.Add ,contentDescription = "content description", tint= Color(0XFF0F9D58))
-    }
-}
