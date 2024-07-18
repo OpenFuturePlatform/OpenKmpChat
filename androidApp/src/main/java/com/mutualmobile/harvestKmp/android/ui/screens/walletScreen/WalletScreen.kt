@@ -26,15 +26,21 @@ import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.FloatingActionButtonCompose
+import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantDatePickerDialog
+import com.mutualmobile.harvestKmp.android.ui.screens.common.GenerateWalletDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.HarvestDialog
+import com.mutualmobile.harvestKmp.android.ui.screens.common.WalletDetailDialog
+import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.components.serverDateFormatter
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletListItem
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletSearchView
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
+import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.NewEntryScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.*
+import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import org.koin.androidx.compose.get
 
 
@@ -43,16 +49,16 @@ fun WalletScreen(
     navController: NavHostController,
     nesVm: NewEntryScreenViewModel = get(),
     userState: DataState,
-    psVm: WalletScreenViewModel = get(),
+    wsVm: WalletScreenViewModel = get(),
 ) {
 
     val scaffoldState = rememberScaffoldState()
     val mContext = LocalContext.current
 
-    LaunchedEffect(psVm.walletScreenNavigationCommands) {
-        when (psVm.walletScreenNavigationCommands) {
+    LaunchedEffect(wsVm.walletScreenNavigationCommands) {
+        when (wsVm.walletScreenNavigationCommands) {
             is NavigationPraxisCommand -> {
-                if ((psVm.walletScreenNavigationCommands as NavigationPraxisCommand).screen.isBlank()) {
+                if ((wsVm.walletScreenNavigationCommands as NavigationPraxisCommand).screen.isBlank()) {
                     navController clearBackStackAndNavigateTo HarvestRoutes.Screen.FIND_WORKSPACE
                 }
             }
@@ -61,9 +67,39 @@ fun WalletScreen(
 
     LaunchedEffect(userState) {
         when (userState) {
-            is SuccessState<*> -> { psVm.getUserWallets(userState = userState) }
+            is SuccessState<*> -> { wsVm.getUserWallets(userState = userState) }
             else -> Unit
         }
+    }
+
+    if (wsVm.isWalletGenerateDialogVisible) {
+        GenerateWalletDialog(
+            onDismiss = {
+                wsVm.isWalletGenerateDialogVisible = false
+                wsVm.blockchainType = BlockchainType.ETH
+                wsVm.password = ""
+            },
+            onConfirm = {
+                wsVm.generateWallet()
+            },
+            titleProvider = { MR.strings.assistant_datepicker_title.get() }
+        )
+    }
+    if (wsVm.isWalletDetailDialogVisible){
+        WalletDetailDialog(
+            onDismiss = {
+                wsVm.isWalletDetailDialogVisible = false
+                wsVm.currentWalletPrivateKey = ""
+                wsVm.currentWalletDecryptedPrivateKey = ""
+                wsVm.currentWalletAddress = ""
+                wsVm.password = ""
+            },
+            onConfirm = {
+                wsVm.decryptWallet()
+            },
+            titleProvider = { MR.strings.choose_wallet.get() },
+            wsVm = wsVm
+        )
     }
 
     Scaffold(
@@ -84,14 +120,14 @@ fun WalletScreen(
                     }
                 },
                 actions = {
-                    WalletSearchView(psVm.textState) { updatedState ->
-                        psVm.textState = updatedState
+                    WalletSearchView(wsVm.textState) { updatedState ->
+                        wsVm.textState = updatedState
                     }
                 },
                 contentPadding = WindowInsets.statusBars.asPaddingValues(),
             )
         },
-        floatingActionButton = { GenerateWalletButtonCompose(mContext, navController) },
+        floatingActionButton = { GenerateWalletButtonCompose(mContext, navController, wsVm) },
         floatingActionButtonPosition = FabPosition.End,
         isFloatingActionButtonDocked = true,
         scaffoldState = scaffoldState
@@ -99,35 +135,41 @@ fun WalletScreen(
         ) { bodyPadding ->
 
         Column(modifier = Modifier.padding(bodyPadding)) {
-            AnimatedVisibility(visible = psVm.currentWalletScreenState is LoadingState) {
+            AnimatedVisibility(visible = wsVm.currentWalletScreenState is LoadingState) {
                 CircularProgressIndicator(modifier = Modifier.fillMaxWidth())
             }
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                val searchedText = psVm.textState.text
-                psVm.filteredWalletListMap = if (searchedText.isEmpty()) {
-                    psVm.walletListMap
+                val searchedText = wsVm.textState.text
+                wsVm.filteredWalletListMap = if (searchedText.isEmpty()) {
+                    wsVm.walletListMap
                 } else {
-                    psVm.walletListMap.filter { it.blockchainType?.contains(searchedText, true) == true}
+                    wsVm.walletListMap.filter { it.blockchainType?.contains(searchedText, true) == true}
                 }
-                items(psVm.filteredWalletListMap) { task ->
+                items(wsVm.filteredWalletListMap) { wallet ->
                     WalletListItem(
-                        label = task.blockchainType + " " + task.address,
-                        onItemClick = { selectedWallet ->
-                            //nesVm.updateCurrentProjectName(selectedWallet)
-                            Toast.makeText(mContext, task.address, Toast.LENGTH_SHORT).show()
-                        })
+                        blokchainType = wallet.blockchainType!!,
+                        address = wallet.address!!,
+                        privateKey = wallet.privateKey!!,
+                        onItemClick = {
+                            //Toast.makeText(mContext, wallet.address, Toast.LENGTH_SHORT).show()
+                            wsVm.isWalletDetailDialogVisible = true
+                            wsVm.currentWalletAddress = wallet.address!!
+                            wsVm.currentWalletPrivateKey = wallet.privateKey!!
+                        },
+                        wsVm = wsVm
+                    )
                 }
 
             }
         }
-        HarvestDialog(praxisCommand = psVm.walletScreenNavigationCommands, onConfirm = {
-            psVm.walletScreenNavigationCommands = null
+        HarvestDialog(praxisCommand = wsVm.walletScreenNavigationCommands, onConfirm = {
+            wsVm.walletScreenNavigationCommands = null
         })
     }
 }
 
 @Composable
-fun GenerateWalletButtonCompose(context: Context, navController: NavHostController){
+fun GenerateWalletButtonCompose(context: Context, navController: NavHostController, wsVm: WalletScreenViewModel){
 
 //    OutlinedButton(
 //        onClick = { Toast.makeText(context, "This is a Circular Button with a + Icon", Toast.LENGTH_LONG).show()},
@@ -145,8 +187,8 @@ fun GenerateWalletButtonCompose(context: Context, navController: NavHostControll
         shape = MaterialTheme.shapes.large.copy(CornerSize(percent = 40)),
         backgroundColor = MaterialTheme.colors.primary,
         contentColor = Color.White,
-        //onClick = { navController.navigate(HarvestRoutes.Screen.ADD_ACTION) }
-        onClick = { Toast.makeText(context, "This will generate wallet", Toast.LENGTH_SHORT).show()},
+        onClick = { wsVm.isWalletGenerateDialogVisible = true }
+        //onClick = { Toast.makeText(context, "This will generate wallet", Toast.LENGTH_SHORT).show()},
     ) {
         Icon(Icons.Default.Add, contentDescription = null)
     }

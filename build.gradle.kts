@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 buildscript {
     repositories {
         gradlePluginPortal()
@@ -19,6 +21,13 @@ allprojects {
         maven(url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-js-wrappers")
         maven(url = "https://jitpack.io")
         maven(url = "https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
+        maven {
+            url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
+            credentials {
+                username = "physcoom"
+                password = "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"
+            }
+        }
     }
 }
 

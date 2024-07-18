@@ -133,6 +133,7 @@ fun initSqlDelightExperimentalDependencies() = startKoin {
 
 val jsSqliteDeps = module {
     single<HarvestUserLocal> { HarvestUserLocalImpl() }
+    single<WalletLocal> { WalletLocalImpl() }
 }
 
 val localDBRepos = module {

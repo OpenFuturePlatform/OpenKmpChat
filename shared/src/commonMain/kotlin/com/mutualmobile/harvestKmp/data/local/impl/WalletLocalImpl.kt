@@ -11,6 +11,7 @@ class WalletLocalImpl(override var driver: SqlDriver? = null) : WalletLocal {
     private val database by lazy { BaseIoDB(driver!!) }
     private val dbQuery by lazy { database.walletDBQueries }
     override fun saveWallet(input: Wallet) {
+        println("Save Wallet locally: $input")
         dbQuery.insertWallet(
             uid = input.id.toString(),
             userId = input.userId,

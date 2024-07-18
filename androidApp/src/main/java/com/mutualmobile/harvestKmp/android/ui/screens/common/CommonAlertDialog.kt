@@ -1,17 +1,32 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.common
 
-import androidx.compose.foundation.background
+import android.R
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.mutualmobile.harvestKmp.MR
@@ -21,6 +36,7 @@ import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.TaskScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
+import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import com.mutualmobile.harvestKmp.domain.model.request.TaskRequest
 import com.mutualmobile.harvestKmp.domain.model.response.AssistantNotesResponse
 import com.mutualmobile.harvestKmp.domain.model.response.AssistantReminderResponse
@@ -211,13 +227,15 @@ fun AssistantToDo(
                         color = Color.White
                     ),
                     onClick = {
-                        tsVm.saveUserTasks(taskRequest = TaskRequest(
-                            assignor = null,
-                            assignee = message.executor!!,
-                            taskTitle =  message.context!!,
-                            taskDescription = message.description!!,
-                            taskDate = LocalDate.now()
-                        ))
+                        tsVm.saveUserTasks(
+                            taskRequest = TaskRequest(
+                                assignor = null,
+                                assignee = message.executor!!,
+                                taskTitle = message.context!!,
+                                taskDescription = message.description!!,
+                                taskDate = LocalDate.now()
+                            )
+                        )
                     }
                 ) {
                     Text(
@@ -319,48 +337,364 @@ fun CommonAlertDialogPreview() {
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun GenerateWalletDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     titleProvider: @Composable () -> String,
-    currentUser: String,
-    tsVm: WalletScreenViewModel = get(),
+    wsVm: WalletScreenViewModel = get(),
 ) {
 
+    val categories = arrayOf("ETH", "BTC", "BNB")
+    var expanded by remember { mutableStateOf(false) }
+    var blockchain by remember { mutableStateOf(categories[0]) }
+
+    val txtFieldError = remember { mutableStateOf("") }
+    val txtField = remember { mutableStateOf("") }
+
     Dialog(onDismissRequest = { onDismiss() }, properties = DialogProperties()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .defaultMinSize(minHeight = 72.dp)
-                    .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colors.primary,
-                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-                    )
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center
+            Box(
+                contentAlignment = Alignment.Center
             ) {
-                item { Spacer(Modifier.size(20.dp)) }
-                item {
-                    Box(Modifier.height(70.dp))
+                Column(modifier = Modifier.padding(20.dp)) {
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Generate wallet",
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                fontFamily = FontFamily.Default,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "",
+                            tint = colorResource(R.color.darker_gray),
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp)
+                                .clickable { wsVm.isWalletGenerateDialogVisible = false }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    ExposedDropdownMenuBox(
+                        modifier = Modifier.fillMaxWidth()
+                            .border(
+                            BorderStroke(
+                                width = 2.dp,
+                                color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                            )
+                        ),
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded }
+                    ) {
+                        TextField(
+                            value = blockchain,
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(
+                                    expanded = expanded
+                                )
+                            }
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            categories.forEach { item ->
+                                DropdownMenuItem(
+                                    content = { Text(text = item) },
+                                    onClick = {
+                                        blockchain = item
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+
+                    }
+
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(
+                                    width = 2.dp,
+                                    color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                )
+                            ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        placeholder = { Text(text = "Enter password") },
+                        value = txtField.value,
+                        onValueChange = {
+                            txtField.value = it.take(10)
+                        })
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
+                        Button(
+                            onClick = {
+                                if (txtField.value.isEmpty()) {
+                                    txtFieldError.value = "Password can not be empty"
+                                    return@Button
+                                }
+                                wsVm.password = txtField.value
+                                wsVm.isWalletGenerateDialogVisible = false
+                                wsVm.blockchainType = BlockchainType.valueOf(blockchain)
+                                onConfirm()
+                            },
+                            shape = RoundedCornerShape(50.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                        ) {
+                            Text(text = "Done")
+                        }
+                    }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun WalletDetailDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    titleProvider: @Composable () -> String,
+    wsVm: WalletScreenViewModel
+) {
+    val clipboardManager = LocalClipboardManager.current
+    val txtFieldError = remember { mutableStateOf("") }
+    val txtField = remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = {
+        onDismiss()
+    }, properties = DialogProperties()) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Wallet Detail",
+                            style = TextStyle(
+                                fontSize = 24.sp,
+                                fontFamily = FontFamily.Default,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "",
+                            tint = colorResource(R.color.darker_gray),
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp)
+                                .clickable { onDismiss() }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(
+                        text = "Address",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = wsVm.currentWalletAddress,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                    Button(onClick = {
+                        clipboardManager.setText(AnnotatedString((wsVm.currentWalletAddress)))
+                    }) {
+                        Text("Copy Address")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (wsVm.currentWalletDecryptedPrivateKey != "") {
+                        Text(
+                            text = wsVm.currentWalletDecryptedPrivateKey,
+                            fontSize = 18.sp,
+                            color = Color.Black,
+                            modifier = Modifier.padding(all = 8.dp)
+                        )
+                        Button(onClick = {
+                            clipboardManager.setText(AnnotatedString((wsVm.currentWalletDecryptedPrivateKey)))
+                        }) {
+                            Text("Copy Private Key")
+                        }
+                    }
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(
+                                    width = 2.dp,
+                                    color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                )
+                            ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        placeholder = { Text(text = "Enter password to decrypt") },
+                        value = txtField.value,
+                        onValueChange = {
+                            txtField.value = it.take(10)
+                        })
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Buttons
+//                    Row(
+//                        horizontalArrangement = Arrangement.End,
+//                        modifier = Modifier.fillMaxWidth()
+//                    ) {
+//                        TextButton(onClick = {
+//                            onDismiss()
+//                        }) {
+//                            Text(text = "CANCEL")
+//                        }
+//                        Spacer(modifier = Modifier.width(4.dp))
+//                        TextButton(onClick = {
+//                            if (txtField.value.isEmpty()) {
+//                                txtFieldError.value = "Password can not be empty"
+//                                return@Button
+//                            }
+//                            wsVm.password = txtField.value
+//                            onConfirm()
+//                        }) {
+//                            Text(text = "DECRYPT")
+//                        }
+//                    }
+
+                    Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
+                        Button(
+                            onClick = {
+                                if (txtField.value.isEmpty()) {
+                                    txtFieldError.value = "Password can not be empty"
+                                    return@Button
+                                }
+                                wsVm.password = txtField.value
+
+                                onConfirm()
+                            },
+                            shape = RoundedCornerShape(50.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                        ) {
+                            Text(text = "Done")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+//Layout
+@Composable
+fun CustomDialogUI(modifier: Modifier = Modifier, openDialogCustom: MutableState<Boolean>) {
+    Card(
+        //shape = MaterialTheme.shapes.medium,
+        shape = RoundedCornerShape(10.dp),
+        // modifier = modifier.size(280.dp, 240.dp)
+        modifier = Modifier.padding(10.dp, 5.dp, 10.dp, 10.dp),
+        elevation = 8.dp
+    ) {
+        Column(
+            modifier
+                .background(Color.White)
+        ) {
+
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Get Updates",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(top = 5.dp)
+                        .fillMaxWidth(),
+                    style = MaterialTheme.typography.h4,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = "Allow Permission to send you notifications when new art styles added.",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(top = 10.dp, start = 25.dp, end = 25.dp)
+                        .fillMaxWidth(),
+                    style = MaterialTheme.typography.h5
+                )
             }
 
             Row(
-                modifier = Modifier
-                    //.fillMaxWidth()
-                    .background(color = Color.White),
-                horizontalArrangement = Arrangement.Center,
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp)
+                    .background(Color.Cyan),
+                horizontalArrangement = Arrangement.SpaceAround
             ) {
-                TextButton(onClick = onDismiss) {
+
+                TextButton(onClick = {
+                    openDialogCustom.value = false
+                }) {
+
                     Text(
-                        text = "Ok",
+                        "Not Now",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Cyan,
+                        modifier = Modifier.padding(top = 5.dp, bottom = 5.dp)
+                    )
+                }
+                TextButton(onClick = {
+                    openDialogCustom.value = false
+                }) {
+                    Text(
+                        "Allow",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.Black,
+                        modifier = Modifier.padding(top = 5.dp, bottom = 5.dp)
                     )
                 }
             }

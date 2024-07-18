@@ -60,6 +60,10 @@ import org.koin.android.ext.android.get
 class MainActivity : ComponentActivity() {
     val mainActivityViewModel: MainActivityViewModel = get()
 
+    init {
+        System.loadLibrary("TrustWalletCore")
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         setupSplashScreen()

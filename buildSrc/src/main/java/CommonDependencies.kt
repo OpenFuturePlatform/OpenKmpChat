@@ -28,7 +28,9 @@ object CommonMainDependencies {
         "org.jetbrains.kotlinx:kotlinx-serialization-core:${CommonDependencyVersions.kotlinxSerialization}",
         "org.jetbrains.kotlinx:kotlinx-coroutines-core:${CommonDependencyVersions.coroutines}",
         "com.google.code.gson:gson:2.10.1",
-        "io.github.novacrypto:BIP39:2018.10.06"
+//        "org.web3j:core:5.0.0",
+//        "org.bitcoinj:bitcoinj-core:0.16.1",
+//        "io.github.novacrypto:BIP39:2018.10.06",
     )
 
     val api = listOf(

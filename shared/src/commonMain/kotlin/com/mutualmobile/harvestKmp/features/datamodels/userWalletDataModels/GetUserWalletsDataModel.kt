@@ -5,9 +5,12 @@ import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.di.UserWalletUseCaseComponent
+import com.mutualmobile.harvestKmp.domain.model.Wallet
 import com.mutualmobile.harvestKmp.domain.model.request.CreateWalletRequest
 import com.mutualmobile.harvestKmp.domain.model.request.DecryptWalletRequest
+import com.mutualmobile.harvestKmp.domain.model.response.WalletResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,10 +25,6 @@ class GetUserWalletsDataModel() :
 
     private var currentLoadingJob: Job? = null
 
-    private val salt = "NaCl"
-    private val initVector = "IIIIIIIIIIIIIIII"
-    private val iterations = 1000
-    private val keyLength = 256
     private val walletLocal = SharedComponent().provideWalletLocal()
 
     private val userWalletUseCaseComponent = UserWalletUseCaseComponent()
@@ -67,6 +66,31 @@ class GetUserWalletsDataModel() :
                     intPraxisCommand.emit(NavigationPraxisCommand(""))
                 }
             }
+        }
+    }
+
+    fun getLocalUserWallets() {
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+            val walletResponses = walletLocal.getAll().map {
+                WalletResponse(
+                    address = it.address,
+                    privateKey = it.privateKey,
+                    blockchainType = it.blockchainType
+                )
+            }
+            _dataFlow.emit(SuccessState(walletResponses))
+
+        }
+    }
+
+    fun saveWalletLocal(input: Wallet){
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+            walletLocal.saveWallet(input)
+            _dataFlow.emit(SuccessState(listOf(WalletResponse(address = input.address, blockchainType = input.blockchainType.name, privateKey = input.privateKey))))
         }
     }
 
