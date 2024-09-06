@@ -19,11 +19,11 @@ class OpenChatApp : Application() {
             modules(viewModelModule)
         }
         GlobalScope.launch {
-            precheckSqlite()
+            preCheckSqlite()
         }
     }
 
-    private suspend fun precheckSqlite() {
+    private suspend fun preCheckSqlite() {
         if (sharedComponent.provideHarvestUserLocal().driver == null) {
             val driver = DriverFactory(context = this).createDriverBlocking()
             sharedComponent.provideHarvestUserLocal().driver = driver
@@ -31,6 +31,10 @@ class OpenChatApp : Application() {
         if (sharedComponent.provideChatLocal().driver == null) {
             val driver = DriverFactory(context = this).createDriverBlocking()
             sharedComponent.provideChatLocal().driver = driver
+        }
+        if (sharedComponent.provideWalletLocal().driver == null) {
+            val driver = DriverFactory(context = this).createDriverBlocking()
+            sharedComponent.provideWalletLocal().driver = driver
         }
     }
 }

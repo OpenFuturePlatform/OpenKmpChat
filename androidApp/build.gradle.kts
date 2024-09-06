@@ -61,6 +61,12 @@ android {
 dependencies {
     implementation(project(":shared"))
     implementation("androidx.activity:activity-ktx:1.6.1")
+
+    // Firebase Cloud Messaging
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("com.google.firebase:firebase-analytics")
+    //implementation("com.google.firebase:firebase-installations:18.0.0")
+
     AndroidDependencies.platforms.forEach { platformDependency ->
         implementation(platform(platformDependency))
     }

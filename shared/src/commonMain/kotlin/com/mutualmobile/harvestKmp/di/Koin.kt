@@ -29,6 +29,10 @@ import com.mutualmobile.harvestKmp.data.network.org.impl.OrgProjectsApiImpl
 import com.mutualmobile.harvestKmp.data.network.org.impl.OrgUsersApiImpl
 import com.mutualmobile.harvestKmp.data.network.org.impl.UserProjectApiImpl
 import com.mutualmobile.harvestKmp.data.network.org.impl.UserWorkApiImpl
+import com.mutualmobile.harvestKmp.data.network.state.StateApi
+import com.mutualmobile.harvestKmp.data.network.state.impl.StateApiImpl
+import com.mutualmobile.harvestKmp.data.network.wallet.WalletApi
+import com.mutualmobile.harvestKmp.data.network.wallet.impl.WalletApiImpl
 import com.mutualmobile.harvestKmp.domain.model.response.LoginResponse
 import com.mutualmobile.harvestKmp.domain.usecases.CurrentUserLoggedInUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.SaveSettingsUseCase
@@ -51,6 +55,8 @@ import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.GetListOf
 import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.GetProjectsFromIdsUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.UpdateProjectUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgUsersApiUseCases.FindUsersInOrgUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.GetBalanceUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.GetRatesUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userForgotPasswordApiUseCases.ForgotPasswordUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userForgotPasswordApiUseCases.ResetPasswordUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userProjectUseCases.AssignProjectsToUsersUseCase
@@ -62,6 +68,7 @@ import com.mutualmobile.harvestKmp.domain.usecases.userTaskUseCases.SaveUserTask
 import com.mutualmobile.harvestKmp.domain.usecases.userWalletUseCases.DecryptWalletUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userWalletUseCases.GenerateWalletUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userWalletUseCases.GetWalletUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.userWalletUseCases.SaveWalletUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userWorkUseCases.GetWorkLogsForDateRangeUseCase
 import com.russhwolf.settings.Settings
 import io.ktor.client.HttpClient
@@ -106,6 +113,7 @@ fun initSharedDependencies() = startKoin {
         groupApiUseCaseModule,
         userTaskUseCaseModule,
         userWalletUseCaseModule,
+        stateUseCaseModule,
         platformModule()
     )
 }
@@ -127,6 +135,7 @@ fun initSqlDelightExperimentalDependencies() = startKoin {
         groupApiUseCaseModule,
         userTaskUseCaseModule,
         userWalletUseCaseModule,
+        stateUseCaseModule,
         platformModule()
     )
 }
@@ -165,6 +174,7 @@ val commonModule = module {
     single<TaskApi> { TaskApiImpl(get()) }
     single<WalletApi> { WalletApiImpl(get()) }
     single { Settings() }
+    single<StateApi> { StateApiImpl(get()) }
 }
 
 val useCaseModule = module {
@@ -254,6 +264,12 @@ val userWalletUseCaseModule = module {
     single { GenerateWalletUseCase(get()) }
     single { DecryptWalletUseCase(get()) }
     single { GetWalletUseCase(get()) }
+    single { SaveWalletUseCase(get()) }
+}
+
+val stateUseCaseModule = module {
+    single { GetRatesUseCase(get()) }
+    single { GetBalanceUseCase(get()) }
 }
 
 class SharedComponent : KoinComponent {
@@ -314,10 +330,16 @@ class UserTaskUseCaseComponent : KoinComponent {
     fun provideGetUserTasksUseCase(): GetUserTasksUseCase = get()
 }
 
+class StateUseCaseComponent : KoinComponent {
+    fun provideGetRatesUseCase(): GetRatesUseCase = get()
+    fun provideGetBalanceUseCase(): GetBalanceUseCase = get()
+}
+
 class UserWalletUseCaseComponent : KoinComponent {
     fun provideGenerateWalletUseCase(): GenerateWalletUseCase = get()
     fun provideDecryptWalletUseCase(): DecryptWalletUseCase = get()
     fun provideGetWalletUseCase(): GetWalletUseCase = get()
+    fun provideSaveWalletUseCase(): SaveWalletUseCase = get()
 }
 
 class UserWorkUseCaseComponent : KoinComponent {

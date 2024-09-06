@@ -1,3 +1,6 @@
+import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -5,8 +8,12 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -110,14 +117,16 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
                         } else {
                             println("Message: ${message}")
 
-                            Box(Modifier.size(96.dp).padding(vertical = 4.dp, horizontal = 4.dp)
+                            Box(Modifier.size(96.dp)
+                                .padding(vertical = 4.dp, horizontal = 4.dp)
                                 .clip(RectangleShape) // Clip the box content
                                 .pointerInput(Unit) {
                                     detectTransformGestures { _, _, zoom, rotation ->
                                         scale.value *= zoom
                                         rotationState.value += rotation
                                     }
-                                }) {
+                                }
+                            ) {
 
                                 message.attachmentIds?.forEach {
                                     run {
@@ -155,6 +164,21 @@ fun ChatMessage(isMyMessage: Boolean, message: Message) {
 //                                        )
 
 
+                                    }
+                                }
+                                Row(
+                                    modifier = Modifier
+                                        .imePadding(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    IconButton(onClick = {
+
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreVert,
+                                            contentDescription = "Recordings",
+                                            tint = MaterialTheme.colors.primary
+                                        )
                                     }
                                 }
 

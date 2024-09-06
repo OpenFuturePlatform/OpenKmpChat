@@ -1,10 +1,9 @@
 package com.mutualmobile.harvestKmp.data.network
 
 object Endpoint {
-    //const val SPRING_BOOT_BASE_URL = "http://192.168.50.204:5001"
-    const val SPRING_BOOT_BASE_URL = "http://192.168.0.105:5001"
-    //const val SPRING_BOOT_BASE_URL = "http://35.199.50.38:8080"
-
+    private const val HOST_URL = "http://192.168.0.101"
+    const val SPRING_BOOT_BASE_URL = "$HOST_URL:5001"
+    const val STATE_URL = "$HOST_URL:8545"
 
     private const val API_URL = "/api/v1"
     private const val ADMIN = "/admin"
@@ -59,6 +58,9 @@ object Endpoint {
     const val LIST_CONTACTS = "$API_URL/user/all"
     const val USER_DETAIL = "$API_URL/user/userDetails"
     const val LIST_RECIPIENT_GROUP = "$CHAT_URL/front-messages?user="
+
+    const val RATES_URL = "/api/currency/rate/all"
+    const val BALANCE_URL = "/api/wallets/v2/balance"
 
     object Params {
         const val START_DATE = "startDate"

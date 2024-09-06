@@ -346,7 +346,7 @@ fun GenerateWalletDialog(
     wsVm: WalletScreenViewModel = get(),
 ) {
 
-    val categories = arrayOf("ETH", "BTC", "BNB")
+    val categories = arrayOf("ETH", "BTC", "BNB", "TRX")
     var expanded by remember { mutableStateOf(false) }
     var blockchain by remember { mutableStateOf(categories[0]) }
 
@@ -500,7 +500,7 @@ fun WalletDetailDialog(
             Box(
                 contentAlignment = Alignment.Center
             ) {
-                Column(modifier = Modifier.padding(10.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),

@@ -7,5 +7,6 @@ enum class BlockchainType(
 ) {
     ETH(1, "ETH"),
     BTC(2, "BTC"),
-    BNB(3, "BNB")
+    BNB(3, "BNB"),
+    TRX(4, "TRX")
 }

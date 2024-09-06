@@ -1,13 +1,10 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.walletScreen
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -20,34 +17,29 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
-import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.FloatingActionButtonCompose
-import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantDatePickerDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.GenerateWalletDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.HarvestDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.WalletDetailDialog
-import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.components.serverDateFormatter
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletListItem
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletSearchView
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.ui.utils.get
-import com.mutualmobile.harvestKmp.android.viewmodels.NewEntryScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.*
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
+import kotlinx.coroutines.delay
 import org.koin.androidx.compose.get
 
 
 @Composable
 fun WalletScreen(
     navController: NavHostController,
-    nesVm: NewEntryScreenViewModel = get(),
     userState: DataState,
     wsVm: WalletScreenViewModel = get(),
 ) {
@@ -59,16 +51,22 @@ fun WalletScreen(
         when (wsVm.walletScreenNavigationCommands) {
             is NavigationPraxisCommand -> {
                 if ((wsVm.walletScreenNavigationCommands as NavigationPraxisCommand).screen.isBlank()) {
-                    navController clearBackStackAndNavigateTo HarvestRoutes.Screen.FIND_WORKSPACE
+                    navController clearBackStackAndNavigateTo HarvestRoutes.Screen.SETTINGS
                 }
             }
         }
     }
 
     LaunchedEffect(userState) {
-        when (userState) {
-            is SuccessState<*> -> { wsVm.getUserWallets(userState = userState) }
-            else -> Unit
+        while(true) {
+            when (userState) {
+                is SuccessState<*> -> {
+                    wsVm.getUserWallets(userState = userState)
+                }
+
+                else -> Unit
+            }
+            delay(60000)
         }
     }
 
@@ -85,7 +83,7 @@ fun WalletScreen(
             titleProvider = { MR.strings.assistant_datepicker_title.get() }
         )
     }
-    if (wsVm.isWalletDetailDialogVisible){
+    if (wsVm.isWalletDetailDialogVisible) {
         WalletDetailDialog(
             onDismiss = {
                 wsVm.isWalletDetailDialogVisible = false
@@ -132,7 +130,7 @@ fun WalletScreen(
         isFloatingActionButtonDocked = true,
         scaffoldState = scaffoldState
 
-        ) { bodyPadding ->
+    ) { bodyPadding ->
 
         Column(modifier = Modifier.padding(bodyPadding)) {
             AnimatedVisibility(visible = wsVm.currentWalletScreenState is LoadingState) {
@@ -141,17 +139,19 @@ fun WalletScreen(
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 val searchedText = wsVm.textState.text
                 wsVm.filteredWalletListMap = if (searchedText.isEmpty()) {
-                    wsVm.walletListMap
+                    wsVm.wallets
                 } else {
-                    wsVm.walletListMap.filter { it.blockchainType?.contains(searchedText, true) == true}
+                    wsVm.wallets.filter { it.blockchainType?.contains(searchedText, true) == true }
                 }
                 items(wsVm.filteredWalletListMap) { wallet ->
+                    val walletKey = wallet.address+wallet.blockchainType
+                    val balance = if(wsVm.walletBalances.isNotEmpty() && wsVm.walletBalances.containsKey(walletKey)){ wsVm.walletBalances[walletKey] } else {"0"}
                     WalletListItem(
                         blokchainType = wallet.blockchainType!!,
                         address = wallet.address!!,
                         privateKey = wallet.privateKey!!,
+                        balance = balance!!,
                         onItemClick = {
-                            //Toast.makeText(mContext, wallet.address, Toast.LENGTH_SHORT).show()
                             wsVm.isWalletDetailDialogVisible = true
                             wsVm.currentWalletAddress = wallet.address!!
                             wsVm.currentWalletPrivateKey = wallet.privateKey!!
@@ -169,7 +169,7 @@ fun WalletScreen(
 }
 
 @Composable
-fun GenerateWalletButtonCompose(context: Context, navController: NavHostController, wsVm: WalletScreenViewModel){
+fun GenerateWalletButtonCompose(context: Context, navController: NavHostController, wsVm: WalletScreenViewModel) {
 
 //    OutlinedButton(
 //        onClick = { Toast.makeText(context, "This is a Circular Button with a + Icon", Toast.LENGTH_LONG).show()},

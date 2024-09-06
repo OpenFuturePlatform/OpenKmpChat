@@ -13,8 +13,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.ProgressIndicatorDefaults.IndicatorBackgroundOpacity
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Call
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -95,8 +97,7 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
                         .fillMaxWidth()
                         .background(MaterialTheme.colors.background)
                         .imePadding()
-                        .wrapContentHeight()
-                    ,
+                        .wrapContentHeight(),
                     colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
                     value = imageCaptionText,
                     placeholder = {
@@ -119,19 +120,24 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
                     },
                     trailingIcon = {
                         IconButton(
-                                onClick =  {
-                                        sendMessage(imageCaptionText, TextType.ATTACHMENT, selectedImage!!, selectedImageChecksum)
-                                        imageCaptionText = ""
-                                        selectedImage = null
-                                        photoUri = null
-                                    },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Send,
-                                    contentDescription = "Send",
-                                    tint = MaterialTheme.colors.primary
+                            onClick = {
+                                sendMessage(
+                                    imageCaptionText,
+                                    TextType.ATTACHMENT,
+                                    selectedImage!!,
+                                    selectedImageChecksum
                                 )
-                            }
+                                imageCaptionText = ""
+                                selectedImage = null
+                                photoUri = null
+                            },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Send,
+                                contentDescription = "Send",
+                                tint = MaterialTheme.colors.primary
+                            )
+                        }
 
                     }
                 )
@@ -173,22 +179,39 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
                     }
                 },
                 trailingIcon = {
-                    if (inputText.isNotEmpty()) {
-                        Row(
-                            modifier = Modifier
-                                //.imePadding()
-                                .clickable {
-                                    sendMessage(inputText, TextType.TEXT, null, null)
-                                    inputText = ""
-                                    selectedImage = null
-                                },
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
+                    Row(
+                        modifier = Modifier
+                            .imePadding(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+
+                        IconButton(onClick = {
+                            showImagePicker = true
+                            launcher.launch(
+                                PickVisualMediaRequest(
+                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                                )
+                            )
+                        }) {
                             Icon(
-                                imageVector = Icons.Default.Send,
-                                contentDescription = "Send",
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "Recordings",
                                 tint = MaterialTheme.colors.primary
                             )
+                        }
+
+                        if (inputText.isNotEmpty()) {
+                            IconButton(onClick = {
+                                sendMessage(inputText, TextType.TEXT, null, null)
+                                inputText = ""
+                                selectedImage = null
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Send,
+                                    contentDescription = "Send",
+                                    tint = MaterialTheme.colors.primary
+                                )
+                            }
                         }
                     }
                 }
@@ -250,7 +273,7 @@ private fun copy(source: InputStream, target: OutputStream) {
 }
 
 @Composable
-fun CustomLinearProgressBar(){
+fun CustomLinearProgressBar() {
     Column(modifier = Modifier.fillMaxWidth()) {
         LinearProgressIndicator(
             modifier = Modifier
