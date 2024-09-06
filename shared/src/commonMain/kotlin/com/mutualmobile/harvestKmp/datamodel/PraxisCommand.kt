@@ -70,6 +70,7 @@ object HarvestRoutes {
 
 
         const val CHAT_GPT = "chat-gpt"
+        const val CALL = "call"
 
         const val GROUP_WITH_PARTICIPANTS = CREATE_GROUP
             .plus(BROWSER_QUERY)

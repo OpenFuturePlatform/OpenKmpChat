@@ -8,12 +8,32 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.rememberScaffoldState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -28,13 +48,13 @@ import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantDatePicker
 import com.mutualmobile.harvestKmp.android.ui.screens.common.CommonAlertDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultGroupPicture
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultProfilePicture
-import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.components.formatter
 import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.components.serverDateFormatter
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.ChatPrivateViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
+import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.CALL
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.domain.model.ChatUser
@@ -43,8 +63,6 @@ import com.mutualmobile.harvestKmp.domain.model.TextType
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import kotlinx.datetime.Clock
 import org.koin.androidx.compose.get
-import java.util.*
-import kotlin.streams.toList
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
@@ -85,7 +103,14 @@ fun ChatPrivateScreen(
                     )
                 },
                 actions = {
-
+                    IconButton(onClick = {
+                        navController.navigate(CALL)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Phone,
+                            contentDescription = "Call",
+                        )
+                    }
                     IconButton(onClick = { menuExpanded = !menuExpanded }) {
                         Icon(
                             imageVector = Icons.Filled.MoreVert,

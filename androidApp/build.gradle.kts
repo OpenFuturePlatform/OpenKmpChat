@@ -61,6 +61,7 @@ android {
 dependencies {
     implementation(project(":shared"))
     implementation("androidx.activity:activity-ktx:1.6.1")
+    implementation("co.daily:client:0.23.0")
     AndroidDependencies.platforms.forEach { platformDependency ->
         implementation(platform(platformDependency))
     }

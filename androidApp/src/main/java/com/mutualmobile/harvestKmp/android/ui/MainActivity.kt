@@ -35,6 +35,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.navigation.NavigationItem
+import com.mutualmobile.harvestKmp.android.ui.screens.callScreen.CallScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.*
 import com.mutualmobile.harvestKmp.android.ui.screens.homeScreen.UserHomeScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoginScreen
@@ -227,6 +228,13 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     userState = mainActivityViewModel.getUserState,
                                     _participants = it.arguments?.getString("participants")
+                                )
+                            }
+                            composable(
+                                HarvestRoutes.Screen.CALL
+                            ) {
+                                CallScreen(
+                                    navController = navController
                                 )
                             }
 

@@ -77,6 +77,7 @@ object AndroidMainDependencies {
     // File picker
     //"com.mohamedrejeb.calf:calf-file-picker:0.4.0"
     //"com.github.mahdiasd:ComposeBottomDialogFilePicker:1.0.1"
+    "co.daily:client:0.23.0"
   )
 }
 
