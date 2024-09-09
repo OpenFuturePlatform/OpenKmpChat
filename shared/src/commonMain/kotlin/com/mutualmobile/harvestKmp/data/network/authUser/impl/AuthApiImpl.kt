@@ -1,11 +1,11 @@
 package com.mutualmobile.harvestKmp.data.network.authUser.impl
 
 import com.mutualmobile.harvestKmp.data.network.Endpoint
-import com.mutualmobile.harvestKmp.data.network.UserRole
 import com.mutualmobile.harvestKmp.data.network.authUser.AuthApi
 import com.mutualmobile.harvestKmp.data.network.getSafeNetworkResponse
 import com.mutualmobile.harvestKmp.domain.model.request.*
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
+import com.mutualmobile.harvestKmp.domain.model.response.FcmTokenResponse
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.domain.model.response.LoginResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
@@ -20,11 +20,11 @@ import io.ktor.http.contentType
 
 class AuthApiImpl(private val httpClient: HttpClient) : AuthApi {
 
-    override suspend fun fcmToken(user: User): NetworkResponse<ApiResponse<LoginResponse>> =
+    override suspend fun fcmToken(fcmToken: FcmToken): NetworkResponse<ApiResponse<FcmTokenResponse>> =
         getSafeNetworkResponse {
-            httpClient.post("${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.FCM_TOKEN}") {
+            httpClient.post("${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.FCM_TOKEN}/add") {
                 contentType(ContentType.Application.Json)
-                setBody(user)
+                setBody(fcmToken)
             }
         }
 
@@ -34,7 +34,7 @@ class AuthApiImpl(private val httpClient: HttpClient) : AuthApi {
         email: String,
         password: String,
         //company: String
-    ): NetworkResponse<ApiResponse<HarvestUser>> {
+    ): NetworkResponse<ApiResponse<OpenUser>> {
         return getSafeNetworkResponse {
             httpClient.post("${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.SIGNUP}") {
                 contentType(ContentType.Application.Json)
@@ -56,7 +56,7 @@ class AuthApiImpl(private val httpClient: HttpClient) : AuthApi {
         lastName: String,
         email: String,
         password: String
-    ): NetworkResponse<ApiResponse<HarvestUser>> {
+    ): NetworkResponse<ApiResponse<OpenUser>> {
         return getSafeNetworkResponse {
             httpClient.post("${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.SIGNUP}") {
                 contentType(ContentType.Application.Json)
@@ -97,7 +97,7 @@ class AuthApiImpl(private val httpClient: HttpClient) : AuthApi {
     override suspend fun changePassword(
         password: String,
         oldPassword: String,
-    ): NetworkResponse<ApiResponse<HarvestOrganization>> = getSafeNetworkResponse {
+    ): NetworkResponse<ApiResponse<OpenOrganization>> = getSafeNetworkResponse {
         httpClient.post("${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.CHANGE_PASSWORD}") {
             contentType(ContentType.Application.Json)
             setBody(ChangePassword(password = password, oldPass = oldPassword))

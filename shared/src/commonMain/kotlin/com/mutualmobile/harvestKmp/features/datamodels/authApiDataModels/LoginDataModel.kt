@@ -5,7 +5,9 @@ import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.di.AuthApiUseCaseComponent
+import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.di.UseCasesComponent
+import com.mutualmobile.harvestKmp.domain.model.request.FcmToken
 import com.mutualmobile.harvestKmp.domain.model.response.LoginResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import kotlinx.coroutines.cancel
@@ -22,6 +24,9 @@ class LoginDataModel :
 
     private val useCasesComponent = UseCasesComponent()
     private val authApiUseCasesComponent = AuthApiUseCaseComponent()
+    private val tokenLocal = SharedComponent().provideTokenLocal()
+
+    private val fcmUseCase = authApiUseCasesComponent.provideFcmTokenUseCase()
     private val loginUseCase = authApiUseCasesComponent.provideLoginUseCase()
     private val saveSettingsUseCase = useCasesComponent.provideSaveSettingsUseCase()
     private val provideLogoutUseCase = authApiUseCasesComponent.provideLogoutUseCase()
@@ -86,6 +91,25 @@ class LoginDataModel :
                     token,
                     refreshToken
                 )
+            }
+        }
+    }
+
+    fun saveFcmToken(
+        fcmToken: String,
+        userId: String
+    ) {
+        dataModelScope.launch(exceptionHandler) {
+            when (val response = fcmUseCase(FcmToken(token = fcmToken, userId = userId))) {
+                is NetworkResponse.Success -> {
+                    println("fcm save response ${response.data.data}")
+                }
+
+                is NetworkResponse.Failure -> {
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                }
             }
         }
     }

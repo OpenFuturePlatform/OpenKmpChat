@@ -1,10 +1,8 @@
 package com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels
 
 import com.mutualmobile.harvestKmp.datamodel.*
-import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withOrgId
 import com.mutualmobile.harvestKmp.di.AuthApiUseCaseComponent
-import com.mutualmobile.harvestKmp.domain.model.request.HarvestOrganization
-import com.mutualmobile.harvestKmp.domain.model.request.HarvestUser
+import com.mutualmobile.harvestKmp.domain.model.request.OpenUser
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import kotlinx.coroutines.Job
@@ -98,7 +96,7 @@ class SignUpDataModel() :
         println("FAILED, ${signUpResponse.throwable.message}")
     }
 
-    private suspend fun handleSuccessSignup(signUpResponse: NetworkResponse.Success<ApiResponse<HarvestUser>>) {
+    private suspend fun handleSuccessSignup(signUpResponse: NetworkResponse.Success<ApiResponse<OpenUser>>) {
         _dataFlow.emit(SuccessState(signUpResponse.data))
         signUpResponse.data.data?.let {
             this.intPraxisCommand.emit(

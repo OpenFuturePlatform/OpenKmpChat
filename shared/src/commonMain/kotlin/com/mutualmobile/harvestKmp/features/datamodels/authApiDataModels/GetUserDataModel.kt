@@ -1,12 +1,12 @@
 package com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels
 
-import com.mutualmobile.harvestKmp.data.network.UserRole
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.di.AuthApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
+import com.mutualmobile.harvestKmp.domain.model.request.FcmToken
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import kotlinx.coroutines.Job
@@ -24,6 +24,7 @@ class GetUserDataModel :
     private var currentLoadingJob: Job? = null
     private val authApiUseCasesComponent = AuthApiUseCaseComponent()
     private val getUserUseCase = authApiUseCasesComponent.provideGetNetworkUserUseCase()
+    private val fcmUseCase = authApiUseCasesComponent.provideFcmTokenUseCase()
     private val harvestLocal = SharedComponent().provideHarvestUserLocal()
 
     fun getUser(forceFetchFromNetwork: Boolean = false) {
@@ -93,5 +94,28 @@ class GetUserDataModel :
 
     override fun refresh() {
 
+    }
+
+    fun saveFcmToken(token: String){
+        println("Save fcm token $token")
+        dataModelScope.launch(exceptionHandler) {
+
+            harvestLocal.getUser()?.let { user ->
+                println("fcm user ${user.email}")
+                when (fcmUseCase(
+                    FcmToken(token = token, userId = user.email)
+                )) {
+                    is NetworkResponse.Success -> {
+                    }
+
+                    is NetworkResponse.Failure -> {
+                    }
+
+                    is NetworkResponse.Unauthorized -> {
+
+                    }
+                }
+            }
+        }
     }
 }

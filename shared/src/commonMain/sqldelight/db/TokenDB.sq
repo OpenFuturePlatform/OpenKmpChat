@@ -1,0 +1,13 @@
+CREATE TABLE firebase_token(
+    token TEXT,
+    time INTEGER
+);
+
+insertToken:
+INSERT OR REPLACE INTO firebase_token(token, time) VALUES(?,?);
+
+selectAllTokens:
+SELECT * FROM firebase_token ORDER BY time DESC;
+
+deleteAllTokens:
+DELETE FROM firebase_token;

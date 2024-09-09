@@ -1,13 +1,7 @@
 package com.mutualmobile.harvestKmp.di
 
-import com.mutualmobile.harvestKmp.data.local.AttachmentLocal
-import com.mutualmobile.harvestKmp.data.local.ChatLocal
-import com.mutualmobile.harvestKmp.data.local.impl.ChatLocalImpl
-import com.mutualmobile.harvestKmp.data.local.HarvestUserLocal
-import com.mutualmobile.harvestKmp.data.local.WalletLocal
-import com.mutualmobile.harvestKmp.data.local.impl.AttachmentLocalImpl
-import com.mutualmobile.harvestKmp.data.local.impl.HarvestUserLocalImpl
-import com.mutualmobile.harvestKmp.data.local.impl.WalletLocalImpl
+import com.mutualmobile.harvestKmp.data.local.*
+import com.mutualmobile.harvestKmp.data.local.impl.*
 import com.mutualmobile.harvestKmp.data.network.Constants
 import com.mutualmobile.harvestKmp.data.network.Endpoint
 import com.mutualmobile.harvestKmp.data.network.Endpoint.REFRESH_TOKEN
@@ -150,6 +144,7 @@ val localDBRepos = module {
     single<ChatLocal> { ChatLocalImpl(get()) }
     single<AttachmentLocal> { AttachmentLocalImpl(get()) }
     single<WalletLocal> { WalletLocalImpl(get()) }
+    single<TokenLocal> { TokenLocalImpl(get()) }
 }
 
 val networkModule = module {
@@ -188,7 +183,7 @@ val authApiUseCaseModule = module {
     single { FcmTokenUseCase(get()) }
     single { GetUserUseCase(get()) }
     single { LoginUseCase(get()) }
-    single { LogoutUseCase(get(), get(), get(), get()) }
+    single { LogoutUseCase(get(), get(), get(), get(), get()) }
     single { NewOrgSignUpUseCase(get()) }
 }
 
@@ -278,6 +273,7 @@ class SharedComponent : KoinComponent {
     fun provideAttachmentLocal(): AttachmentLocal = get()
     fun provideSettings(): Settings = get()
     fun provideWalletLocal(): WalletLocal = get()
+    fun provideTokenLocal(): TokenLocal = get()
 }
 
 class UseCasesComponent : KoinComponent {

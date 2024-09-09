@@ -5,14 +5,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.messaging.FirebaseMessaging
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.domain.model.request.HarvestOrganization
+import com.mutualmobile.harvestKmp.di.AuthApiUseCaseComponent
+import com.mutualmobile.harvestKmp.domain.model.request.OpenOrganization
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels.GetUserDataModel
 import com.mutualmobile.harvestKmp.features.datamodels.orgApiDataModels.FindOrgByIdDataModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+
 
 class MainActivityViewModel : ViewModel() {
     private val getUserDataModel = GetUserDataModel()
@@ -21,11 +24,12 @@ class MainActivityViewModel : ViewModel() {
     var getUserState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
         private set
     var user: GetUserResponse? by mutableStateOf(null)
-    var userOrganization: HarvestOrganization? by mutableStateOf(null)
+    var userOrganization: OpenOrganization? by mutableStateOf(null)
 
     val doesLocalUserExist: Boolean = getUserDataModel.getLocalUser() != null
 
     init {
+        println("Called MainActivityViewModel init")
         fetchUser()
     }
 
@@ -35,8 +39,12 @@ class MainActivityViewModel : ViewModel() {
                 getUserState = newUserState
                 if (newUserState is PraxisDataModel.SuccessState<*>) {
                     user = newUserState.data as? GetUserResponse
-                    //fetchUserOrganization()
-                    //fetchUserChats
+
+//                    FirebaseMessaging.getInstance().token.addOnSuccessListener { fcmToken ->
+//                        println("FcmToken: $fcmToken")
+//                        getUserDataModel.saveFcmToken(fcmToken)
+//                    }
+
                 }
             }.launchIn(viewModelScope)
             activate()
@@ -47,7 +55,7 @@ class MainActivityViewModel : ViewModel() {
         with(findOrgByIdDataModel) {
             dataFlow.onEach { newOrgState ->
                 if (newOrgState is PraxisDataModel.SuccessState<*>) {
-                    userOrganization = (newOrgState.data as? ApiResponse<HarvestOrganization>)?.data
+                    userOrganization = (newOrgState.data as? ApiResponse<OpenOrganization>)?.data
                 }
             }.launchIn(viewModelScope)
             user?.orgId?.let { nnOrgId ->

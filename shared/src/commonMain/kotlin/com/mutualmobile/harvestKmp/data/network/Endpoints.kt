@@ -16,7 +16,7 @@ object Endpoint {
     const val LOGIN = "$UN_AUTH_API/login"
     const val FORGOT_PASSWORD = "$UN_AUTH_API/forgotPassword"
     const val RESET_PASSWORD_ENDPOINT = "$UN_AUTH_API/resetPassword"
-    const val FCM_TOKEN = "$API_URL/fcmToken"
+    const val FCM_TOKEN = "$API_URL/token"
     const val CHANGE_PASSWORD = "$API_URL/changePassword"
     const val LOGOUT = "$API_URL/logout"
     const val REFRESH_TOKEN = "$API_URL/refreshToken"

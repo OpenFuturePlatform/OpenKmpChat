@@ -16,7 +16,7 @@ data class User(
     val modifiedTime: String? = null,
     val platform: DevicePlatform? = null,
     val orgId: String? = null,
-    val harvestOrganization: HarvestOrganization? = null
+    val openOrganization: OpenOrganization? = null
 ){
     //override fun toString(): String = Uri.encode(Gson().toJson(this))
 }

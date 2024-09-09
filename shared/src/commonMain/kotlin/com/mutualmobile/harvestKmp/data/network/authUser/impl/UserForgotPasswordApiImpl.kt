@@ -1,10 +1,9 @@
 package com.mutualmobile.harvestKmp.data.network.authUser.impl
 
 import com.mutualmobile.harvestKmp.data.network.Endpoint
-import com.mutualmobile.harvestKmp.data.network.authUser.AuthApi
 import com.mutualmobile.harvestKmp.data.network.authUser.UserForgotPasswordApi
 import com.mutualmobile.harvestKmp.data.network.getSafeNetworkResponse
-import com.mutualmobile.harvestKmp.domain.model.request.HarvestOrganization
+import com.mutualmobile.harvestKmp.domain.model.request.OpenOrganization
 import com.mutualmobile.harvestKmp.domain.model.request.ResetPasswordRequest
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
@@ -26,7 +25,7 @@ class UserForgotPasswordApiImpl(private val httpClient: HttpClient) : UserForgot
         }
     }
 
-    override suspend fun forgotPassword(email: String): NetworkResponse<ApiResponse<HarvestOrganization>> =
+    override suspend fun forgotPassword(email: String): NetworkResponse<ApiResponse<OpenOrganization>> =
         getSafeNetworkResponse {
             httpClient.post("${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.FORGOT_PASSWORD}") {
                 contentType(ContentType.Application.Json)

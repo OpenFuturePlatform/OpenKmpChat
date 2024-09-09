@@ -3,7 +3,7 @@ package com.mutualmobile.harvestKmp.domain.model.request
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class HarvestOrganization(
+data class OpenOrganization(
     val id: String? = null,
     val imgUrl: String? = null,
     val name: String? = null,
@@ -12,7 +12,7 @@ data class HarvestOrganization(
 )
 
 @Serializable
-data class HarvestUser(
+data class OpenUser(
     val email: String? = null,
     val firstName: String? = null,
     val lastName: String? = null

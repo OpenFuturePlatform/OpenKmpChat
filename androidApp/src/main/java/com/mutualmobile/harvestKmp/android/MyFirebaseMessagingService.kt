@@ -5,8 +5,10 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.mutualmobile.harvestKmp.di.SharedComponent
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
+    private val tokenLocal = SharedComponent().provideTokenLocal()
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         // Handle FCM messages here
         Log.d(TAG, "From: ${remoteMessage.from}")
@@ -21,20 +23,20 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             Log.d(TAG, "Message Notification Body: ${it.body}")
             val messageBody = it.body
             val messageTitle = it.title
-            val builder = NotificationCompat.Builder(this, "YOUR_CHANNEL_ID")
-                .setSmallIcon(R.drawable.btc)
-                .setContentTitle(messageTitle)
-                .setContentText(messageBody)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            // Show the notification
-            NotificationManagerCompat.from(this).notify(1, builder.build())
+//            val builder = NotificationCompat.Builder(this, "YOUR_CHANNEL_ID")
+//                .setSmallIcon(R.drawable.btc)
+//                .setContentTitle(messageTitle)
+//                .setContentText(messageBody)
+//                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//            // Show the notification
+//            NotificationManagerCompat.from(this).notify(1, builder.build())
         }
     }
 
     override fun onNewToken(token: String) {
         // Handle new or refreshed FCM registration token
         Log.d(TAG, "Refreshed token: $token")
-        // You may want to send this token to your server for further use
+        tokenLocal.saveToken(token)
     }
 
     companion object {

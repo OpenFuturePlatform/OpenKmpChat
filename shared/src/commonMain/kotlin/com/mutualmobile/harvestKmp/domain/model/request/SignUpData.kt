@@ -15,5 +15,5 @@ data class SignUpData(
     val modifiedTime: String? = null,
     val platform: String? = null,
     val orgId: String? = null,
-    val harvestOrganization: HarvestOrganization? = null
+    val openOrganization: OpenOrganization? = null
 )

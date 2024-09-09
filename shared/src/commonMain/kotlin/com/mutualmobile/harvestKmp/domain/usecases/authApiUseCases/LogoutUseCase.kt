@@ -1,6 +1,7 @@
 package com.mutualmobile.harvestKmp.domain.usecases.authApiUseCases
 
 import com.mutualmobile.harvestKmp.data.local.HarvestUserLocal
+import com.mutualmobile.harvestKmp.data.local.TokenLocal
 import com.mutualmobile.harvestKmp.data.network.authUser.AuthApi
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
@@ -14,12 +15,14 @@ class LogoutUseCase(
     private val authApi: AuthApi,
     private val settings: Settings,
     private val httpClient: HttpClient,
-    private val harvestUserLocal: HarvestUserLocal
+    private val harvestUserLocal: HarvestUserLocal,
+    private val tokenLocal: TokenLocal
 ) {
     suspend operator fun invoke(): NetworkResponse<ApiResponse<String>> {
         return authApi.logout().apply {
             settings.clear()
             harvestUserLocal.clear()
+            tokenLocal.clear()
             httpClient.plugin(Auth).providers.filterIsInstance<BearerAuthProvider>().first()
                 .clearToken() // this will invalidate the tokens
         }
