@@ -17,6 +17,7 @@ class WalletLocalImpl(override var driver: SqlDriver? = null) : WalletLocal {
             userId = input.userId,
             address = input.address,
             privateKey = input.privateKey,
+            seedPhrase = input.seedPhrase,
             time = input.seconds,
             blockchainType = input.blockchainType.name
         )

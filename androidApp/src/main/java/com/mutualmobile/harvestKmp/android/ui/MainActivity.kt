@@ -1,30 +1,41 @@
 package com.mutualmobile.harvestKmp.android.ui
 
 //noinspection SuspiciousImport
+import android.Manifest
 import android.R
 import android.animation.ObjectAnimator
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.media.audiofx.BassBoost
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.animation.LinearInterpolator
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.animation.doOnEnd
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
@@ -32,7 +43,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.findNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberPermissionState
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.navigation.NavigationItem
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.*
@@ -59,11 +74,21 @@ import org.koin.android.ext.android.get
 
 class MainActivity : ComponentActivity() {
     val mainActivityViewModel: MainActivityViewModel = get()
-
+    private lateinit var navController: NavHostController
     init {
         System.loadLibrary("TrustWalletCore")
     }
 
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        // Handle deep link intent
+        intent?.data?.let { uri ->
+            println("Deep link url : $uri")
+            navController.handleDeepLink(intent)
+        }
+    }
+
+    @OptIn(ExperimentalPermissionsApi::class)
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         setupSplashScreen()
@@ -73,6 +98,46 @@ class MainActivity : ComponentActivity() {
 
             OpenChatTheme {
                 SetupSystemUiController()
+                val context = LocalContext.current
+                val permissionState = rememberPermissionState(
+                    permission = Manifest.permission.POST_NOTIFICATIONS
+                )
+                val permissionOpenDialog = remember { mutableStateOf(false) }
+                val rationalPermissionOpenDialog = remember { mutableStateOf(false) }
+
+                if (permissionOpenDialog.value) {
+                    ShowSettingDialog(openDialog = permissionOpenDialog)
+                }
+
+                val launcher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission(),
+                    onResult = { isGranted ->
+                        if (!isGranted) {
+                            println("PERMISSION NOT GRANTED")
+                            if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                                rationalPermissionOpenDialog.value = true
+                            } else {
+                                permissionOpenDialog.value = true
+                            }
+                        } else {
+                            println("PERMISSION GRANTED")
+                        }
+                    }
+                )
+                if (rationalPermissionOpenDialog.value) {
+                    ShowRationalPermissionDialog(openDialog = rationalPermissionOpenDialog) {
+                        rationalPermissionOpenDialog.value = false
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+                }
+
+//                LaunchedEffect(Unit) {
+//                    permissionState.launchPermissionRequest()
+//                }
+
+
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
@@ -85,7 +150,7 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    val navController = rememberNavController()
+                    navController = rememberNavController()
 
                     val bottomNavigationItems = listOf(
                         //NavigationItem.Home,
@@ -98,7 +163,11 @@ class MainActivity : ComponentActivity() {
 
                     Scaffold(
                         bottomBar = {
-                            OpenChatAppBottomNavigation(navController = navController,modifier = Modifier, bottomNavigationItems)
+                            OpenChatAppBottomNavigation(
+                                navController = navController,
+                                modifier = Modifier,
+                                bottomNavigationItems
+                            )
                         }
                     ) {
                         NavHost(
@@ -233,8 +302,8 @@ class MainActivity : ComponentActivity() {
                                     userState = mainActivityViewModel.getUserState,
                                     recipient = it.arguments?.getString("recipient"),
                                     sender = it.arguments?.getString("sender"),
-                                    chatUid =  it.arguments?.getString("chatUid"),
-                                    isGroup =  it.arguments?.getString("isGroup")
+                                    chatUid = it.arguments?.getString("chatUid"),
+                                    isGroup = it.arguments?.getString("isGroup")
                                 )
                             }
 
@@ -258,7 +327,13 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            composable(HarvestRoutes.Screen.USER_WALLET) {
+                            composable(
+                                HarvestRoutes.Screen.USER_WALLET,
+                                deepLinks = listOf(navDeepLink {
+                                    uriPattern = "https://openaix.io/wallets"
+                                    action = Intent.ACTION_VIEW
+                                }),
+                            ) {
                                 WalletScreen(
                                     navController = navController,
                                     userState = mainActivityViewModel.getUserState
@@ -344,6 +419,7 @@ class MainActivity : ComponentActivity() {
             }
         )
     }
+
     @Composable
     fun OpenChatAppBottomNavigation(
         navController: NavHostController,
@@ -391,5 +467,88 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun currentRoute(navController: NavHostController): String? {
         return navController.currentBackStackEntryAsState().value?.destination?.route
+    }
+    @Composable
+    fun ShowSettingDialog(openDialog: MutableState<Boolean>) {
+        if (openDialog.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    openDialog.value = false
+                },
+                title = {
+                    Text(text = "Notification Permission")
+                },
+                text = {
+                    Text("Notification permission is required, Please allow notification permission from setting")
+                },
+
+                buttons = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TextButton(
+                            onClick = {
+                                openDialog.value = false
+                            }
+                        ) {
+                            Text("Cancel")
+                        }
+                        Spacer(modifier = Modifier.width(20.dp))
+                        TextButton(
+                            onClick = {
+                                openDialog.value = false
+
+                                startActivity(intent)
+                            },
+                        ) {
+                            Text("Ok")
+                        }
+                    }
+
+                },
+            )
+        }
+    }
+
+    @Composable
+    fun ShowRationalPermissionDialog(openDialog: MutableState<Boolean>, onclick: () -> Unit) {
+        if (openDialog.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    openDialog.value = false
+                },
+                title = {
+                    Text(text = "Alert")
+                },
+                text = {
+                    Text("Notification permission is required, to show notification")
+                },
+
+                buttons = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        TextButton(
+                            onClick = {
+                                openDialog.value = false
+                            }
+                        ) {
+                            Text("Cancel")
+                        }
+                        Spacer(modifier = Modifier.width(20.dp))
+                        TextButton(
+                            onClick = onclick,
+                        ) {
+                            Text("Ok")
+                        }
+                    }
+
+                },
+            )
+        }
     }
 }

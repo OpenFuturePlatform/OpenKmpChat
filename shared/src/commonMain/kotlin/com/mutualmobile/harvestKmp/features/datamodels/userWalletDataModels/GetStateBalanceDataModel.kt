@@ -6,6 +6,7 @@ import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.di.StateUseCaseComponent
 import com.mutualmobile.harvestKmp.domain.model.request.BalanceRequest
 import com.mutualmobile.harvestKmp.features.NetworkResponse
+import io.ktor.websocket.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,6 +24,7 @@ class GetStateBalanceDataModel() :
 
     private val stateUseCaseComponent = StateUseCaseComponent()
     private val getWalletBalanceUseCase = stateUseCaseComponent.provideGetBalanceUseCase()
+    private val getContractsUseCase = stateUseCaseComponent.provideGetContractsUseCase()
 
     override fun activate() {
     }
@@ -34,11 +36,11 @@ class GetStateBalanceDataModel() :
     override fun refresh() {
     }
 
-    fun getCryptoBalance(address: String, blockchainType: String) {
+    fun getCryptoBalance(address: String, contractAddress: String?, blockchainType: String) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-            when (val response = getWalletBalanceUseCase(BalanceRequest(address = address, isNative = true, blockchainName = blockchainType))) {
+            when (val response = getWalletBalanceUseCase(BalanceRequest(address = address, contractAddress = contractAddress, blockchainName = blockchainType))) {
 
                 is NetworkResponse.Success -> {
                     _dataFlow.emit(SuccessState(response.data))

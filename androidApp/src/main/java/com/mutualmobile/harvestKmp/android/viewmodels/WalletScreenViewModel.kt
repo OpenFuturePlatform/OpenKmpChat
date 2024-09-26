@@ -10,10 +10,7 @@ import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
 import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
-import com.mutualmobile.harvestKmp.domain.model.response.CoinGateRate
-import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
-import com.mutualmobile.harvestKmp.domain.model.response.WalletBalanceResponse
-import com.mutualmobile.harvestKmp.domain.model.response.WalletResponse
+import com.mutualmobile.harvestKmp.domain.model.response.*
 import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetStateBalanceDataModel
 import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetStateRatesDataModel
 import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetUserWalletsDataModel
@@ -22,6 +19,7 @@ import kotlinx.coroutines.flow.onEach
 
 class WalletScreenViewModel : ViewModel() {
     var wallets by mutableStateOf(emptyList<WalletResponse>())
+    var contracts by mutableStateOf(emptyList<ContractResponse>())
     var exchangeRates by mutableStateOf(emptyList<CoinGateRate>())
     var walletBalances by mutableStateOf(mapOf<String, String>())
     var filteredWalletListMap: List<WalletResponse> = emptyList()
@@ -39,6 +37,7 @@ class WalletScreenViewModel : ViewModel() {
 
     var currentWalletPrivateKey by mutableStateOf("")
     var currentWalletDecryptedPrivateKey by mutableStateOf("")
+    var currentWalletSeeedPhrases by mutableStateOf("")
     var currentWalletAddress by mutableStateOf("")
     var isWalletDetailDialogVisible by mutableStateOf(false)
 
@@ -134,12 +133,14 @@ class WalletScreenViewModel : ViewModel() {
         val userResponse = userState.data as GetUserResponse
         currentUserId = userResponse.id!!
         getUserWalletsDataModel.getLocalUserWallets()
+        //getUserWalletsDataModel.getUserWallets(userResponse.email!!)
         getStateRatesDataModel.getCryptoRates()
         wallets.forEach{
             println("Fetch balance ${it.address} and ${it.blockchainType}")
-            if (it.blockchainType!! == BlockchainType.BNB.name || it.blockchainType == BlockchainType.ETH.name) {
+            if (it.blockchainType!! == BlockchainType.BNB.name || it.blockchainType == BlockchainType.ETH.name || it.blockchainType == BlockchainType.TRX.name) {
                 getStateBalanceDataModel.getCryptoBalance(
                     address = it.address!!,
+                    contractAddress = null,
                     blockchainType = it.blockchainType!!
                 )
             }

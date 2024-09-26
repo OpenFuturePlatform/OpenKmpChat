@@ -50,6 +50,7 @@ import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.GetProjec
 import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.UpdateProjectUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgUsersApiUseCases.FindUsersInOrgUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.GetBalanceUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.GetContractsUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.GetRatesUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userForgotPasswordApiUseCases.ForgotPasswordUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userForgotPasswordApiUseCases.ResetPasswordUseCase
@@ -265,6 +266,7 @@ val userWalletUseCaseModule = module {
 val stateUseCaseModule = module {
     single { GetRatesUseCase(get()) }
     single { GetBalanceUseCase(get()) }
+    single { GetContractsUseCase(get()) }
 }
 
 class SharedComponent : KoinComponent {
@@ -329,6 +331,7 @@ class UserTaskUseCaseComponent : KoinComponent {
 class StateUseCaseComponent : KoinComponent {
     fun provideGetRatesUseCase(): GetRatesUseCase = get()
     fun provideGetBalanceUseCase(): GetBalanceUseCase = get()
+    fun provideGetContractsUseCase(): GetContractsUseCase = get()
 }
 
 class UserWalletUseCaseComponent : KoinComponent {

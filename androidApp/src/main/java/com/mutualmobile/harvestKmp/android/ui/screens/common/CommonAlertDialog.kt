@@ -44,6 +44,8 @@ import com.mutualmobile.harvestKmp.domain.model.response.AssistantTodosResponse
 import com.mutualmobile.harvestKmp.utils.now
 import kotlinx.datetime.LocalDate
 import org.koin.androidx.compose.get
+import wallet.core.jni.Blockchain
+import wallet.core.jni.CoinType
 import java.util.*
 
 @Composable
@@ -346,7 +348,9 @@ fun GenerateWalletDialog(
     wsVm: WalletScreenViewModel = get(),
 ) {
 
+    //val categories = Blockchain.values().map { it.name }
     val categories = arrayOf("ETH", "BTC", "BNB", "TRX")
+    println("Categories $categories")
     var expanded by remember { mutableStateOf(false) }
     var blockchain by remember { mutableStateOf(categories[0]) }
 
@@ -392,11 +396,11 @@ fun GenerateWalletDialog(
                     ExposedDropdownMenuBox(
                         modifier = Modifier.fillMaxWidth()
                             .border(
-                            BorderStroke(
-                                width = 2.dp,
-                                color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
-                            )
-                        ),
+                                BorderStroke(
+                                    width = 2.dp,
+                                    color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                )
+                            ),
                         expanded = expanded,
                         onExpandedChange = { expanded = !expanded }
                     ) {
@@ -470,7 +474,7 @@ fun GenerateWalletDialog(
                                 .fillMaxWidth()
                                 .height(50.dp)
                         ) {
-                            Text(text = "Done")
+                            Text(text = "Generate")
                         }
                     }
                 }
@@ -550,6 +554,12 @@ fun WalletDetailDialog(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (wsVm.currentWalletDecryptedPrivateKey != "") {
+                        Text(
+                            text = wsVm.currentWalletSeeedPhrases,
+                            fontSize = 18.sp,
+                            color = Color.Black,
+                            modifier = Modifier.padding(all = 8.dp)
+                        )
                         Text(
                             text = wsVm.currentWalletDecryptedPrivateKey,
                             fontSize = 18.sp,
@@ -631,6 +641,7 @@ fun WalletDetailDialog(
         }
     }
 }
+
 //Layout
 @Composable
 fun CustomDialogUI(modifier: Modifier = Modifier, openDialogCustom: MutableState<Boolean>) {

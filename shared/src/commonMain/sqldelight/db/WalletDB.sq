@@ -3,12 +3,13 @@ CREATE TABLE open_wallet(
     userId TEXT,
     address TEXT,
     privateKey TEXT,
+    seedPhrase TEXT,
     blockchainType TEXT,
     time INTEGER
 );
 
 insertWallet:
-INSERT OR REPLACE INTO open_wallet(uid, userId, address, privateKey, blockchainType, time) VALUES(?,?,?,?,?,?);
+INSERT OR REPLACE INTO open_wallet(uid, userId, address, privateKey, seedPhrase, blockchainType, time) VALUES(?,?,?,?,?,?,?);
 
 selectAllWallets:
 SELECT * FROM open_wallet ORDER BY time DESC;

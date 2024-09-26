@@ -10,3 +10,10 @@ data class WalletResponse(
     var seedPhrases: String? = null,
     var balance: String?
 )
+
+@Serializable
+data class ContractResponse(
+    var address: String? = null,
+    var name: String? = null,
+    var blockchainType: String? = null
+)

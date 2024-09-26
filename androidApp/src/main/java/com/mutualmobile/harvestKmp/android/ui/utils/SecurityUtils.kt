@@ -1,13 +1,18 @@
 package com.mutualmobile.harvestKmp.android.ui.utils
 
+import com.google.protobuf.ByteString
 import com.mutualmobile.harvestKmp.domain.model.Wallet
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import io.github.novacrypto.bip39.MnemonicGenerator
 import io.github.novacrypto.bip39.Words
 import io.github.novacrypto.bip39.wordlists.English
 import org.spongycastle.util.encoders.Base64
+import wallet.core.java.AnySigner
 import wallet.core.jni.CoinType
 import wallet.core.jni.HDWallet
+import wallet.core.jni.PrivateKey
+import wallet.core.jni.proto.Ethereum
+import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.security.NoSuchAlgorithmException
 import java.security.SecureRandom
@@ -31,7 +36,6 @@ object SecurityUtils {
     fun generateWallet(blockchainType: BlockchainType, password: String, userId: String): Wallet {
         val seedPhrase = generateSeedCode()
         println("SeedPhrase: $seedPhrase")
-        println("Blockchain: $blockchainType and password: $password")
         val hdWallet = HDWallet(seedPhrase, "")
         val coin: CoinType = when (blockchainType) {
             BlockchainType.ETH -> CoinType.ETHEREUM
@@ -50,8 +54,15 @@ object SecurityUtils {
         //val decrypted = decrypt(encrypted, password)
         //println("Decrypted: $decrypted")
 
-        return Wallet(address = address, privateKey = encrypted, userId = userId, blockchainType = blockchainType)
+        return Wallet(
+            address = address,
+            privateKey = encrypted,
+            userId = userId,
+            blockchainType = blockchainType,
+            seedPhrase = seedPhrase
+        )
     }
+
     private fun generateSeedCode(): String {
         val seedCode = StringBuilder()
         val entropy = ByteArray(Words.TWELVE.byteLength())
@@ -61,7 +72,7 @@ object SecurityUtils {
         return seedCode.toString()
     }
 
-    private fun encrypt(plainText: String, password: String): String{
+    private fun encrypt(plainText: String, password: String): String {
 
         val passwordChars = password.toCharArray()
         val saltBytes = salt.toByteArray()
@@ -120,14 +131,48 @@ object SecurityUtils {
         return null
     }
 
+    fun signEthereum(receiverAddress: String, secretPrivateKey: PrivateKey): String {
+        val signerInput = Ethereum.SigningInput.newBuilder().apply {
+            chainId = ByteString.copyFrom(BigInteger("01").toByteArray())
+            gasPrice = BigInteger("d693a400", 16).toByteString() // decimal 3600000000
+            gasLimit = BigInteger("5208", 16).toByteString()     // decimal 21000
+            toAddress = receiverAddress
+            transaction = Ethereum.Transaction.newBuilder().apply {
+                transfer = Ethereum.Transaction.Transfer.newBuilder().apply {
+                    amount = BigInteger("348bca5a16000", 16).toByteString() // 924400000000000
+                }.build()
+            }.build()
+            privateKey = ByteString.copyFrom(secretPrivateKey.data())
+        }.build()
+        val output = AnySigner.sign(signerInput, CoinType.ETHEREUM, Ethereum.SigningOutput.parser())
+        println("Signed transaction: \n${output.encoded.toByteArray().toHexString()}")
+        return output.encoded.toByteArray().toHexString()
+    }
+
+    private fun BigInteger.toByteString(): ByteString {
+        return ByteString.copyFrom(this.toByteArray())
+    }
+
     private fun ByteArray.toHexString(withPrefix: Boolean = true): String {
         val stringBuilder = StringBuilder()
-        if(withPrefix) {
+        if (withPrefix) {
             stringBuilder.append("0x")
         }
         for (element in this) {
             stringBuilder.append(String.format("%02x", element and 0xFF.toByte()))
         }
         return stringBuilder.toString()
+    }
+
+    private fun String.hexStringToByteArray(): ByteArray {
+        val HEX_CHARS = "0123456789ABCDEF"
+        val result = ByteArray(length / 2)
+        for (i in 0 until length step 2) {
+            val firstIndex = HEX_CHARS.indexOf(this[i].toUpperCase());
+            val secondIndex = HEX_CHARS.indexOf(this[i + 1].toUpperCase());
+            val octet = firstIndex.shl(4).or(secondIndex)
+            result.set(i.shr(1), octet.toByte())
+        }
+        return result
     }
 }

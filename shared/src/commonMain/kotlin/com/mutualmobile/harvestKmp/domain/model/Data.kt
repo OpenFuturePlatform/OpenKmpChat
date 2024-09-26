@@ -40,6 +40,7 @@ data class Message(
 data class Wallet(
     val userId: String,
     val address: String,
+    val seedPhrase: String,
     val privateKey: String,
     val blockchainType: BlockchainType,
     val seconds: Long,
@@ -48,6 +49,7 @@ data class Wallet(
     constructor(
         userId: String,
         address: String,
+        seedPhrase: String,
         privateKey: String,
         blockchainType: BlockchainType,
     ) : this(
@@ -55,6 +57,7 @@ data class Wallet(
         address = address,
         privateKey = privateKey,
         blockchainType = blockchainType,
+        seedPhrase = seedPhrase,
         seconds = Clock.System.now().epochSeconds,
         id = Random.nextLong()
     )

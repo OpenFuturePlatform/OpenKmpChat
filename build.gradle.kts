@@ -24,8 +24,8 @@ allprojects {
         maven {
             url = uri("https://maven.pkg.github.com/trustwallet/wallet-core")
             credentials {
-                username = "physcoom"
-                password = "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"
+                username = "physcom"
+                password = "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"
             }
         }
     }

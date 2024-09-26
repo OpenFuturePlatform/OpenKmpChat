@@ -1,7 +1,8 @@
 package com.mutualmobile.harvestKmp.data.network
 
 object Endpoint {
-    private const val HOST_URL = "http://192.168.0.101"
+    private const val HOST_URL = "http://192.168.0.105" // WIFI
+    //private const val HOST_URL = "http://192.168.47.204" // MOBILE
     const val SPRING_BOOT_BASE_URL = "$HOST_URL:5001"
     const val STATE_URL = "$HOST_URL:8545"
 
@@ -61,6 +62,7 @@ object Endpoint {
 
     const val RATES_URL = "/api/currency/rate/all"
     const val BALANCE_URL = "/api/wallets/v2/balance"
+    const val CONTRACT_URL = "/api/wallets/contracts"
 
     object Params {
         const val START_DATE = "startDate"

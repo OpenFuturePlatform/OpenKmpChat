@@ -86,3 +86,49 @@ fun WalletListItem(
     }
 }
 
+@Composable
+fun WalletContractsItem(
+    blokchainType: String,
+    address: String,
+    balance: String,
+    wsVm: WalletScreenViewModel
+) {
+
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable(onClick = {  })
+                .background(Color.White)
+                .fillMaxWidth()
+                .padding(PaddingValues(8.dp, 8.dp)),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row {
+                Image(
+                    modifier = Modifier
+                        .size(PROFILE_PICTURE_SIZE.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop,
+                    painter = painterResource(MR.images.usdt.drawableResId),
+                    contentDescription = "Icon"
+                )
+                Column {
+                    Text(blokchainType)
+                    Text("1.00 $")
+                }
+            }
+            Column {
+                Text(balance)
+                Text("$balance $")
+            }
+        }
+
+        Divider(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f)
+        )
+    }
+}

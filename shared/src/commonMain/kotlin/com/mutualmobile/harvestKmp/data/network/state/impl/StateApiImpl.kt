@@ -5,6 +5,7 @@ import com.mutualmobile.harvestKmp.data.network.getSafeNetworkResponse
 import com.mutualmobile.harvestKmp.data.network.state.StateApi
 import com.mutualmobile.harvestKmp.domain.model.request.BalanceRequest
 import com.mutualmobile.harvestKmp.domain.model.response.CoinGateRate
+import com.mutualmobile.harvestKmp.domain.model.response.ContractResponse
 import com.mutualmobile.harvestKmp.domain.model.response.WalletBalanceResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import io.ktor.client.*
@@ -31,6 +32,15 @@ class StateApiImpl(
             ) {
                 contentType(ContentType.Application.Json)
                 setBody(request)
+            }
+        }
+
+    override suspend fun getContracts(isTest: Boolean): NetworkResponse<List<ContractResponse>> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.STATE_URL}${Endpoint.CONTRACT_URL}?isTest=$isTest"
+            ) {
+                contentType(ContentType.Application.Json)
             }
         }
 }

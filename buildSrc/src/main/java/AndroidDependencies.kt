@@ -23,7 +23,7 @@ object AndroidDependencyVersions {
   const val splashScreen = "1.0.0-beta02"
   const val snapper = "0.2.1"
   const val navigation = "2.4.2"
-  const val walletcore_version = "2.6.3"
+  const val walletcore = "4.1.9"
 }
 
 object AndroidDependencies {
@@ -53,7 +53,7 @@ object AndroidDependencies {
     "io.insert-koin:koin-core:${CommonDependencyVersions.koin}",
     "io.insert-koin:koin-android:${CommonDependencyVersions.koin}",
     "io.insert-koin:koin-androidx-compose:${CommonDependencyVersions.koin}",
-    "com.trustwallet:wallet-core:${AndroidDependencyVersions.walletcore_version}",
+    "com.trustwallet:wallet-core:${AndroidDependencyVersions.walletcore}",
     "io.github.novacrypto:BIP39:2018.10.06",
     "commons-codec:commons-codec:1.17.0"
 

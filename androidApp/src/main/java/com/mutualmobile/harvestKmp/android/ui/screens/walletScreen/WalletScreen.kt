@@ -24,6 +24,7 @@ import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.common.GenerateWalletDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.HarvestDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.WalletDetailDialog
+import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletContractsItem
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletListItem
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletSearchView
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
@@ -58,7 +59,7 @@ fun WalletScreen(
     }
 
     LaunchedEffect(userState) {
-        while(true) {
+        while (true) {
             when (userState) {
                 is SuccessState<*> -> {
                     wsVm.getUserWallets(userState = userState)
@@ -88,6 +89,7 @@ fun WalletScreen(
             onDismiss = {
                 wsVm.isWalletDetailDialogVisible = false
                 wsVm.currentWalletPrivateKey = ""
+                wsVm.currentWalletSeeedPhrases = ""
                 wsVm.currentWalletDecryptedPrivateKey = ""
                 wsVm.currentWalletAddress = ""
                 wsVm.password = ""
@@ -144,8 +146,13 @@ fun WalletScreen(
                     wsVm.wallets.filter { it.blockchainType?.contains(searchedText, true) == true }
                 }
                 items(wsVm.filteredWalletListMap) { wallet ->
-                    val walletKey = wallet.address+wallet.blockchainType
-                    val balance = if(wsVm.walletBalances.isNotEmpty() && wsVm.walletBalances.containsKey(walletKey)){ wsVm.walletBalances[walletKey] } else {"0"}
+                    val walletKey = wallet.address + wallet.blockchainType
+                    val balance = if (wsVm.walletBalances.isNotEmpty() && wsVm.walletBalances.containsKey(walletKey)) {
+                        wsVm.walletBalances[walletKey]
+                    } else {
+                        "0"
+                    }
+
                     WalletListItem(
                         blokchainType = wallet.blockchainType!!,
                         address = wallet.address!!,
@@ -155,9 +162,18 @@ fun WalletScreen(
                             wsVm.isWalletDetailDialogVisible = true
                             wsVm.currentWalletAddress = wallet.address!!
                             wsVm.currentWalletPrivateKey = wallet.privateKey!!
+                            wsVm.currentWalletSeeedPhrases = wallet.seedPhrases!!
                         },
                         wsVm = wsVm
                     )
+                    if (wallet.blockchainType!! == "ETH" || wallet.blockchainType!! == "TRX"){
+                        WalletContractsItem(
+                            blokchainType =  wallet.blockchainType!!,
+                            address = wallet.address!!,
+                            balance = balance,
+                            wsVm = wsVm
+                        )
+                    }
                 }
 
             }

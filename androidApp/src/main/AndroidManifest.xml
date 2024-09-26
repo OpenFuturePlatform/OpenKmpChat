@@ -1,37 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.mutualmobile.harvestKmp.android">
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.mutualmobile.harvestKmp.android">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.ACTION_OPEN" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.ACTION_OPEN"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
-        android:name="com.mutualmobile.harvestKmp.android.OpenChatApp"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        tools:ignore="RtlEnabled"
-        android:usesCleartextTraffic="true"
-        tools:targetApi="donut">
+            android:name="com.mutualmobile.harvestKmp.android.OpenChatApp"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:supportsRtl="true"
+            tools:ignore="RtlEnabled"
+            android:usesCleartextTraffic="true"
+            tools:targetApi="donut">
         <activity
-            android:name="com.mutualmobile.harvestKmp.android.ui.MainActivity"
-            android:exported="true"
-            android:theme="@style/SplashScreen"
-            android:windowSoftInputMode="adjustResize"
-            android:allowEmbedded="true"
-            android:resizeableActivity="true">
+                android:name="com.mutualmobile.harvestKmp.android.ui.MainActivity"
+                android:exported="true"
+                android:theme="@style/SplashScreen"
+                android:windowSoftInputMode="adjustResize"
+                android:allowEmbedded="true"
+                android:launchMode="singleTask"
+                android:resizeableActivity="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.LAUNCHER"/>
+                <data
+                        android:host="openaix.io"
+                        android:scheme="https" />
             </intent-filter>
         </activity>
         <service
                 android:name=".MyFirebaseMessagingService"
-                android:exported="false" tools:ignore="MissingClass">
+                android:enabled="true"
+                android:exported="false">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
             </intent-filter>
         </service>
     </application>

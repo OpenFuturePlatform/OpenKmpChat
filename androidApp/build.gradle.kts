@@ -65,8 +65,7 @@ dependencies {
     // Firebase Cloud Messaging
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-analytics")
-    //implementation("com.google.firebase:firebase-installations:18.0.0")
-
+    implementation("com.google.accompanist:accompanist-permissions:0.25.1")
     AndroidDependencies.platforms.forEach { platformDependency ->
         implementation(platform(platformDependency))
     }
