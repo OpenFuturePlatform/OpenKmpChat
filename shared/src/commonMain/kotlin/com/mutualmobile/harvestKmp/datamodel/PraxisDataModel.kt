@@ -40,6 +40,9 @@ abstract class PraxisDataModel(
     data class SuccessState<T>(
         val data: T,
     ) : DataState()
+    data class WalletBalanceSuccessState<T>(
+        val data: T,
+    ) : DataState()
     data class AssistantSuccessState<T>(
         val data: T,
     ) : DataState()

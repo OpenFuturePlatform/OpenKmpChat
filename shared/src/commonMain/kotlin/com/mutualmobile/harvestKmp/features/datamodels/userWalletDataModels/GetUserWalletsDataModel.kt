@@ -78,27 +78,25 @@ class GetUserWalletsDataModel() :
         }
     }
 
-    fun saveWalletLocal(input: Wallet) {
+    fun saveWalletsLocal(inputs: List<Wallet>) {
         executeJob {
             _dataFlow.emit(LoadingState)
-            walletLocal.saveWallet(input)
-            _dataFlow.emit(
-                SuccessState(
-                    listOf(
-                        WalletResponse(
-                            address = input.address,
-                            blockchainType = input.blockchainType.name,
-                            privateKey = input.privateKey,
-                            balance = null,
-                            seedPhrases = input.seedPhrase
-                        )
-                    )
+            println("Save Wallets locally: $inputs")
+            for (input in inputs) {
+                walletLocal.saveWallet(input)
+            }
+            _dataFlow.emit(SuccessState(inputs.map {
+                WalletResponse(
+                    address = it.address,
+                    privateKey = it.privateKey,
+                    blockchainType = it.blockchainType.name,
+                    balance = "0"
                 )
-            )
+            }))
         }
     }
 
-    fun saveWalletRemote(input: Wallet) {
+    fun saveWalletsRemote(input: Wallet) {
         executeJob {
             when (val response = walletRemoteSaveUseCase(
                 SaveWalletRequest(input.blockchainType, input.address, input.userId)
@@ -106,19 +104,19 @@ class GetUserWalletsDataModel() :
 
                 is NetworkResponse.Success -> {
                     println("Saved remote")
-                    _dataFlow.emit(
-                        SuccessState(
-                            listOf(
-                                WalletResponse(
-                                    address = input.address,
-                                    blockchainType = input.blockchainType.name,
-                                    privateKey = input.privateKey,
-                                    balance = null,
-                                    seedPhrases = input.seedPhrase
-                                )
-                            )
-                        )
-                    )
+//                    _dataFlow.emit(
+//                        SuccessState(
+//                            listOf(
+//                                WalletResponse(
+//                                    address = input.address,
+//                                    blockchainType = input.blockchainType.name,
+//                                    privateKey = input.privateKey,
+//                                    balance = null,
+//                                    seedPhrases = input.seedPhrase
+//                                )
+//                            )
+//                        )
+//                    )
                 }
 
                 is NetworkResponse.Failure -> {
@@ -135,6 +133,7 @@ class GetUserWalletsDataModel() :
         intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
         intPraxisCommand.emit(NavigationPraxisCommand(""))
     }
+
     private fun executeJob(block: suspend () -> Unit) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch { block() }

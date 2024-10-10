@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
 data class BalanceRequest(
     val blockchainName: String,
     val contractAddress: String?,
-    val address: String
+    val address: String?
 )

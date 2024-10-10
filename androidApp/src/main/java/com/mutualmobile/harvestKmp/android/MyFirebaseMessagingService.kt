@@ -46,9 +46,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     }
 
     private fun sendNotification(message: RemoteMessage.Notification) {
-//        val intent = Intent(this, MainActivity::class.java).apply {
-//            addFlags(FLAG_ACTIVITY_CLEAR_TOP)
-//        }
         val intent = Intent(
             Intent.ACTION_VIEW,
             Uri.parse("https://openaix.io/wallets"),

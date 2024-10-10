@@ -44,7 +44,7 @@ class WalletApiImpl(
     }
 
     override suspend fun save(saveWalletRequest: SaveWalletRequest): NetworkResponse<WalletResponse> = getSafeNetworkResponse {
-        println("save reqyest $saveWalletRequest")
+        println("save request $saveWalletRequest")
         httpClient.post(
             urlString = "${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.WALLET_URL}/save"
         ) {

@@ -9,13 +9,13 @@ import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
 import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.domain.model.Wallet
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import com.mutualmobile.harvestKmp.domain.model.response.*
-import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetStateBalanceDataModel
-import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetStateRatesDataModel
-import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetUserWalletsDataModel
+import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.*
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import org.spongycastle.util.test.FixedSecureRandom.BigInteger
 
 class WalletScreenViewModel : ViewModel() {
     var wallets by mutableStateOf(emptyList<WalletResponse>())
@@ -31,7 +31,7 @@ class WalletScreenViewModel : ViewModel() {
     var walletScreenNavigationCommands: PraxisCommand? by mutableStateOf(null)
 
     var isWalletGenerateDialogVisible by mutableStateOf(false)
-    var blockchainType by mutableStateOf(BlockchainType.ETH)
+    var blockchainNetworks by mutableStateOf(emptyList<BlockchainType>())
     var password by mutableStateOf("")
     var currentUserId by mutableStateOf("")
 
@@ -40,11 +40,16 @@ class WalletScreenViewModel : ViewModel() {
     var currentWalletSeeedPhrases by mutableStateOf("")
     var currentWalletAddress by mutableStateOf("")
     var isWalletDetailDialogVisible by mutableStateOf(false)
+    var currentBlockchainGasPrice by mutableStateOf(Long.MIN_VALUE)
+    var currentBlockchainGasLimit by mutableStateOf(Long.MIN_VALUE)
+    var currentBlockchainAddressNonce by mutableStateOf(Long.MIN_VALUE)
 
     private val getUserWalletsDataModel = GetUserWalletsDataModel()
     private val getStateRatesDataModel = GetStateRatesDataModel()
     private val getStateBalanceDataModel = GetStateBalanceDataModel()
-
+    private val getStateGasPriceDataModel = GetStateGasPriceDataModel()
+    private val getStateGasLimitDataModel = GetStateGasLimitDataModel()
+    private val getStateNonceDataModel = GetStateNonceDataModel()
     init {
         with(getUserWalletsDataModel) {
             observeDataState()
@@ -53,6 +58,15 @@ class WalletScreenViewModel : ViewModel() {
         with(getStateRatesDataModel) {
             observeStateDataState()
             observeStateNavigationCommands()
+        }
+        with(getStateGasPriceDataModel){
+            observeStateGasPriceDataState()
+        }
+        with(getStateGasLimitDataModel){
+            observeStateGasLimitDataState()
+        }
+        with(getStateNonceDataModel){
+            observeStateNonceDataState()
         }
         with(getStateBalanceDataModel) {
             observeStateBalanceDataState()
@@ -106,6 +120,48 @@ class WalletScreenViewModel : ViewModel() {
         }.launchIn(viewModelScope)
     }
 
+    private fun GetStateGasPriceDataModel.observeStateGasPriceDataState() {
+        dataFlow.onEach { gasPriceState ->
+
+            when (gasPriceState) {
+                is PraxisDataModel.SuccessState<*> -> {
+                    println("Gas Limit ${gasPriceState.data}")
+                    currentBlockchainGasPrice = gasPriceState.data as Long
+                }
+
+                else -> Unit
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun GetStateNonceDataModel.observeStateNonceDataState() {
+        dataFlow.onEach { nonceState ->
+
+            when (nonceState) {
+                is PraxisDataModel.SuccessState<*> -> {
+                    println("Nonce ${nonceState.data}")
+                    currentBlockchainGasPrice = nonceState.data as Long
+                }
+
+                else -> Unit
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun GetStateGasLimitDataModel.observeStateGasLimitDataState() {
+        dataFlow.onEach { gasLimitState ->
+
+            when (gasLimitState) {
+                is PraxisDataModel.SuccessState<*> -> {
+                    println("Gas Limit ${gasLimitState.data}")
+                    currentBlockchainGasLimit = gasLimitState.data as Long
+                }
+
+                else -> Unit
+            }
+        }.launchIn(viewModelScope)
+    }
+
     private fun GetStateBalanceDataModel.observeStateBalanceNavigationCommands() {
         praxisCommand.onEach { newCommand ->
             walletScreenNavigationCommands = newCommand
@@ -115,6 +171,7 @@ class WalletScreenViewModel : ViewModel() {
     private fun GetStateBalanceDataModel.observeStateBalanceDataState() {
         dataFlow.onEach { balanceState ->
             currentWalletScreenState = balanceState
+            println("BalanceState $balanceState")
             when (balanceState) {
                 is PraxisDataModel.SuccessState<*> -> {
                     println("Balance ${balanceState.data}")
@@ -143,14 +200,45 @@ class WalletScreenViewModel : ViewModel() {
                     contractAddress = null,
                     blockchainType = it.blockchainType!!
                 )
+                getStateGasLimitDataModel.getGasLimit(it.address!!, it.blockchainType!!)
+                getStateGasPriceDataModel.getGasPrice(it.address!!, it.blockchainType!!)
             }
         }
     }
 
     fun generateWallet() {
-        val wallet = SecurityUtils.generateWallet(blockchainType, password, currentUserId)
-        getUserWalletsDataModel.saveWalletLocal(wallet)
-        getUserWalletsDataModel.saveWalletRemote(wallet)
+        val seedPhrases = SecurityUtils.generateSeedCode()
+        println("SeedPhrase: $seedPhrases and network: $blockchainNetworks")
+        var currentWallets = emptyList<Wallet>()
+        for (blockchainType in blockchainNetworks) {
+            val wallet = SecurityUtils.generateWallet(blockchainType, seedPhrases, password, currentUserId)
+            currentWallets = currentWallets.plus(wallet)
+
+        }
+        currentWallets.forEach { wallet ->
+            getUserWalletsDataModel.saveWalletsRemote(wallet)
+        }
+        getUserWalletsDataModel.saveWalletsLocal(currentWallets)
+
+    }
+
+    fun signEthereumTransaction(fromAddress: String, privateKey: String) {
+        println("Sign transaction fromAddres: $fromAddress and privateKey: $privateKey")
+        val privKey = SecurityUtils.getPrivateKeyFromStr(privateKey)
+        val receiverAddress = "0x014D9Fcdb245CF31BfbaD92F3031FE036fE91Bc3"
+        val amount = java.math.BigInteger("1000000000000000000")
+
+        getStateGasPriceDataModel.getGasPrice(fromAddress, BlockchainType.ETH.name)
+        getStateGasLimitDataModel.getGasLimit(fromAddress, BlockchainType.ETH.name)
+
+//        val signature = SecurityUtils.signEthereum(
+//            receiverAddress,
+//            privKey,
+//            java.math.BigInteger(currentBlockchainGasPrice),
+//            java.math.BigInteger(currentBlockchainGasPrice),
+//            amount
+//        )
+
     }
 
     fun decryptWallet() {

@@ -11,7 +11,10 @@ import wallet.core.java.AnySigner
 import wallet.core.jni.CoinType
 import wallet.core.jni.HDWallet
 import wallet.core.jni.PrivateKey
+import wallet.core.jni.proto.Binance
 import wallet.core.jni.proto.Ethereum
+import wallet.core.jni.proto.Solana
+import wallet.core.jni.proto.Tron
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.security.NoSuchAlgorithmException
@@ -33,15 +36,17 @@ object SecurityUtils {
     private const val iterations = 1000
     private const val keyLength = 256
 
-    fun generateWallet(blockchainType: BlockchainType, password: String, userId: String): Wallet {
-        val seedPhrase = generateSeedCode()
-        println("SeedPhrase: $seedPhrase")
+    fun generateWallet(blockchainType: BlockchainType, seedPhrase: String, password: String, userId: String): Wallet {
+        //todo - we can use the seed phrase to generate the private key and address
+        println("Generating wallet for blockchain type: $blockchainType")
         val hdWallet = HDWallet(seedPhrase, "")
-        val coin: CoinType = when (blockchainType) {
+        val coin = when (blockchainType) {
             BlockchainType.ETH -> CoinType.ETHEREUM
             BlockchainType.BTC -> CoinType.BITCOIN
             BlockchainType.BNB -> CoinType.BINANCE
             BlockchainType.TRX -> CoinType.TRON
+            BlockchainType.SOL -> CoinType.SOLANA
+            BlockchainType.USDT -> CoinType.TRON
         }
         println("Derivation path : ${coin.derivationPath()}")
         val address = hdWallet.getAddressForCoin(coin)
@@ -63,13 +68,17 @@ object SecurityUtils {
         )
     }
 
-    private fun generateSeedCode(): String {
+    fun generateSeedCode(): String {
         val seedCode = StringBuilder()
         val entropy = ByteArray(Words.TWELVE.byteLength())
         SecureRandom().nextBytes(entropy)
         MnemonicGenerator(English.INSTANCE)
             .createMnemonic(entropy, seedCode::append)
         return seedCode.toString()
+    }
+
+    fun getPrivateKeyFromStr(privateKey: String): PrivateKey {
+        return PrivateKey(privateKey.hexStringToByteArray())
     }
 
     private fun encrypt(plainText: String, password: String): String {
@@ -131,15 +140,15 @@ object SecurityUtils {
         return null
     }
 
-    fun signEthereum(receiverAddress: String, secretPrivateKey: PrivateKey): String {
+    fun signEthereum(receiverAddress: String, secretPrivateKey: PrivateKey, gasPriceInteger: BigInteger, gasLimitInteger: BigInteger, amountInteger: BigInteger): String {
         val signerInput = Ethereum.SigningInput.newBuilder().apply {
             chainId = ByteString.copyFrom(BigInteger("01").toByteArray())
-            gasPrice = BigInteger("d693a400", 16).toByteString() // decimal 3600000000
-            gasLimit = BigInteger("5208", 16).toByteString()     // decimal 21000
+            gasPrice = gasPriceInteger.toByteString() // decimal 3600000000
+            gasLimit = gasLimitInteger.toByteString()     // decimal 21000
             toAddress = receiverAddress
             transaction = Ethereum.Transaction.newBuilder().apply {
-                transfer = Ethereum.Transaction.Transfer.newBuilder().apply {
-                    amount = BigInteger("348bca5a16000", 16).toByteString() // 924400000000000
+                transfer = Ethereum.Transaction.Transfer.newBuilder().apply  {
+                    amount = amountInteger.toByteString() // 924400000000000
                 }.build()
             }.build()
             privateKey = ByteString.copyFrom(secretPrivateKey.data())

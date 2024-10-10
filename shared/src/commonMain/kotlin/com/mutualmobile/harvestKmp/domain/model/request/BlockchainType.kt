@@ -5,8 +5,10 @@ enum class BlockchainType(
     private val id: Int,
     private val value: String
 ) {
-    ETH(1, "ETH"),
-    BTC(2, "BTC"),
-    BNB(3, "BNB"),
-    TRX(4, "TRX")
+    ETH(60, "ETH"),
+    BTC(0, "BTC"),
+    BNB(714, "BNB"),
+    TRX(195, "TRX"),
+    SOL(501, "SOL"),
+    USDT(1, "USDT")
 }

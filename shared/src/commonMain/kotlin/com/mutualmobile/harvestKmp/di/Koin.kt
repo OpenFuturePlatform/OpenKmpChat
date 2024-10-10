@@ -49,9 +49,7 @@ import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.GetListOf
 import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.GetProjectsFromIdsUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgProjectsUseCases.UpdateProjectUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.orgUsersApiUseCases.FindUsersInOrgUseCase
-import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.GetBalanceUseCase
-import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.GetContractsUseCase
-import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.GetRatesUseCase
+import com.mutualmobile.harvestKmp.domain.usecases.stateApiUseCases.*
 import com.mutualmobile.harvestKmp.domain.usecases.userForgotPasswordApiUseCases.ForgotPasswordUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userForgotPasswordApiUseCases.ResetPasswordUseCase
 import com.mutualmobile.harvestKmp.domain.usecases.userProjectUseCases.AssignProjectsToUsersUseCase
@@ -267,6 +265,9 @@ val stateUseCaseModule = module {
     single { GetRatesUseCase(get()) }
     single { GetBalanceUseCase(get()) }
     single { GetContractsUseCase(get()) }
+    single { GetGasLimitUseCase(get()) }
+    single { GetGasPriceUseCase(get()) }
+    single { GetNonceUseCase(get()) }
 }
 
 class SharedComponent : KoinComponent {
@@ -332,6 +333,9 @@ class StateUseCaseComponent : KoinComponent {
     fun provideGetRatesUseCase(): GetRatesUseCase = get()
     fun provideGetBalanceUseCase(): GetBalanceUseCase = get()
     fun provideGetContractsUseCase(): GetContractsUseCase = get()
+    fun provideGetGasPriceUseCase(): GetGasPriceUseCase = get()
+    fun provideGetGasLimitUseCase(): GetGasLimitUseCase = get()
+    fun provideGetNonceUseCase(): GetNonceUseCase = get()
 }
 
 class UserWalletUseCaseComponent : KoinComponent {

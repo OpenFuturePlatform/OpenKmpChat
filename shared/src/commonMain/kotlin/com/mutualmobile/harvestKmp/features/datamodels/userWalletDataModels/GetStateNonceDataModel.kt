@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-class GetStateBalanceDataModel() :
+class GetStateNonceDataModel() :
     PraxisDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
@@ -23,10 +23,6 @@ class GetStateBalanceDataModel() :
 
 
     private val stateUseCaseComponent = StateUseCaseComponent()
-    private val getWalletBalanceUseCase = stateUseCaseComponent.provideGetBalanceUseCase()
-    private val getContractsUseCase = stateUseCaseComponent.provideGetContractsUseCase()
-    private val getGasPriceUseCase = stateUseCaseComponent.provideGetGasPriceUseCase()
-    private val getGasLimitUseCase = stateUseCaseComponent.provideGetGasLimitUseCase()
     private val getNonceUseCase = stateUseCaseComponent.provideGetNonceUseCase()
 
     override fun activate() {
@@ -38,15 +34,14 @@ class GetStateBalanceDataModel() :
 
     override fun refresh() {
     }
-
-    fun getCryptoBalance(address: String, contractAddress: String?, blockchainType: String) {
+    fun getEthNonce(address: String, blockchainType: String) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-            when (val response = getWalletBalanceUseCase(BalanceRequest(address = address, contractAddress = contractAddress, blockchainName = blockchainType))) {
+            when (val response = getNonceUseCase(BalanceRequest(address = address, blockchainName = blockchainType, contractAddress = null))) {
 
                 is NetworkResponse.Success -> {
-                    println("GetStateBalanceDataModel: Success -> ${response.data}")
+                    println("GetNonce: Success -> ${response.data}")
                     _dataFlow.emit(SuccessState(response.data))
                 }
 

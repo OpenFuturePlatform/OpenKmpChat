@@ -10,4 +10,7 @@ interface StateApi {
     suspend fun getPrices(ticker: String?): NetworkResponse<CoinGateRate>
     suspend fun getBalance(request : BalanceRequest): NetworkResponse<WalletBalanceResponse>
     suspend fun getContracts(isTest : Boolean): NetworkResponse<List<ContractResponse>>
+    suspend fun getGasLimit(request : BalanceRequest): NetworkResponse<Long>
+    suspend fun getGasPrice(request : BalanceRequest): NetworkResponse<Long>
+    suspend fun getNonce(request : BalanceRequest): NetworkResponse<Long>
 }

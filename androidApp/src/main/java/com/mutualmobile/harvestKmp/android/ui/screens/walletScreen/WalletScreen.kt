@@ -4,14 +4,13 @@ import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -24,8 +23,7 @@ import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.common.GenerateWalletDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.HarvestDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.WalletDetailDialog
-import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletContractsItem
-import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletListItem
+import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.ExpandableListItem
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletSearchView
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.ui.utils.get
@@ -33,7 +31,7 @@ import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.*
-import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
+import com.mutualmobile.harvestKmp.domain.model.response.WalletResponse
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.get
 
@@ -47,6 +45,9 @@ fun WalletScreen(
 
     val scaffoldState = rememberScaffoldState()
     val mContext = LocalContext.current
+    //val networks = Blockchain.values().map { it.name }
+    val networks = listOf("ETH", "BTC", "BNB", "TRX", "SOL")
+    val selectedNetworks = remember { mutableStateListOf<String>() }
 
     LaunchedEffect(wsVm.walletScreenNavigationCommands) {
         when (wsVm.walletScreenNavigationCommands) {
@@ -73,17 +74,19 @@ fun WalletScreen(
 
     if (wsVm.isWalletGenerateDialogVisible) {
         GenerateWalletDialog(
+            networks = networks,
+            selectedNetworks = selectedNetworks,
             onDismiss = {
                 wsVm.isWalletGenerateDialogVisible = false
-                wsVm.blockchainType = BlockchainType.ETH
                 wsVm.password = ""
+                wsVm.blockchainNetworks = emptyList()
             },
             onConfirm = {
                 wsVm.generateWallet()
-            },
-            titleProvider = { MR.strings.assistant_datepicker_title.get() }
+            }
         )
     }
+
     if (wsVm.isWalletDetailDialogVisible) {
         WalletDetailDialog(
             onDismiss = {
@@ -98,7 +101,10 @@ fun WalletScreen(
                 wsVm.decryptWallet()
             },
             titleProvider = { MR.strings.choose_wallet.get() },
-            wsVm = wsVm
+            wsVm = wsVm,
+            onSign = {
+                wsVm.signEthereumTransaction(wsVm.currentWalletAddress, wsVm.currentWalletDecryptedPrivateKey)
+            }
         )
     }
 
@@ -134,6 +140,8 @@ fun WalletScreen(
 
     ) { bodyPadding ->
 
+        var expandedIndex by remember { mutableStateOf(-1) }
+
         Column(modifier = Modifier.padding(bodyPadding)) {
             AnimatedVisibility(visible = wsVm.currentWalletScreenState is LoadingState) {
                 CircularProgressIndicator(modifier = Modifier.fillMaxWidth())
@@ -141,39 +149,30 @@ fun WalletScreen(
             LazyColumn(modifier = Modifier.fillMaxWidth()) {
                 val searchedText = wsVm.textState.text
                 wsVm.filteredWalletListMap = if (searchedText.isEmpty()) {
-                    wsVm.wallets
+                    wsVm.wallets.sortedBy { it.blockchainType }
                 } else {
-                    wsVm.wallets.filter { it.blockchainType?.contains(searchedText, true) == true }
+                    wsVm.wallets.filter { it.blockchainType?.contains(searchedText, true) == true }.sortedBy { it.blockchainType }
                 }
-                items(wsVm.filteredWalletListMap) { wallet ->
-                    val walletKey = wallet.address + wallet.blockchainType
-                    val balance = if (wsVm.walletBalances.isNotEmpty() && wsVm.walletBalances.containsKey(walletKey)) {
-                        wsVm.walletBalances[walletKey]
-                    } else {
-                        "0"
-                    }
 
-                    WalletListItem(
-                        blokchainType = wallet.blockchainType!!,
-                        address = wallet.address!!,
-                        privateKey = wallet.privateKey!!,
-                        balance = balance!!,
-                        onItemClick = {
-                            wsVm.isWalletDetailDialogVisible = true
-                            wsVm.currentWalletAddress = wallet.address!!
-                            wsVm.currentWalletPrivateKey = wallet.privateKey!!
-                            wsVm.currentWalletSeeedPhrases = wallet.seedPhrases!!
+                var groupedWallets: Map<String, List<WalletResponse>> =
+                    wsVm.filteredWalletListMap.groupBy { it.blockchainType!! }
+                // ADD USDT Wallets
+                val usdtWallets =
+                    wsVm.filteredWalletListMap.filter { it.blockchainType!! == "ETH" || it.blockchainType!! == "TRX" }
+                groupedWallets = groupedWallets.plus("USDT" to usdtWallets)
+
+                itemsIndexed(groupedWallets.entries.toList()) { index, blockchainWallet ->
+
+                    ExpandableListItem(
+                        blockchainType = blockchainWallet.key,
+                        wallets = blockchainWallet.value,
+                        isExpanded = expandedIndex == index,
+                        onClick = {
+                            expandedIndex = if (expandedIndex == index) -1 else index
                         },
                         wsVm = wsVm
                     )
-                    if (wallet.blockchainType!! == "ETH" || wallet.blockchainType!! == "TRX"){
-                        WalletContractsItem(
-                            blokchainType =  wallet.blockchainType!!,
-                            address = wallet.address!!,
-                            balance = balance,
-                            wsVm = wsVm
-                        )
-                    }
+
                 }
 
             }

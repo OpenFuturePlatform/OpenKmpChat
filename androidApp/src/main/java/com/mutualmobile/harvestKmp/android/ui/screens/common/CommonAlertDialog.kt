@@ -5,6 +5,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -14,9 +15,12 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -36,6 +40,7 @@ import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.TaskScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
+import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import com.mutualmobile.harvestKmp.domain.model.request.TaskRequest
 import com.mutualmobile.harvestKmp.domain.model.response.AssistantNotesResponse
@@ -342,20 +347,18 @@ fun CommonAlertDialogPreview() {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun GenerateWalletDialog(
+    networks: List<String>,
+    selectedNetworks: List<String>,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    titleProvider: @Composable () -> String,
     wsVm: WalletScreenViewModel = get(),
 ) {
 
-    //val categories = Blockchain.values().map { it.name }
-    val categories = arrayOf("ETH", "BTC", "BNB", "TRX")
-    println("Categories $categories")
     var expanded by remember { mutableStateOf(false) }
-    var blockchain by remember { mutableStateOf(categories[0]) }
 
     val txtFieldError = remember { mutableStateOf("") }
     val txtField = remember { mutableStateOf("") }
+    val selectedNetworks = remember { mutableStateListOf(*selectedNetworks.toTypedArray()) }
 
     Dialog(onDismissRequest = { onDismiss() }, properties = DialogProperties()) {
         Surface(
@@ -405,7 +408,7 @@ fun GenerateWalletDialog(
                         onExpandedChange = { expanded = !expanded }
                     ) {
                         TextField(
-                            value = blockchain,
+                            value = if (selectedNetworks.size == 0) "Choose Network" else selectedNetworks.joinToString(", "),
                             onValueChange = {},
                             readOnly = true,
                             trailingIcon = {
@@ -419,14 +422,18 @@ fun GenerateWalletDialog(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
                         ) {
-                            categories.forEach { item ->
-                                DropdownMenuItem(
-                                    content = { Text(text = item) },
-                                    onClick = {
-                                        blockchain = item
-                                        expanded = false
-                                    }
-                                )
+                            networks.forEach { item ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = selectedNetworks.contains(item),
+                                        onCheckedChange = {
+                                            if (it) selectedNetworks.add(item) else selectedNetworks.remove(item)
+                                        }
+                                    )
+                                    Text(text = item)
+                                }
                             }
                         }
 
@@ -466,7 +473,8 @@ fun GenerateWalletDialog(
                                 }
                                 wsVm.password = txtField.value
                                 wsVm.isWalletGenerateDialogVisible = false
-                                wsVm.blockchainType = BlockchainType.valueOf(blockchain)
+                                wsVm.blockchainNetworks = selectedNetworks.map { BlockchainType.valueOf(it.toString()) }
+                                // confirm
                                 onConfirm()
                             },
                             shape = RoundedCornerShape(50.dp),
@@ -484,9 +492,52 @@ fun GenerateWalletDialog(
 }
 
 @Composable
+fun MultiSelectDialog(
+    items: List<String>,
+    selectedItems: List<String>,
+    onDismissRequest: () -> Unit,
+    onConfirm: (List<String>) -> Unit
+) {
+    val selected = remember { mutableStateListOf(*selectedItems.toTypedArray()) }
+
+    AlertDialog(
+        onDismissRequest = onDismissRequest,
+        title = { Text(text = "Select Items") },
+        text = {
+            Column {
+                items.forEach { item ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = selected.contains(item),
+                            onCheckedChange = {
+                                if (it) selected.add(item) else selected.remove(item)
+                            }
+                        )
+                        Text(text = item)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(selected) }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = onDismissRequest) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
 fun WalletDetailDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
+    onSign: () -> Unit,
     titleProvider: @Composable () -> String,
     wsVm: WalletScreenViewModel
 ) {
@@ -533,13 +584,6 @@ fun WalletDetailDialog(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     Text(
-                        text = "Address",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
                         text = wsVm.currentWalletAddress,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
@@ -554,12 +598,12 @@ fun WalletDetailDialog(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (wsVm.currentWalletDecryptedPrivateKey != "") {
-                        Text(
-                            text = wsVm.currentWalletSeeedPhrases,
-                            fontSize = 18.sp,
-                            color = Color.Black,
-                            modifier = Modifier.padding(all = 8.dp)
-                        )
+//                        Text(
+//                            text = wsVm.currentWalletSeeedPhrases,
+//                            fontSize = 18.sp,
+//                            color = Color.Black,
+//                            modifier = Modifier.padding(all = 8.dp)
+//                        )
                         Text(
                             text = wsVm.currentWalletDecryptedPrivateKey,
                             fontSize = 18.sp,
@@ -567,10 +611,16 @@ fun WalletDetailDialog(
                             modifier = Modifier.padding(all = 8.dp)
                         )
                         Button(onClick = {
+                            onSign()
+                        }) {
+                            Text(text = "SEND")
+                        }
+                        Button(onClick = {
                             clipboardManager.setText(AnnotatedString((wsVm.currentWalletDecryptedPrivateKey)))
                         }) {
                             Text("Copy Private Key")
                         }
+
                     }
                     TextField(
                         modifier = Modifier
@@ -595,47 +645,49 @@ fun WalletDetailDialog(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     // Buttons
-//                    Row(
-//                        horizontalArrangement = Arrangement.End,
-//                        modifier = Modifier.fillMaxWidth()
-//                    ) {
-//                        TextButton(onClick = {
-//                            onDismiss()
-//                        }) {
-//                            Text(text = "CANCEL")
-//                        }
-//                        Spacer(modifier = Modifier.width(4.dp))
-//                        TextButton(onClick = {
-//                            if (txtField.value.isEmpty()) {
-//                                txtFieldError.value = "Password can not be empty"
-//                                return@Button
-//                            }
-//                            wsVm.password = txtField.value
-//                            onConfirm()
-//                        }) {
-//                            Text(text = "DECRYPT")
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(onClick = {
+                            onDismiss()
+                        }) {
+                            Text(text = "CANCEL")
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Button(onClick = {
+                            if (txtField.value.isEmpty()) {
+                                txtFieldError.value = "Password can not be empty"
+                                return@Button
+                            }
+                            wsVm.password = txtField.value
+                            onConfirm()
+                        }) {
+                            Text(text = "DECRYPT")
+                        }
+
+
+                    }
+
+//                    Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
+//                        Button(
+//                            onClick = {
+//                                if (txtField.value.isEmpty()) {
+//                                    txtFieldError.value = "Password can not be empty"
+//                                    return@Button
+//                                }
+//                                wsVm.password = txtField.value
+//
+//                                onConfirm()
+//                            },
+//                            shape = RoundedCornerShape(50.dp),
+//                            modifier = Modifier
+//                                .fillMaxWidth()
+//                                .height(50.dp)
+//                        ) {
+//                            Text(text = "Done")
 //                        }
 //                    }
-
-                    Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
-                        Button(
-                            onClick = {
-                                if (txtField.value.isEmpty()) {
-                                    txtFieldError.value = "Password can not be empty"
-                                    return@Button
-                                }
-                                wsVm.password = txtField.value
-
-                                onConfirm()
-                            },
-                            shape = RoundedCornerShape(50.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(50.dp)
-                        ) {
-                            Text(text = "Done")
-                        }
-                    }
                 }
             }
         }

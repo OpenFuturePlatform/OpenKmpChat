@@ -8,6 +8,7 @@ data class CoinGateRate(
     val btc: CoinGateExchangeRate,
     val bnb: CoinGateExchangeRate,
     val trx: CoinGateExchangeRate,
+    val sol: CoinGateExchangeRate,
     val eth: CoinGateExchangeRate
 )
 

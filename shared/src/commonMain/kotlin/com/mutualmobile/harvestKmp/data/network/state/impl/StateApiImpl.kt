@@ -43,4 +43,34 @@ class StateApiImpl(
                 contentType(ContentType.Application.Json)
             }
         }
+
+    override suspend fun getGasLimit(request: BalanceRequest): NetworkResponse<Long> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.STATE_URL}${Endpoint.GAS_LIMIT_URL}"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+
+    override suspend fun getGasPrice(request: BalanceRequest): NetworkResponse<Long> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.STATE_URL}${Endpoint.GAS_PRICE_URL}"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+
+    override suspend fun getNonce(request: BalanceRequest): NetworkResponse<Long> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.STATE_URL}${Endpoint.NONCE_URL}"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
 }

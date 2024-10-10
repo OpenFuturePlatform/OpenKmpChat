@@ -1,5 +1,6 @@
 package com.mutualmobile.harvestKmp.domain.model
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
+import com.mutualmobile.harvestKmp.domain.model.response.WalletResponse
 import dev.icerock.moko.graphics.Color
 import dev.icerock.moko.resources.ImageResource
 import kotlinx.datetime.Clock
@@ -141,3 +142,8 @@ object ColorProvider {
         return Color(color)
     }
 }
+data class BlockchainWallets(
+    val blockchainType: BlockchainType,
+    val blockchainIcon: String,
+    val wallets: List<WalletResponse>
+)
