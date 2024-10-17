@@ -11,10 +11,8 @@ import wallet.core.java.AnySigner
 import wallet.core.jni.CoinType
 import wallet.core.jni.HDWallet
 import wallet.core.jni.PrivateKey
-import wallet.core.jni.proto.Binance
 import wallet.core.jni.proto.Ethereum
-import wallet.core.jni.proto.Solana
-import wallet.core.jni.proto.Tron
+import java.math.BigDecimal
 import java.math.BigInteger
 import java.nio.charset.StandardCharsets
 import java.security.NoSuchAlgorithmException
@@ -140,15 +138,23 @@ object SecurityUtils {
         return null
     }
 
-    fun signEthereum(receiverAddress: String, secretPrivateKey: PrivateKey, gasPriceInteger: BigInteger, gasLimitInteger: BigInteger, amountInteger: BigInteger): String {
+    fun signEthereum(
+        receiverAddress: String,
+        secretPrivateKey: PrivateKey,
+        gasPriceInteger: BigInteger,
+        gasLimitInteger: BigInteger,
+        amountInteger: BigInteger,
+        addressNonce: BigInteger
+    ): String {
         val signerInput = Ethereum.SigningInput.newBuilder().apply {
-            chainId = ByteString.copyFrom(BigInteger("01").toByteArray())
-            gasPrice = gasPriceInteger.toByteString() // decimal 3600000000
-            gasLimit = gasLimitInteger.toByteString()     // decimal 21000
+            chainId = ByteString.copyFrom(BigInteger("11155111").toByteArray())
+            gasPrice = gasPriceInteger.toByteString()
+            gasLimit = gasLimitInteger.toByteString()
             toAddress = receiverAddress
+            nonce = ByteString.copyFrom(addressNonce.toByteArray())
             transaction = Ethereum.Transaction.newBuilder().apply {
-                transfer = Ethereum.Transaction.Transfer.newBuilder().apply  {
-                    amount = amountInteger.toByteString() // 924400000000000
+                transfer = Ethereum.Transaction.Transfer.newBuilder().apply {
+                    amount = amountInteger.toByteString()
                 }.build()
             }.build()
             privateKey = ByteString.copyFrom(secretPrivateKey.data())
@@ -184,4 +190,6 @@ object SecurityUtils {
         }
         return result
     }
+
+
 }

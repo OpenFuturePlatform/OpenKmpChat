@@ -1,6 +1,7 @@
 package com.mutualmobile.harvestKmp.data.network.state
 
 import com.mutualmobile.harvestKmp.domain.model.request.BalanceRequest
+import com.mutualmobile.harvestKmp.domain.model.request.BroadcastRequest
 import com.mutualmobile.harvestKmp.domain.model.response.CoinGateRate
 import com.mutualmobile.harvestKmp.domain.model.response.ContractResponse
 import com.mutualmobile.harvestKmp.domain.model.response.WalletBalanceResponse
@@ -13,4 +14,5 @@ interface StateApi {
     suspend fun getGasLimit(request : BalanceRequest): NetworkResponse<Long>
     suspend fun getGasPrice(request : BalanceRequest): NetworkResponse<Long>
     suspend fun getNonce(request : BalanceRequest): NetworkResponse<Long>
+    suspend fun broadcastTransaction(request : BroadcastRequest): NetworkResponse<String>
 }

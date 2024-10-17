@@ -67,6 +67,7 @@ import com.russhwolf.settings.Settings
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.RefreshTokensParams
@@ -268,6 +269,7 @@ val stateUseCaseModule = module {
     single { GetGasLimitUseCase(get()) }
     single { GetGasPriceUseCase(get()) }
     single { GetNonceUseCase(get()) }
+    single { PostBroadcastUseCase(get()) }
 }
 
 class SharedComponent : KoinComponent {
@@ -336,6 +338,7 @@ class StateUseCaseComponent : KoinComponent {
     fun provideGetGasPriceUseCase(): GetGasPriceUseCase = get()
     fun provideGetGasLimitUseCase(): GetGasLimitUseCase = get()
     fun provideGetNonceUseCase(): GetNonceUseCase = get()
+    fun provideBroadcastUseCase(): PostBroadcastUseCase = get()
 }
 
 class UserWalletUseCaseComponent : KoinComponent {
@@ -410,7 +413,11 @@ fun httpClient(
             logger = Logger.DEFAULT
             level = LogLevel.ALL
         }
-        install(WebSockets)
+        //install(WebSockets)
+        install(HttpTimeout) {
+            connectTimeoutMillis = 300000
+            requestTimeoutMillis = 300000
+        }
     }
 
 private suspend fun RefreshTokensParams.refreshToken(

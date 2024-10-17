@@ -7,6 +7,7 @@ import com.mutualmobile.harvestKmp.features.NetworkResponse
 
 class GetBalanceUseCase(private val stateApi: StateApi) {
     suspend operator fun invoke(request: BalanceRequest): NetworkResponse<WalletBalanceResponse> {
+        println("GetBalanceUseCase request $request")
         return stateApi.getBalance(request)
     }
 }

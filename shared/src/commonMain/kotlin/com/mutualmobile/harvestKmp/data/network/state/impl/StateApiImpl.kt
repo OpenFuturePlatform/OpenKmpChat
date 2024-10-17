@@ -4,6 +4,7 @@ import com.mutualmobile.harvestKmp.data.network.Endpoint
 import com.mutualmobile.harvestKmp.data.network.getSafeNetworkResponse
 import com.mutualmobile.harvestKmp.data.network.state.StateApi
 import com.mutualmobile.harvestKmp.domain.model.request.BalanceRequest
+import com.mutualmobile.harvestKmp.domain.model.request.BroadcastRequest
 import com.mutualmobile.harvestKmp.domain.model.response.CoinGateRate
 import com.mutualmobile.harvestKmp.domain.model.response.ContractResponse
 import com.mutualmobile.harvestKmp.domain.model.response.WalletBalanceResponse
@@ -68,6 +69,16 @@ class StateApiImpl(
         getSafeNetworkResponse {
             httpClient.post(
                 urlString = "${Endpoint.STATE_URL}${Endpoint.NONCE_URL}"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+
+    override suspend fun broadcastTransaction(request: BroadcastRequest): NetworkResponse<String> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.STATE_URL}${Endpoint.BROADCAST_URL}"
             ) {
                 contentType(ContentType.Application.Json)
                 setBody(request)

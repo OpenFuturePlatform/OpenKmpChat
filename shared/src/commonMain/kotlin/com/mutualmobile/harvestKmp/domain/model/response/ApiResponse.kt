@@ -1,6 +1,5 @@
 package com.mutualmobile.harvestKmp.domain.model.response
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,9 +9,7 @@ data class ApiResponse<T>(
 )
 
 @Serializable
-data class SpringError(
-    val error: String? = null,
-    val path: String? = null,
-    val status: Int? = null,
-    val timestamp: String? = null
+data class ApiError(
+    val reason: String? = null,
+    val status: Int? = null
 )

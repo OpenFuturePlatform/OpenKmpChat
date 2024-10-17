@@ -21,7 +21,6 @@ class GetStateGasLimitDataModel() :
 
     private var currentLoadingJob: Job? = null
 
-
     private val stateUseCaseComponent = StateUseCaseComponent()
     private val getGasLimitUseCase = stateUseCaseComponent.provideGetGasLimitUseCase()
 
@@ -34,11 +33,18 @@ class GetStateGasLimitDataModel() :
 
     override fun refresh() {
     }
+
     fun getGasLimit(address: String, blockchainType: String) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-            when (val response = getGasLimitUseCase(BalanceRequest(address = address, blockchainName = blockchainType, contractAddress = null))) {
+            when (val response = getGasLimitUseCase(
+                BalanceRequest(
+                    address = address,
+                    blockchainName = blockchainType,
+                    contractAddress = null
+                )
+            )) {
 
                 is NetworkResponse.Success -> {
                     println("GetGasLimit: Success -> ${response.data}")
@@ -55,6 +61,30 @@ class GetStateGasLimitDataModel() :
                     intPraxisCommand.emit(NavigationPraxisCommand(""))
                 }
 
+            }
+        }
+    }
+
+    suspend fun getGasLimitSync(address: String, blockchainType: String) : Long {
+        val response = getGasLimitUseCase(
+            BalanceRequest(
+                address = address,
+                blockchainName = blockchainType,
+                contractAddress = null
+            )
+        )
+        return when (response) {
+
+            is NetworkResponse.Success -> {
+                response.data
+            }
+
+            is NetworkResponse.Failure -> {
+                0
+            }
+
+            is NetworkResponse.Unauthorized -> {
+                0
             }
         }
     }

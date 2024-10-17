@@ -23,10 +23,10 @@ import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.common.GenerateWalletDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.HarvestDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.WalletDetailDialog
+import com.mutualmobile.harvestKmp.android.ui.screens.common.WalletTransactionDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.ExpandableListItem
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.components.WalletSearchView
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
-import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
@@ -100,11 +100,31 @@ fun WalletScreen(
             onConfirm = {
                 wsVm.decryptWallet()
             },
-            titleProvider = { MR.strings.choose_wallet.get() },
-            wsVm = wsVm,
-            onSign = {
-                wsVm.signEthereumTransaction(wsVm.currentWalletAddress, wsVm.currentWalletDecryptedPrivateKey)
-            }
+            onSend = {
+                wsVm.isWalletDetailDialogVisible = false
+                wsVm.isWalletTransactionDialogVisible = true
+            },
+            wsVm = wsVm
+        )
+    }
+    if (wsVm.isWalletTransactionDialogVisible) {
+        WalletTransactionDialog(
+            onDismiss = {
+                wsVm.isWalletTransactionDialogVisible = false
+                wsVm.currentWalletPrivateKey = ""
+                wsVm.currentWalletSeeedPhrases = ""
+                wsVm.currentWalletDecryptedPrivateKey = ""
+                wsVm.currentWalletAddress = ""
+                wsVm.password = ""
+                wsVm.currentBroadcastError = ""
+                wsVm.currentBroadcastHash = ""
+                wsVm.isBroadcastLoading = false
+            },
+            onConfirm = {
+                wsVm.isBroadcastLoading = true
+                wsVm.broadcastTransaction(wsVm.currentWalletAddress, wsVm.currentWalletDecryptedPrivateKey, wsVm.currentReceiverAddress, wsVm.currentReceiverAmount)
+            },
+            wsVm = wsVm
         )
     }
 

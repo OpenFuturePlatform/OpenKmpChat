@@ -34,11 +34,18 @@ class GetStateGasPriceDataModel() :
 
     override fun refresh() {
     }
-    fun getGasPrice(address: String, blockchainType: String)  {
+
+    fun getGasPrice(address: String, blockchainType: String) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-            when (val response = getGasPriceUseCase(BalanceRequest(address = address, blockchainName = blockchainType, contractAddress = null))) {
+            when (val response = getGasPriceUseCase(
+                BalanceRequest(
+                    address = address,
+                    blockchainName = blockchainType,
+                    contractAddress = null
+                )
+            )) {
 
                 is NetworkResponse.Success -> {
                     println("GetGasPrice: Success -> ${response.data}")
@@ -56,6 +63,33 @@ class GetStateGasPriceDataModel() :
                 }
 
             }
+        }
+
+    }
+
+    suspend fun getGasPriceSync(address: String, blockchainType: String): Long {
+
+        val response = getGasPriceUseCase(
+            BalanceRequest(
+                address = address,
+                blockchainName = blockchainType,
+                contractAddress = null
+            )
+        )
+        return when (response) {
+
+            is NetworkResponse.Success -> {
+                response.data
+            }
+
+            is NetworkResponse.Failure -> {
+                0
+            }
+
+            is NetworkResponse.Unauthorized -> {
+                0
+            }
+
         }
 
     }

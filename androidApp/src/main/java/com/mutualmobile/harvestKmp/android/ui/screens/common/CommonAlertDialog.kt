@@ -5,22 +5,18 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -40,7 +36,6 @@ import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.TaskScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
-import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import com.mutualmobile.harvestKmp.domain.model.request.TaskRequest
 import com.mutualmobile.harvestKmp.domain.model.response.AssistantNotesResponse
@@ -49,8 +44,6 @@ import com.mutualmobile.harvestKmp.domain.model.response.AssistantTodosResponse
 import com.mutualmobile.harvestKmp.utils.now
 import kotlinx.datetime.LocalDate
 import org.koin.androidx.compose.get
-import wallet.core.jni.Blockchain
-import wallet.core.jni.CoinType
 import java.util.*
 
 @Composable
@@ -408,7 +401,9 @@ fun GenerateWalletDialog(
                         onExpandedChange = { expanded = !expanded }
                     ) {
                         TextField(
-                            value = if (selectedNetworks.size == 0) "Choose Network" else selectedNetworks.joinToString(", "),
+                            value = if (selectedNetworks.size == 0) "Choose Network" else selectedNetworks.joinToString(
+                                ", "
+                            ),
                             onValueChange = {},
                             readOnly = true,
                             trailingIcon = {
@@ -473,7 +468,7 @@ fun GenerateWalletDialog(
                                 }
                                 wsVm.password = txtField.value
                                 wsVm.isWalletGenerateDialogVisible = false
-                                wsVm.blockchainNetworks = selectedNetworks.map { BlockchainType.valueOf(it.toString()) }
+                                wsVm.blockchainNetworks = selectedNetworks.map { BlockchainType.valueOf(it) }
                                 // confirm
                                 onConfirm()
                             },
@@ -537,8 +532,7 @@ fun MultiSelectDialog(
 fun WalletDetailDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    onSign: () -> Unit,
-    titleProvider: @Composable () -> String,
+    onSend: () -> Unit,
     wsVm: WalletScreenViewModel
 ) {
     val clipboardManager = LocalClipboardManager.current
@@ -611,7 +605,7 @@ fun WalletDetailDialog(
                             modifier = Modifier.padding(all = 8.dp)
                         )
                         Button(onClick = {
-                            onSign()
+                            onSend()
                         }) {
                             Text(text = "SEND")
                         }
@@ -688,6 +682,212 @@ fun WalletDetailDialog(
 //                            Text(text = "Done")
 //                        }
 //                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WalletTransactionDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    wsVm: WalletScreenViewModel
+) {
+
+    val clipboardManager = LocalClipboardManager.current
+    var currentProgress by remember { mutableStateOf(0f) }
+    var loading by remember { mutableStateOf(false) }
+    val txtFieldError = remember { mutableStateOf("") }
+    val addressField = remember { mutableStateOf("") }
+    val amountField = remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = {
+        onDismiss()
+    }, properties = DialogProperties()) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        if (txtFieldError.value.isNotEmpty() || wsVm.currentBroadcastError.isNotEmpty()) {
+                            Icon(
+                                imageVector = Icons.Filled.Warning,
+                                contentDescription = "",
+                                tint = colorResource(R.color.darker_gray),
+                                modifier = Modifier
+                                    .width(30.dp)
+                                    .height(30.dp)
+                            )
+                            Text(
+                                text = txtFieldError.value,
+                                style = TextStyle(
+                                    fontSize = 15.sp,
+                                    fontFamily = FontFamily.Default,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                            Text(
+                                text = wsVm.currentBroadcastError,
+                                style = TextStyle(
+                                    fontSize = 15.sp,
+                                    fontFamily = FontFamily.Default,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+                        }
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = "",
+                            tint = colorResource(R.color.darker_gray),
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp)
+                                .clickable { onDismiss() }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    if (wsVm.currentWalletAddress.isNotEmpty()) {
+                        TextField(
+                            value = wsVm.currentWalletAddress,
+                            readOnly = true,
+                            label = { Text("From") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(
+                                    BorderStroke(
+                                        width = 2.dp,
+                                        color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                    )
+                                ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                backgroundColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            onValueChange = {}
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (wsVm.currentWalletDecryptedPrivateKey != "") {
+
+                        TextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(
+                                    BorderStroke(
+                                        width = 2.dp,
+                                        color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                    )
+                                ),
+                            label = { Text("Receiver") },
+                            colors = TextFieldDefaults.textFieldColors(
+                                backgroundColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            value = "0x014D9Fcdb245CF31BfbaD92F3031FE036fE91Bc3",
+                            onValueChange = {
+                                addressField.value = it
+                            })
+
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        TextField(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(
+                                    BorderStroke(
+                                        width = 2.dp,
+                                        color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                    )
+                                ),
+                            colors = TextFieldDefaults.textFieldColors(
+                                backgroundColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            placeholder = { Text(text = "Enter amount") },
+                            label = { Text("Amount") },
+                            value = amountField.value,
+                            onValueChange = {
+                                amountField.value = it
+                            },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
+
+                        // Buttons
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+
+                            if (wsVm.isBroadcastLoading) {
+                                LinearProgressIndicator(modifier = Modifier.fillMaxWidth().padding(2.dp))
+                            } else {
+                                if (wsVm.currentBroadcastHash.isEmpty()) {
+                                    Button(onClick = {
+                                        onDismiss()
+                                    }) {
+                                        Text(text = "Cancel")
+                                    }
+                                    Spacer(modifier = Modifier.width(4.dp))
+
+                                    Button(onClick = {
+                                        if (addressField.value.isEmpty()) {
+                                            txtFieldError.value = "Address can not be empty"
+                                            return@Button
+                                        }
+                                        if (amountField.value.isEmpty()) {
+                                            txtFieldError.value = "Amount can not be empty"
+                                            return@Button
+                                        }
+                                        wsVm.currentReceiverAddress = addressField.value
+                                        wsVm.currentReceiverAmount = amountField.value
+                                        onConfirm()
+                                    }) {
+                                        Text(text = "Send")
+                                    }
+                                } else {
+                                    Button(onClick = {
+                                        clipboardManager.setText(AnnotatedString((wsVm.currentBroadcastHash)))
+                                    }) {
+                                        Text(text = "Copy ID")
+                                    }
+                                }
+
+                            }
+                        }
+
+                    } else {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Button(onClick = {
+                                onDismiss()
+                            }) {
+                                Text(text = "Close")
+                            }
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                    }
+
+
                 }
             }
         }

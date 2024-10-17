@@ -1,5 +1,7 @@
 package com.mutualmobile.harvestKmp.features
 
+import com.mutualmobile.harvestKmp.domain.model.response.ApiError
+
 sealed class NetworkResponse<out T> {
     class Success<T>(val data: T) : NetworkResponse<T>()
     class Failure(val throwable: Throwable) : NetworkResponse<Nothing>()

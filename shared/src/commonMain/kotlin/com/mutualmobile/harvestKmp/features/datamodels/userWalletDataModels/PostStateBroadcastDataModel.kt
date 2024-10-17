@@ -4,9 +4,8 @@ import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
 import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
 import com.mutualmobile.harvestKmp.di.StateUseCaseComponent
-import com.mutualmobile.harvestKmp.domain.model.request.BalanceRequest
+import com.mutualmobile.harvestKmp.domain.model.request.BroadcastRequest
 import com.mutualmobile.harvestKmp.features.NetworkResponse
-import io.ktor.websocket.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,16 +13,15 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-class GetStateNonceDataModel() :
+class PostStateBroadcastDataModel() :
     PraxisDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
     private var currentLoadingJob: Job? = null
 
-
     private val stateUseCaseComponent = StateUseCaseComponent()
-    private val getNonceUseCase = stateUseCaseComponent.provideGetNonceUseCase()
+    private val getBroadcastUseCase = stateUseCaseComponent.provideBroadcastUseCase()
 
     override fun activate() {
     }
@@ -35,24 +33,24 @@ class GetStateNonceDataModel() :
     override fun refresh() {
     }
 
-    fun getEthNonce(address: String, blockchainType: String) {
+    fun createBroadcast(signature: String, blockchainType: String) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-            when (val response = getNonceUseCase(
-                BalanceRequest(
-                    address = address,
-                    blockchainName = blockchainType,
-                    contractAddress = null
+            when (val response = getBroadcastUseCase(
+                BroadcastRequest(
+                    signature = signature,
+                    blockchainName = blockchainType
                 )
             )) {
 
                 is NetworkResponse.Success -> {
-                    println("GetNonce: Success -> ${response.data}")
+                    println("GetBroadcast: Success -> ${response.data}")
                     _dataFlow.emit(SuccessState(response.data))
                 }
 
                 is NetworkResponse.Failure -> {
+                    println("GetBroadcast: Error -> ${response.throwable}")
                     _dataFlow.emit(ErrorState(response.throwable))
                 }
 
@@ -66,9 +64,9 @@ class GetStateNonceDataModel() :
         }
     }
 
-    suspend fun getEthNonceSync(address: String, blockchainType: String): Long {
+    suspend fun createBroadcastSync(signature: String, blockchainType: String): String {
         val response =
-            getNonceUseCase(BalanceRequest(address = address, blockchainName = blockchainType, contractAddress = null))
+            getBroadcastUseCase(BroadcastRequest(signature = signature, blockchainName = blockchainType))
         return when (response) {
 
             is NetworkResponse.Success -> {
@@ -76,11 +74,11 @@ class GetStateNonceDataModel() :
             }
 
             is NetworkResponse.Failure -> {
-                0
+                ""
             }
 
             is NetworkResponse.Unauthorized -> {
-                0
+                ""
             }
 
         }

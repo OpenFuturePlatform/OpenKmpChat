@@ -24,10 +24,6 @@ class GetStateBalanceDataModel() :
 
     private val stateUseCaseComponent = StateUseCaseComponent()
     private val getWalletBalanceUseCase = stateUseCaseComponent.provideGetBalanceUseCase()
-    private val getContractsUseCase = stateUseCaseComponent.provideGetContractsUseCase()
-    private val getGasPriceUseCase = stateUseCaseComponent.provideGetGasPriceUseCase()
-    private val getGasLimitUseCase = stateUseCaseComponent.provideGetGasLimitUseCase()
-    private val getNonceUseCase = stateUseCaseComponent.provideGetNonceUseCase()
 
     override fun activate() {
     }
@@ -40,9 +36,9 @@ class GetStateBalanceDataModel() :
     }
 
     fun getCryptoBalance(address: String, contractAddress: String?, blockchainType: String) {
-        currentLoadingJob?.cancel()
+        //currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
-            _dataFlow.emit(LoadingState)
+            //_dataFlow.emit(LoadingState)
             when (val response = getWalletBalanceUseCase(BalanceRequest(address = address, contractAddress = contractAddress, blockchainName = blockchainType))) {
 
                 is NetworkResponse.Success -> {

@@ -1,6 +1,7 @@
 package com.mutualmobile.harvestKmp.datamodel
 
 import com.mutualmobile.harvestKmp.di.SharedComponent
+import com.mutualmobile.harvestKmp.domain.model.response.ApiError
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutineScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
