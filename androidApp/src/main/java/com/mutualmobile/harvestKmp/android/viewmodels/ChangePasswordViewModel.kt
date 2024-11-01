@@ -8,16 +8,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.mutualmobile.harvestKmp.android.ui.utils.showToast
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels.ChangePasswordDataModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class ChangePasswordViewModel : ViewModel() {
-    var changePasswordState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+    var changePasswordState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
-    var changePasswordPraxisCommand: PraxisCommand? by mutableStateOf(null)
+    var changePasswordOpenCommand: OpenCommand? by mutableStateOf(null)
 
     private val changePasswordDataModel = ChangePasswordDataModel()
 
@@ -32,7 +32,7 @@ class ChangePasswordViewModel : ViewModel() {
 
     private fun ChangePasswordDataModel.observeNavigationCommands() =
         praxisCommand.onEach { newCommand ->
-            changePasswordPraxisCommand = newCommand
+            changePasswordOpenCommand = newCommand
         }.launchIn(viewModelScope)
 
     fun changePassword(ctx: Context, navController: NavHostController) {
@@ -42,7 +42,7 @@ class ChangePasswordViewModel : ViewModel() {
         ).onEach { passwordState ->
             changePasswordState = passwordState
             when (passwordState) {
-                is PraxisDataModel.SuccessState<*> -> {
+                is OpenDataModel.SuccessState<*> -> {
                     ctx.showToast("Change password successful!")
                     resetAll {
                         navController.navigateUp()
@@ -54,8 +54,8 @@ class ChangePasswordViewModel : ViewModel() {
     }
 
     fun resetAll(onComplete: () -> Unit = {}) {
-        changePasswordState = PraxisDataModel.EmptyState
-        changePasswordPraxisCommand = null
+        changePasswordState = OpenDataModel.EmptyState
+        changePasswordOpenCommand = null
         onComplete()
     }
 }

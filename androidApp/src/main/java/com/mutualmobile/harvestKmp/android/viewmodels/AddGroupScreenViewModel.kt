@@ -7,8 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.data.network.TAG
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.AddGroupDataModel
@@ -17,9 +17,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class AddGroupViewModel : ViewModel() {
-    var currentNavigationCommand: PraxisCommand? by mutableStateOf(null)
-    var currentAddGroupState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+class AddGroupScreenViewModel : ViewModel() {
+    var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
+    var currentAddGroupState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -56,7 +56,7 @@ class AddGroupViewModel : ViewModel() {
         with(addGroupDataModel) {
             dataFlow.onEach { newState ->
                 println("ADD GROUP MEMBER STATE")
-                if (newState is PraxisDataModel.SuccessState<*>) {
+                if (newState is OpenDataModel.SuccessState<*>) {
                     println("NEW GROUP MEMBER STATE ${newState.data}")
                 }
             }.launchIn(viewModelScope)
@@ -67,11 +67,11 @@ class AddGroupViewModel : ViewModel() {
 
     fun resetAll(onComplete: () -> Unit = {}) {
         currentNavigationCommand = null
-        currentAddGroupState = PraxisDataModel.EmptyState
+        currentAddGroupState = OpenDataModel.EmptyState
         onComplete()
     }
 
-    fun getGroupParticipants(userState: PraxisDataModel.SuccessState<*>){
+    fun getGroupParticipants(userState: OpenDataModel.SuccessState<*>){
         println("Participant STATE $userState")
         val userResponse = userState.data as GetUserResponse
         _currentUser.value = User(id = userResponse.id, firstName = userResponse.firstName, lastName = userResponse.lastName, email = userResponse.email)

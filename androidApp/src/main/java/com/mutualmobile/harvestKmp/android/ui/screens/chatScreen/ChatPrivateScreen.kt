@@ -25,40 +25,37 @@ import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.Messages
 import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantDatePickerDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantNoteDialog
-import com.mutualmobile.harvestKmp.android.ui.screens.common.CommonAlertDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultGroupPicture
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultProfilePicture
-import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.components.formatter
 import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.components.serverDateFormatter
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.ui.utils.get
-import com.mutualmobile.harvestKmp.android.viewmodels.ChatPrivateViewModel
+import com.mutualmobile.harvestKmp.android.viewmodels.ChatPrivateScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.ChatUser
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.TextType
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import kotlinx.datetime.Clock
 import org.koin.androidx.compose.get
-import java.util.*
-import kotlin.streams.toList
 
 @RequiresApi(Build.VERSION_CODES.N)
 @Composable
 fun ChatPrivateScreen(
     navController: NavHostController,
-    crVm: ChatPrivateViewModel = get(),
+    crVm: ChatPrivateScreenViewModel = get(),
     user: GetUserResponse?,
-    userState: PraxisDataModel.DataState,
+    userState: OpenDataModel.DataState,
     recipient: String?,
     sender: String?,
     isGroup: String?,
     chatUid: String?
 ) {
     val context = LocalContext.current
+    println("ChatPrivateScreen: recipient: $recipient, sender: $sender, isGroup: $isGroup, chatUid: $chatUid")
 
     val scaffoldState = rememberScaffoldState()
     val canSendMessage = crVm.canSendMessage
@@ -91,13 +88,13 @@ fun ChatPrivateScreen(
                 },
                 actions = {
 
-                    IconButton(onClick = {remindersMenuExpanded = !remindersMenuExpanded }) {
+                    IconButton(onClick = { remindersMenuExpanded = !remindersMenuExpanded }) {
                         Icon(
                             imageVector = Icons.Filled.DateRange,
                             contentDescription = "Reminders"
                         )
                     }
-                    IconButton(onClick = {notesMenuExpanded = !notesMenuExpanded }) {
+                    IconButton(onClick = { notesMenuExpanded = !notesMenuExpanded }) {
                         Icon(
                             imageVector = Icons.Filled.Create,
                             contentDescription = "Notes"
@@ -204,8 +201,8 @@ fun ChatPrivateScreen(
 
     LaunchedEffect(crVm.currentNavigationCommand) {
         when (crVm.currentNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (crVm.currentNavigationCommand as NavigationPraxisCommand).screen
+            is NavigationOpenCommand -> {
+                val destination = (crVm.currentNavigationCommand as NavigationOpenCommand).screen
                 crVm.resetAll {
                     navController clearBackStackAndNavigateTo destination
                 }
@@ -216,7 +213,7 @@ fun ChatPrivateScreen(
     LaunchedEffect(Unit) {
 
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> {
+            is OpenDataModel.SuccessState<*> -> {
                 if (chatUid!! == recipient!!) {
                     crVm.getPrivateChats(recipient, sender!!)
                 } else {
@@ -312,7 +309,6 @@ fun ChatPrivateScreen(
 
         )
     }
-
     if (crVm.assistantNotesReady) {
 
         AssistantNoteDialog(
@@ -372,7 +368,7 @@ fun ContactProfileNavigation(
 @Composable
 fun ChatPrivateApp(
     displayTextField: Boolean = true,
-    viewModel: ChatPrivateViewModel = get(),
+    viewModel: ChatPrivateScreenViewModel = get(),
     canSendMessage: Boolean,
     modifier: Modifier,
     user: GetUserResponse?,

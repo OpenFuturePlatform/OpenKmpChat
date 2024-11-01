@@ -2,13 +2,11 @@ package com.mutualmobile.harvestKmp.android.viewmodels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mutualmobile.harvestKmp.data.network.chat.RealtimeMessagingClient
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.domain.model.response.AssistantNotesResponse
@@ -19,13 +17,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import java.util.*
 
-class ChatPrivateViewModel(
-    client: RealtimeMessagingClient
-) : ViewModel() {
-    var currentNavigationCommand: PraxisCommand? by mutableStateOf(null)
-    var currentPrivateChatState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+class ChatPrivateScreenViewModel : ViewModel() {
+    var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
+    var currentPrivateChatState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -87,38 +82,37 @@ class ChatPrivateViewModel(
         _loading.value = true
         with(getChatPrivateDataModel) {
             dataFlow.onEach { newChatState ->
-                println("PRIVATE CHAT STATE $newChatState")
-                if (newChatState is PraxisDataModel.SuccessState<*>) {
-                    val newMessage = newChatState.data as List<Message>
+                println("CurrentUserChats STATE $newChatState")
+                when (newChatState){
+                    is OpenDataModel.SuccessState<*> -> {
+                        val newMessage = newChatState.data as List<Message>
+                        chats = if (newMessage.size > 1)
+                            newMessage
+                        else
+                            chats.plus(newMessage)
+                    }
 
-                    chats = if (newMessage.size > 1)
-                        newMessage
-                    else
-                        chats.plus(newMessage)
-                }
+                    is OpenDataModel.UploadLoadingState, OpenDataModel.UploadCompleteState -> {
+                        canSendMessage = false
+                    }
 
-                else if (newChatState is PraxisDataModel.UploadLoadingState){
-                    canSendMessage = false
-                }
+                    is OpenDataModel.AssistantSuccessState<*> -> {
+                        assistantNotes  = newChatState.data as List<AssistantNotesResponse>
+                        assistantNotesReady = true
+                        currentAssistantType = "NOTES"
+                    }
+                    is OpenDataModel.AssistantReminderSuccessState<*> -> {
+                        assistantReminders  = newChatState.data as List<AssistantReminderResponse>
+                        assistantNotesReady = true
+                        currentAssistantType = "REMINDERS"
+                    }
 
-                else if (newChatState is PraxisDataModel.UploadCompleteState){
-                    canSendMessage = true
-                }
+                    is OpenDataModel.AssistantTodoSuccessState<*> -> {
+                        assistantTodos  = newChatState.data as List<AssistantTodosResponse>
+                        assistantNotesReady = true
+                        currentAssistantType = "TODOS"
+                    }
 
-                else if (newChatState is PraxisDataModel.AssistantSuccessState<*>){
-                    assistantNotes  = newChatState.data as List<AssistantNotesResponse>
-                    assistantNotesReady = true
-                    currentAssistantType = "NOTES"
-                }
-                else if (newChatState is PraxisDataModel.AssistantReminderSuccessState<*>){
-                    assistantReminders  = newChatState.data as List<AssistantReminderResponse>
-                    assistantNotesReady = true
-                    currentAssistantType = "REMINDERS"
-                }
-                else if (newChatState is PraxisDataModel.AssistantTodoSuccessState<*>){
-                    assistantTodos  = newChatState.data as List<AssistantTodosResponse>
-                    assistantNotesReady = true
-                    currentAssistantType = "TODOS"
                 }
             }.launchIn(viewModelScope)
             activate()
@@ -187,7 +181,7 @@ class ChatPrivateViewModel(
 
     fun resetAll(onComplete: () -> Unit = {}) {
         currentNavigationCommand = null
-        currentPrivateChatState = PraxisDataModel.EmptyState
+        currentPrivateChatState = OpenDataModel.EmptyState
         onComplete()
     }
 

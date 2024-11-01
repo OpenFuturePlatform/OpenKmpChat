@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.core.component.KoinComponent
 
 class UserDashboardDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -27,7 +27,7 @@ class UserDashboardDataModel() :
 
     override fun activate() {
         if (!userLoggedInUseCase.invoke()) {
-            dataModelScope.launch { intPraxisCommand.emit(NavigationPraxisCommand("")) }//take to root
+            dataModelScope.launch { intOpenCommand.emit(NavigationOpenCommand("")) }//take to root
         } else {
             fetchUserInternal()
         }
@@ -47,8 +47,8 @@ class UserDashboardDataModel() :
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
@@ -69,20 +69,20 @@ class UserDashboardDataModel() :
                 is Success<*> -> {
                     println("logged out!")
                     _dataFlow.emit(SuccessState(result.data))
-                    intPraxisCommand.emit(NavigationPraxisCommand(screen = ""))
+                    intOpenCommand.emit(NavigationOpenCommand(screen = ""))
                 }
                 is Failure -> {
                     println("logg out failed!")
                     _dataFlow.emit(ErrorState(result.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             title = "Error",
                             result.throwable.message ?: "An Unknown error has happened"
                         )
                     )
                 }
                 is NetworkResponse.Unauthorized -> {
-                    intPraxisCommand.emit(NavigationPraxisCommand(screen = ""))
+                    intOpenCommand.emit(NavigationOpenCommand(screen = ""))
                 }
             }
         }

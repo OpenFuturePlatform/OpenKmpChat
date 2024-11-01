@@ -33,8 +33,8 @@ import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.ContactProfileViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withGroup
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import org.koin.androidx.compose.get
 
@@ -45,15 +45,15 @@ fun GroupProfileScreen(
     cpVm: ContactProfileViewModel = get(),
     profileId: String?,
     isGroup: String?,
-    userState: PraxisDataModel.DataState
+    userState: OpenDataModel.DataState
 ) {
     println("GROUP PROFILE SCREEN with $profileId and $isGroup")
     val scaffoldState = rememberScaffoldState()
 
     LaunchedEffect(cpVm.currentNavigationCommand) {
         when (cpVm.currentNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (cpVm.currentNavigationCommand as NavigationPraxisCommand).screen
+            is NavigationOpenCommand -> {
+                val destination = (cpVm.currentNavigationCommand as NavigationOpenCommand).screen
                 cpVm.resetAll {
                     navController clearBackStackAndNavigateTo destination
                 }
@@ -63,7 +63,7 @@ fun GroupProfileScreen(
 
     LaunchedEffect(userState) {
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> { cpVm.getGroupDetails(groupId = profileId!!, userState) }
+            is OpenDataModel.SuccessState<*> -> { cpVm.getGroupDetails(groupId = profileId!!, userState) }
             else -> Unit
         }
     }

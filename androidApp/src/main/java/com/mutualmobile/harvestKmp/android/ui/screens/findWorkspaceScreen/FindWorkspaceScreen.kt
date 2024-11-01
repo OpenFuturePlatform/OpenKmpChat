@@ -44,9 +44,9 @@ import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.FindWorkspaceViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.ErrorState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.LoadingState
 import org.koin.androidx.compose.get
 
 @Composable
@@ -56,8 +56,8 @@ fun FindWorkspaceScreen(
 ) {
     LaunchedEffect(fwVm.currentFindOrgNavigationCommand) {
         when (fwVm.currentFindOrgNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (fwVm.currentFindOrgNavigationCommand as NavigationPraxisCommand).screen
+            is NavigationOpenCommand -> {
+                val destination = (fwVm.currentFindOrgNavigationCommand as NavigationOpenCommand).screen
                 fwVm.resetAll { navController.navigate(destination) }
             }
         }
@@ -133,7 +133,7 @@ fun FindWorkspaceScreen(
                 }
             }
             HarvestDialog(
-                praxisCommand = fwVm.currentFindOrgNavigationCommand,
+                openCommand = fwVm.currentFindOrgNavigationCommand,
                 onConfirm = {
                     fwVm.currentFindOrgNavigationCommand = null
                 },

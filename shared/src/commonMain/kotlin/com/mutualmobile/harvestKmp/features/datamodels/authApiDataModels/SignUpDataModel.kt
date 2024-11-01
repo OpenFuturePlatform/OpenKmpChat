@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.core.component.KoinComponent
 
 class SignUpDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
   private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -87,8 +87,8 @@ class SignUpDataModel() :
 
     private suspend fun handleFailure(signUpResponse: NetworkResponse.Failure) {
         _dataFlow.emit(ErrorState(signUpResponse.throwable))
-        intPraxisCommand.emit(
-            ModalPraxisCommand(
+        intOpenCommand.emit(
+            ModalOpenCommand(
                 "Error",
                 signUpResponse.throwable.message ?: "Error"
             )
@@ -99,8 +99,8 @@ class SignUpDataModel() :
     private suspend fun handleSuccessSignup(signUpResponse: NetworkResponse.Success<ApiResponse<OpenUser>>) {
         _dataFlow.emit(SuccessState(signUpResponse.data))
         signUpResponse.data.data?.let {
-            this.intPraxisCommand.emit(
-                NavigationPraxisCommand(
+            this.intOpenCommand.emit(
+                NavigationOpenCommand(
                     HarvestRoutes.Screen.LOGIN
                 )
             )

@@ -13,16 +13,16 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.get
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
 
 @Composable
 fun HarvestDialog(
-    praxisCommand: PraxisCommand?,
+    openCommand: OpenCommand?,
     onConfirm: () -> Unit,
     onDismiss: (() -> Unit)? = null,
 ) {
-    val command = praxisCommand as? ModalPraxisCommand
+    val command = openCommand as? ModalOpenCommand
     val title by remember(command) { mutableStateOf(command?.title) }
     val text by remember(command) { mutableStateOf(command?.message.orEmpty()) }
 
@@ -57,7 +57,7 @@ fun HarvestDialog(
 private fun HarvestDialogPreview() {
     OpenChatTheme {
         HarvestDialog(
-            praxisCommand = ModalPraxisCommand(
+            openCommand = ModalOpenCommand(
                 title = "Error",
                 message = "An account with these credentials already exists"
             ),

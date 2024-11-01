@@ -1,8 +1,11 @@
 package com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels
 
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
+import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withRecipient
+import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withWalletDetail
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.di.StateUseCaseComponent
 import com.mutualmobile.harvestKmp.di.UserWalletUseCaseComponent
@@ -17,8 +20,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-class GetUserWalletsDataModel() :
-    PraxisDataModel(), KoinComponent {
+class WalletsDataModel : OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -59,25 +61,6 @@ class GetUserWalletsDataModel() :
         }
     }
 
-    fun getUserWallets(username: String) {
-        executeJob {
-            _dataFlow.emit(LoadingState)
-            when (val response = walletRemoteGetUseCase(username = username)) {
-
-                is NetworkResponse.Success -> {
-                    println("Wallet response ${response.data}")
-                    _dataFlow.emit(SuccessState(response.data))
-                }
-
-                is NetworkResponse.Failure -> {
-                    _dataFlow.emit(ErrorState(response.throwable))
-                }
-
-                is NetworkResponse.Unauthorized -> handleUnauthorized()
-            }
-        }
-    }
-
     fun saveWalletsLocal(inputs: List<Wallet>) {
         executeJob {
             _dataFlow.emit(LoadingState)
@@ -104,19 +87,6 @@ class GetUserWalletsDataModel() :
 
                 is NetworkResponse.Success -> {
                     println("Saved remote")
-//                    _dataFlow.emit(
-//                        SuccessState(
-//                            listOf(
-//                                WalletResponse(
-//                                    address = input.address,
-//                                    blockchainType = input.blockchainType.name,
-//                                    privateKey = input.privateKey,
-//                                    balance = null,
-//                                    seedPhrases = input.seedPhrase
-//                                )
-//                            )
-//                        )
-//                    )
                 }
 
                 is NetworkResponse.Failure -> {
@@ -128,10 +98,30 @@ class GetUserWalletsDataModel() :
         }
     }
 
+    fun navigateWalletDetail(address: String, encryptedPrivetKey: String, blockchainType: String) {
+
+        executeJob {
+            _dataFlow.emit(LoadingState)
+            val screen =
+                HarvestRoutes.Screen.WALLET_DETAIL.withWalletDetail(
+                    address,
+                    blockchainType,
+                    encryptedPrivetKey
+                )
+            println("navigation screen: $screen")
+            intOpenCommand.emit(
+                NavigationOpenCommand(
+                    screen = screen
+                )
+            )
+        }
+
+    }
+
     private suspend fun handleUnauthorized() {
         settings.clear()
-        intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-        intPraxisCommand.emit(NavigationPraxisCommand(""))
+        intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+        intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
     }
 
     private fun executeJob(block: suspend () -> Unit) {

@@ -210,8 +210,8 @@ val chatApiUseCaseModule = module {
 val groupApiUseCaseModule = module {
     single { CreateGroupUseCase(get()) }
     single { GetGroupUseCase(get()) }
-    single {  AddMemberUseCase(get()) }
-    single {  RemoveMemberUseCase(get()) }
+    single { AddMemberUseCase(get()) }
+    single { RemoveMemberUseCase(get()) }
 }
 
 val orgApiUseCaseModule = module {
@@ -264,7 +264,9 @@ val userWalletUseCaseModule = module {
 
 val stateUseCaseModule = module {
     single { GetRatesUseCase(get()) }
+    single { GetRateUseCase(get()) }
     single { GetBalanceUseCase(get()) }
+    single { GetTransactionsUseCase(get()) }
     single { GetContractsUseCase(get()) }
     single { GetGasLimitUseCase(get()) }
     single { GetGasPriceUseCase(get()) }
@@ -333,7 +335,9 @@ class UserTaskUseCaseComponent : KoinComponent {
 
 class StateUseCaseComponent : KoinComponent {
     fun provideGetRatesUseCase(): GetRatesUseCase = get()
+    fun provideGetRateUseCase(): GetRateUseCase = get()
     fun provideGetBalanceUseCase(): GetBalanceUseCase = get()
+    fun provideGetTransactionsUseCase(): GetTransactionsUseCase = get()
     fun provideGetContractsUseCase(): GetContractsUseCase = get()
     fun provideGetGasPriceUseCase(): GetGasPriceUseCase = get()
     fun provideGetGasLimitUseCase(): GetGasLimitUseCase = get()
@@ -360,6 +364,7 @@ class ChatApiUseCaseComponent : KoinComponent {
     fun provideGroupMessagesByRecipient(): GetGroupMessagesUseCase = get()
     fun providePrivateMessagesByRecipient(): GetPrivateMessagesUseCase = get()
     fun provideCreateAiMessages(): CreateAiMessagesUseCase = get()
+
     //todo - move to another module
     fun provideUploadAttachment(): UploadAttachmentUseCase = get()
     fun provideDownloadAttachment(): DownloadAttachmentUseCase = get()
@@ -415,8 +420,8 @@ fun httpClient(
         }
         //install(WebSockets)
         install(HttpTimeout) {
-            connectTimeoutMillis = 300000
-            requestTimeoutMillis = 300000
+            connectTimeoutMillis = 30000
+            requestTimeoutMillis = 30000
         }
     }
 

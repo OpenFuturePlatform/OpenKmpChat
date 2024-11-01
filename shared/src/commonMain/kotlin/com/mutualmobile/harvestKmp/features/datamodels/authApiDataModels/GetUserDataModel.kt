@@ -1,9 +1,9 @@
 package com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels
 
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.AuthApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.domain.model.request.FcmToken
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 class GetUserDataModel :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
   private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -54,7 +54,7 @@ class GetUserDataModel :
                     print("GetUser Successful, ${getUserResponse.data}")
                     harvestLocal.saveUser(getUserResponse.data)
                     _dataFlow.emit(SuccessState(getUserResponse.data))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.ORG_USER_DASHBOARD))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.ORG_USER_DASHBOARD))
                 }
                 is NetworkResponse.Failure -> {
                     print("GetUser Failed, ${getUserResponse.throwable.message}")
@@ -62,8 +62,8 @@ class GetUserDataModel :
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                     _dataFlow.emit(ErrorState(getUserResponse.throwable))
                 }
             }

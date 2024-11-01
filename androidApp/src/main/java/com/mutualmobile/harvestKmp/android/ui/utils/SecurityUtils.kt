@@ -41,7 +41,7 @@ object SecurityUtils {
         val coin = when (blockchainType) {
             BlockchainType.ETH -> CoinType.ETHEREUM
             BlockchainType.BTC -> CoinType.BITCOIN
-            BlockchainType.BNB -> CoinType.BINANCE
+            BlockchainType.BNB -> CoinType.SMARTCHAIN
             BlockchainType.TRX -> CoinType.TRON
             BlockchainType.SOL -> CoinType.SOLANA
             BlockchainType.USDT -> CoinType.TRON

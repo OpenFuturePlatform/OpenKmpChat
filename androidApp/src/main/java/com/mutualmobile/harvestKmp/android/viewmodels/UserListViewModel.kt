@@ -7,8 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.data.network.TAG
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels.UserListDataModel
@@ -18,8 +18,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class UserListViewModel : ViewModel() {
-    var currentNavigationCommand: PraxisCommand? by mutableStateOf(null)
-    var currentHomeChatState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+    var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
+    var currentHomeChatState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -55,7 +55,7 @@ class UserListViewModel : ViewModel() {
         _loading.value = true
         with(getUserListDataModel) {
             dataFlow.onEach { newChatState ->
-                if (newChatState is PraxisDataModel.SuccessState<*>) {
+                if (newChatState is OpenDataModel.SuccessState<*>) {
                     val users = newChatState.data as List<User>
                     println("CONTACTS : $users")
                     _contacts.value = users
@@ -69,11 +69,11 @@ class UserListViewModel : ViewModel() {
 
     fun resetAll(onComplete: () -> Unit = {}) {
         currentNavigationCommand = null
-        currentHomeChatState = PraxisDataModel.EmptyState
+        currentHomeChatState = OpenDataModel.EmptyState
         onComplete()
     }
 
-    fun getUserContacts(userState: PraxisDataModel.SuccessState<*>){
+    fun getUserContacts(userState: OpenDataModel.SuccessState<*>){
         println("CONTACT STATE $userState")
         val userResponse = userState.data as GetUserResponse
         _currentUser.value = User(id = userResponse.id, firstName = userResponse.firstName, lastName = userResponse.lastName, email = userResponse.email)

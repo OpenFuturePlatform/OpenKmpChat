@@ -2,9 +2,9 @@ package com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels
 
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withDetail
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.GroupApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
@@ -19,9 +19,8 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.datetime.*
 import org.koin.core.component.KoinComponent
-import kotlin.time.Duration
 
-class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
+class ChatPrivateDataModel : OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -47,7 +46,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
     private val getAssistantToDosUseCase = chatApiUseCaseComponent.provideGetAssistantToDos()
 
     private val uploadAttachmentUseCase = chatApiUseCaseComponent.provideUploadAttachment()
-    private val dowloadAttachmentUseCase = chatApiUseCaseComponent.provideDownloadAttachment()
+    private val downloadAttachmentUseCase = chatApiUseCaseComponent.provideDownloadAttachment()
 
     private val groupApiUseCaseComponent = GroupApiUseCaseComponent()
     private val getGroupUseCase = groupApiUseCaseComponent.provideGetGroup()
@@ -57,7 +56,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
     private val attachmentLocal = SharedComponent().provideAttachmentLocal()
 
     override fun activate() {
-        println("LOCAL STORAGE PRIVATE ACTIVATE")
+        println("ChatPrivateDataModel activated")
     }
 
     override fun destroy() {
@@ -102,8 +101,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -112,8 +111,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
@@ -149,8 +148,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -159,8 +158,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
@@ -182,8 +181,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -192,8 +191,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -213,8 +212,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -223,8 +222,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -249,8 +248,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -259,8 +258,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -281,8 +280,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -291,8 +290,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -316,8 +315,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -326,8 +325,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -348,8 +347,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -358,8 +357,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -383,8 +382,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -393,8 +392,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -415,8 +414,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -425,8 +424,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 
@@ -497,8 +496,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                     is NetworkResponse.Failure -> {
                         _dataFlow.emit(ErrorState(response.throwable))
-                        intPraxisCommand.emit(
-                            ModalPraxisCommand(
+                        intOpenCommand.emit(
+                            ModalOpenCommand(
                                 "Failed",
                                 response.throwable.message ?: "Failed to find chats"
                             )
@@ -507,8 +506,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                     is NetworkResponse.Unauthorized -> {
                         settings.clear()
-                        intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                        intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                        intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                        intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                     }
                 }
             }
@@ -518,7 +517,7 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
     suspend fun downloadAttachment(id: Int) : ByteArray {
         return when (val response =
-                dowloadAttachmentUseCase(
+                downloadAttachmentUseCase(
                    id = id
                 )) {
                 is NetworkResponse.Success -> {
@@ -546,8 +545,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                         println("Group detail response: ${response.data} for $contactId and $isGroup with screen: $profileScreen")
 
-                        intPraxisCommand.emit(
-                            NavigationPraxisCommand(
+                        intOpenCommand.emit(
+                            NavigationOpenCommand(
                                 screen = profileScreen
                             )
                         )
@@ -556,8 +555,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                     is NetworkResponse.Failure -> {
                         _dataFlow.emit(ErrorState(response.throwable))
-                        intPraxisCommand.emit(
-                            ModalPraxisCommand(
+                        intOpenCommand.emit(
+                            ModalOpenCommand(
                                 "Failed",
                                 response.throwable.message ?: "Failed to find chats"
                             )
@@ -566,8 +565,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                     is NetworkResponse.Unauthorized -> {
                         settings.clear()
-                        intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                        intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                        intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                        intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                     }
                 }
 
@@ -581,8 +580,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                         println("User detail response: ${response.data} for $contactId and $isGroup with screen: $profileScreen")
 
-                        intPraxisCommand.emit(
-                            NavigationPraxisCommand(
+                        intOpenCommand.emit(
+                            NavigationOpenCommand(
                                 screen = profileScreen
                             )
                         )
@@ -591,8 +590,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                     is NetworkResponse.Failure -> {
                         _dataFlow.emit(ErrorState(response.throwable))
-                        intPraxisCommand.emit(
-                            ModalPraxisCommand(
+                        intOpenCommand.emit(
+                            ModalOpenCommand(
                                 "Failed",
                                 response.throwable.message ?: "Failed to find chats"
                             )
@@ -601,8 +600,8 @@ class ChatPrivateDataModel : PraxisDataModel(), KoinComponent {
 
                     is NetworkResponse.Unauthorized -> {
                         settings.clear()
-                        intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                        intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                        intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                        intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                     }
                 }
             }

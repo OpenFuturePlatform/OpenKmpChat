@@ -1,9 +1,9 @@
 package com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels
 
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.AuthApiUseCaseComponent
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import kotlinx.coroutines.Job
@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
 
 class ChangePasswordDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
   private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -52,16 +52,16 @@ class ChangePasswordDataModel() :
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }.catch {
             this.emit(ErrorState(it))
             println(it)
             it.printStackTrace()
-            intPraxisCommand.emit(
-                ModalPraxisCommand(
+            intOpenCommand.emit(
+                ModalOpenCommand(
                     title = "Error",
                     it.message ?: "An Unknown error has happened"
                 )

@@ -3,17 +3,13 @@ package com.mutualmobile.harvestKmp.android.ui.screens.chatScreen
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -21,7 +17,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,15 +36,14 @@ import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoadingIndicat
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.theme.Typography
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
-import com.mutualmobile.harvestKmp.android.viewmodels.ChatRoomViewModel
+import com.mutualmobile.harvestKmp.android.viewmodels.ChatRoomScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toJavaLocalDateTime
 import org.koin.androidx.compose.get
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -58,8 +52,8 @@ import java.util.*
 @Composable
 fun ChatRoomScreen(
     navController: NavHostController,
-    crVm: ChatRoomViewModel = get(),
-    userState: PraxisDataModel.DataState
+    crVm: ChatRoomScreenViewModel = get(),
+    userState: OpenDataModel.DataState
 ) {
 
     val scaffoldState = rememberScaffoldState()
@@ -68,8 +62,8 @@ fun ChatRoomScreen(
 
     LaunchedEffect(crVm.currentNavigationCommand) {
         when (crVm.currentNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (crVm.currentNavigationCommand as NavigationPraxisCommand).screen
+            is NavigationOpenCommand -> {
+                val destination = (crVm.currentNavigationCommand as NavigationOpenCommand).screen
                 crVm.resetAll {
                     navController clearBackStackAndNavigateTo destination
                 }
@@ -78,9 +72,8 @@ fun ChatRoomScreen(
     }
 
     LaunchedEffect(userState) {
-        println("INITIAL FETCH CHAT ROOM ONLY")
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> { crVm.getUserGroupChats(userState = userState) }
+            is OpenDataModel.SuccessState<*> -> { crVm.getUserGroupChats(userState = userState) }
             else -> Unit
         }
     }
@@ -120,7 +113,7 @@ fun ChatRoomScreen(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun ChatsBody(viewModel: ChatRoomViewModel) {
+fun ChatsBody(viewModel: ChatRoomScreenViewModel) {
     val chats = viewModel.chats.collectAsState()
     if(chats.value.isNotEmpty()) {
         LazyColumn(

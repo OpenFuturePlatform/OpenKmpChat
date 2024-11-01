@@ -1,8 +1,8 @@
 package com.mutualmobile.harvestKmp.features.datamodels.userTaskDataModels
 
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.UserTaskUseCaseComponent
 import com.mutualmobile.harvestKmp.domain.model.request.TaskRequest
 import com.mutualmobile.harvestKmp.features.NetworkResponse
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 class GetUserTasksDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
   private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -51,8 +51,8 @@ class GetUserTasksDataModel() :
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
             }
         }
@@ -76,8 +76,8 @@ class GetUserTasksDataModel() :
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
             }
         }

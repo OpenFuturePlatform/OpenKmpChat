@@ -50,11 +50,11 @@ import com.mutualmobile.harvestKmp.android.ui.utils.dateWithoutTimeZone
 import com.mutualmobile.harvestKmp.android.ui.utils.toDecimalString
 import com.mutualmobile.harvestKmp.android.viewmodels.TimeScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.WorkRequestType
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.DataState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.DataState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.LoadingState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.SuccessState
 import com.mutualmobile.harvestKmp.domain.model.request.HarvestUserWorkRequest
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
@@ -110,12 +110,12 @@ fun TimeScreen(
     var currentWeekWorkLogs by remember {
         mutableStateOf(emptyList<HarvestUserWorkResponse>())
     }
-    var timeLoggingPraxisCommand: PraxisCommand? by remember { mutableStateOf(null) }
+    var timeLoggingOpenCommand: OpenCommand? by remember { mutableStateOf(null) }
     val timeLoggingDataModel by remember { mutableStateOf(TimeLogginDataModel().apply {
         praxisCommand.onEach { newCommand ->
-            timeLoggingPraxisCommand = newCommand
+            timeLoggingOpenCommand = newCommand
             when (newCommand) {
-                is NavigationPraxisCommand -> {
+                is NavigationOpenCommand -> {
                     if (newCommand.screen.isBlank()) {
                         navigateToFindWorkspaceScreen()
                     }
@@ -347,8 +347,8 @@ fun TimeScreen(
                     }
                 }
             }
-            HarvestDialog(praxisCommand = timeLoggingPraxisCommand, onConfirm = {
-                timeLoggingPraxisCommand = null
+            HarvestDialog(openCommand = timeLoggingOpenCommand, onConfirm = {
+                timeLoggingOpenCommand = null
             })
         }
     }

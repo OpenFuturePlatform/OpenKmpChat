@@ -4,7 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.domain.model.response.OrgProjectResponse
 import com.mutualmobile.harvestKmp.features.datamodels.orgProjectsDataModels.OrgProjectsDataModel
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.onEach
 class TimeScreenViewModel : ViewModel() {
     private val orgProjectsDataModel = OrgProjectsDataModel()
 
-    var getProjectsState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+    var getProjectsState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
         private set
     var currentWeekWorkLogsOrgList by mutableStateOf(emptyList<OrgProjectResponse>())
 
@@ -22,7 +22,7 @@ class TimeScreenViewModel : ViewModel() {
         orgProjectsDataModel.getProjectsForProjectIds(projectIds = projectIds).onEach { newState ->
             getProjectsState = newState
             when (newState) {
-                is PraxisDataModel.SuccessState<*> -> {
+                is OpenDataModel.SuccessState<*> -> {
                     (newState.data as? ApiResponse<List<OrgProjectResponse>>)?.data?.let { nnList ->
                         currentWeekWorkLogsOrgList = nnList
                     }

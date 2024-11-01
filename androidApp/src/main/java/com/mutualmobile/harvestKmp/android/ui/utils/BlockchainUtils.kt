@@ -1,7 +1,25 @@
 package com.mutualmobile.harvestKmp.android.ui.utils
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
+import com.mutualmobile.harvestKmp.MR
 import java.math.BigDecimal
 
+@Composable
+fun getIconUrl(blokchainType: String): Painter {
+    return when (blokchainType) {
+        "BNB" -> painterResource(MR.images.bnb.drawableResId)
+        "BTC" -> painterResource(MR.images.btc.drawableResId)
+        "ETH" -> painterResource(MR.images.eth.drawableResId)
+        "TRX" -> painterResource(MR.images.trx.drawableResId)
+        "SOL" -> painterResource(MR.images.sol.drawableResId)
+        "USDT" -> painterResource(MR.images.usdt.drawableResId)
+        else -> {
+            painterResource(MR.images.bnb.drawableResId)
+        }
+    }
+}
 
 object BlockchainUtils {
 

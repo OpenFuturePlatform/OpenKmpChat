@@ -13,7 +13,7 @@ suspend inline fun <reified T> getSafeNetworkResponse(
 ): NetworkResponse<T> {
     return try {
         val response = networkOperation()
-        println("NetworkResponse: $response")
+        //println("NetworkResponse: $response")
         when (response.status) {
             HttpStatusCode.OK -> {
                 NetworkResponse.Success<T>(response.body()).apply(onSuccessOperations)

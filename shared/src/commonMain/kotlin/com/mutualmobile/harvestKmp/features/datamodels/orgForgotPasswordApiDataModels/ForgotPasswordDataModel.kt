@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.core.component.KoinComponent
 
 class ForgotPasswordDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
   private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
     private var currentLoadingJob: Job? = null
@@ -28,8 +28,8 @@ class ForgotPasswordDataModel() :
                     email = email
                 )) {
                     is NetworkResponse.Success -> {
-                        intPraxisCommand.emit(
-                            ModalPraxisCommand(
+                        intOpenCommand.emit(
+                            ModalOpenCommand(
                                 "Response",
                                 response.data.message ?: "Woah!"
                             )
@@ -43,8 +43,8 @@ class ForgotPasswordDataModel() :
                     }
                     is NetworkResponse.Unauthorized -> {
                         settings.clear()
-                        intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                        intPraxisCommand.emit(NavigationPraxisCommand(""))
+                        intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                        intOpenCommand.emit(NavigationOpenCommand(""))
                     }
                 }
             }

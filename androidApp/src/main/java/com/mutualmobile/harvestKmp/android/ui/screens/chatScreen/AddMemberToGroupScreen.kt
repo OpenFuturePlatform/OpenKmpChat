@@ -32,11 +32,11 @@ import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoadingIndicator
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
-import com.mutualmobile.harvestKmp.android.viewmodels.AddGroupViewModel
+import com.mutualmobile.harvestKmp.android.viewmodels.AddGroupScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.UserListViewModel
 import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import org.koin.androidx.compose.get
 
 
@@ -45,9 +45,9 @@ import org.koin.androidx.compose.get
 fun AddMemberToGroupScreen(
     navController: NavHostController,
     ulVm: UserListViewModel = get(),
-    agVm: AddGroupViewModel = get(),
+    agVm: AddGroupScreenViewModel = get(),
     groupId: String?,
-    userState: PraxisDataModel.DataState
+    userState: OpenDataModel.DataState
 ) {
 
     val context = LocalContext.current
@@ -57,8 +57,8 @@ fun AddMemberToGroupScreen(
 
     LaunchedEffect(ulVm.currentNavigationCommand) {
         when (ulVm.currentNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (ulVm.currentNavigationCommand as NavigationPraxisCommand).screen
+            is NavigationOpenCommand -> {
+                val destination = (ulVm.currentNavigationCommand as NavigationOpenCommand).screen
                 ulVm.resetAll {
                     navController clearBackStackAndNavigateTo destination
                 }
@@ -68,7 +68,7 @@ fun AddMemberToGroupScreen(
 
     LaunchedEffect(userState) {
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> {
+            is OpenDataModel.SuccessState<*> -> {
                 ulVm.getUserContacts(userState)
             }
             else -> Unit
@@ -110,7 +110,7 @@ fun AddMemberToGroupScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         Box(Modifier.weight(1f)) {
-                            MemberList(viewModel = ulVm, addGroupViewModel = agVm, context = context)
+                            MemberList(viewModel = ulVm, addGroupScreenViewModel = agVm, context = context)
                         }
                     }
 
@@ -122,13 +122,13 @@ fun AddMemberToGroupScreen(
 }
 
 @Composable
-fun MemberList(viewModel: UserListViewModel, addGroupViewModel: AddGroupViewModel, context: Context) {
+fun MemberList(viewModel: UserListViewModel, addGroupScreenViewModel: AddGroupScreenViewModel, context: Context) {
 
     val contacts = viewModel.contacts.collectAsState()
     val currentUser = viewModel.currentUser.collectAsState()
-    val participants = addGroupViewModel.participants
+    val participants = addGroupScreenViewModel.participants
 
-    CustomMemberListView(addGroupViewModel, context)
+    CustomMemberListView(addGroupScreenViewModel, context)
 
     if(contacts.value.isNotEmpty()) {
         Text(
@@ -153,7 +153,7 @@ fun MemberList(viewModel: UserListViewModel, addGroupViewModel: AddGroupViewMode
                         currentUser = currentUser.value,
                         isSelected = isSelected,
                         onChatClicked = {
-                            addGroupViewModel.onChatClicked(contact)
+                            addGroupScreenViewModel.onChatClicked(contact)
                         }
                     )
                     Divider()
@@ -173,7 +173,7 @@ fun MemberList(viewModel: UserListViewModel, addGroupViewModel: AddGroupViewMode
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun CustomMemberListView(agVm: AddGroupViewModel, context: Context) {
+fun CustomMemberListView(agVm: AddGroupScreenViewModel, context: Context) {
     LazyRow {
         itemsIndexed(agVm.participants) { index, item ->
             Card(
@@ -221,13 +221,13 @@ fun CustomMemberListView(agVm: AddGroupViewModel, context: Context) {
 }
 
 @Composable
-fun AddMemberToGroupButtonCompose(addGroupViewModel: AddGroupViewModel, groupId: String){
+fun AddMemberToGroupButtonCompose(addGroupScreenViewModel: AddGroupScreenViewModel, groupId: String){
 
     FloatingActionButton(
         shape = MaterialTheme.shapes.large.copy(CornerSize(percent = 40)),
         backgroundColor = MaterialTheme.colors.primary,
         contentColor = Color.White,
-        onClick = { addGroupViewModel.addMemberToGroup(groupId) }
+        onClick = { addGroupScreenViewModel.addMemberToGroup(groupId) }
     ) {
         Icon(Icons.Default.ArrowForward, contentDescription = null)
     }

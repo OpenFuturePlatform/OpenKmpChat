@@ -26,8 +26,8 @@ import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.NewEntryScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.TaskScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.*
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.*
 import org.koin.androidx.compose.get
 
 
@@ -40,8 +40,8 @@ fun TaskScreen(
 ) {
     LaunchedEffect(psVm.taskScreenNavigationCommands) {
         when (psVm.taskScreenNavigationCommands) {
-            is NavigationPraxisCommand -> {
-                if ((psVm.taskScreenNavigationCommands as NavigationPraxisCommand).screen.isBlank()) {
+            is NavigationOpenCommand -> {
+                if ((psVm.taskScreenNavigationCommands as NavigationOpenCommand).screen.isBlank()) {
                     navController clearBackStackAndNavigateTo HarvestRoutes.Screen.FIND_WORKSPACE
                 }
             }
@@ -104,7 +104,7 @@ fun TaskScreen(
 
             }
         }
-        HarvestDialog(praxisCommand = psVm.taskScreenNavigationCommands, onConfirm = {
+        HarvestDialog(openCommand = psVm.taskScreenNavigationCommands, onConfirm = {
             psVm.taskScreenNavigationCommands = null
         })
     }

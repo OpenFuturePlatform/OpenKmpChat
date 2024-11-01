@@ -1,12 +1,11 @@
 package com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels
 
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.StateUseCaseComponent
 import com.mutualmobile.harvestKmp.domain.model.request.BalanceRequest
 import com.mutualmobile.harvestKmp.features.NetworkResponse
-import io.ktor.websocket.*
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,8 +13,8 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-class GetStateBalanceDataModel() :
-    PraxisDataModel(), KoinComponent {
+class GetStateBalanceDataModel :
+    OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -36,13 +35,13 @@ class GetStateBalanceDataModel() :
     }
 
     fun getCryptoBalance(address: String, contractAddress: String?, blockchainType: String) {
-        //currentLoadingJob?.cancel()
+        currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
-            //_dataFlow.emit(LoadingState)
+            _dataFlow.emit(LoadingState)
             when (val response = getWalletBalanceUseCase(BalanceRequest(address = address, contractAddress = contractAddress, blockchainName = blockchainType))) {
 
                 is NetworkResponse.Success -> {
-                    println("GetStateBalanceDataModel: Success -> ${response.data}")
+                    //println("GetStateBalanceDataModel: Success -> ${response.data}")
                     _dataFlow.emit(SuccessState(response.data))
                 }
 
@@ -52,8 +51,8 @@ class GetStateBalanceDataModel() :
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
 
             }

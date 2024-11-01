@@ -52,9 +52,9 @@ import com.mutualmobile.harvestKmp.android.ui.utils.showToast
 import com.mutualmobile.harvestKmp.android.viewmodels.NewEntryScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.WorkRequestType
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.ErrorState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.LoadingState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.SuccessState
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
@@ -223,7 +223,7 @@ fun NewEntryScreen(
                 modifier = Modifier.alpha(0.5f)
             )
         }
-        HarvestDialog(praxisCommand = nesVm.logWorkTimeNavigationCommands, onConfirm = {
+        HarvestDialog(openCommand = nesVm.logWorkTimeNavigationCommands, onConfirm = {
             if (nesVm.currentLogWorkTimeState is SuccessState<*>) {
                 nesVm.resetAllItems {
                     navController.navigateUp()

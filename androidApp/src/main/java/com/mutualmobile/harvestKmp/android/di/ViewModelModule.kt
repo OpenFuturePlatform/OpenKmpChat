@@ -17,12 +17,15 @@ val viewModelModule = module {
     single { NewOrgSignUpScreenViewModel() }
     single { WorkTypeScreenViewModel() }
     single { UserHomeViewModel() }
-    single { ChatRoomViewModel() }
+    single { ChatRoomScreenViewModel() }
     single { ChatViewModel(get()) }
-    single { ChatPrivateViewModel(get()) }
+    single { ChatPrivateScreenViewModel() }
     single { UserListViewModel()}
-    single { AddGroupViewModel()}
+    single { AddGroupScreenViewModel()}
     single { ContactProfileViewModel() }
     single { TaskScreenViewModel() }
-    single { WalletScreenViewModel() }
+    single { WalletDetailScreenViewModel() }
+    single { WalletsScreenViewModel() }
+    single { WalletSenderDetailScreenViewModel() }
+    single { WalletReceiverDetailScreenViewModel() }
 }

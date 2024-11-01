@@ -32,10 +32,10 @@ import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.NewEntryScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.ProjectScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.DataState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.DataState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.LoadingState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.SuccessState
 import com.mutualmobile.harvestKmp.domain.model.request.HarvestUserWorkRequest
 import java.util.Date
 import org.koin.androidx.compose.get
@@ -50,8 +50,8 @@ fun ProjectScreen(
 ) {
     LaunchedEffect(psVm.projectScreenNavigationCommands) {
         when (psVm.projectScreenNavigationCommands) {
-            is NavigationPraxisCommand -> {
-                if ((psVm.projectScreenNavigationCommands as NavigationPraxisCommand).screen.isBlank()) {
+            is NavigationOpenCommand -> {
+                if ((psVm.projectScreenNavigationCommands as NavigationOpenCommand).screen.isBlank()) {
                     navController clearBackStackAndNavigateTo HarvestRoutes.Screen.FIND_WORKSPACE
                 }
             }
@@ -135,7 +135,7 @@ fun ProjectScreen(
 
             }
         }
-        HarvestDialog(praxisCommand = psVm.projectScreenNavigationCommands, onConfirm = {
+        HarvestDialog(openCommand = psVm.projectScreenNavigationCommands, onConfirm = {
             psVm.projectScreenNavigationCommands = null
         })
     }

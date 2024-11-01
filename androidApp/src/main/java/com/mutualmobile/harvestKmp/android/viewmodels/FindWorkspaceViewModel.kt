@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.features.datamodels.orgApiDataModels.FindOrgByIdentifierDataModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -16,9 +16,9 @@ class FindWorkspaceViewModel : ViewModel() {
 
     var tfValue by mutableStateOf("")
 
-    var currentFindOrgNavigationCommand: PraxisCommand? by mutableStateOf(null)
+    var currentFindOrgNavigationCommand: OpenCommand? by mutableStateOf(null)
 
-    var findOrgState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+    var findOrgState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
     init {
         with(findOrgByIdentifierDataModel) {
@@ -48,7 +48,7 @@ class FindWorkspaceViewModel : ViewModel() {
     fun resetAll(onComplete: () -> Unit = {}) {
         tfValue = ""
         currentFindOrgNavigationCommand = null
-        findOrgState = PraxisDataModel.EmptyState
+        findOrgState = OpenDataModel.EmptyState
         onComplete()
     }
 }

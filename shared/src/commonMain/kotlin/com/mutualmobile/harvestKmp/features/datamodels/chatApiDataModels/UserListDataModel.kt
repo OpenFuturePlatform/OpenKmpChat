@@ -2,22 +2,20 @@ package com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels
 
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withRecipient
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.UserApiUseCaseComponent
 import com.mutualmobile.harvestKmp.domain.model.request.User
-import com.mutualmobile.harvestKmp.domain.model.response.ContactResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-class UserListDataModel : PraxisDataModel(), KoinComponent {
+class UserListDataModel : OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -60,8 +58,8 @@ class UserListDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -70,8 +68,8 @@ class UserListDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
@@ -86,8 +84,8 @@ class UserListDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Success -> {
                     println("PRIVATE CHATS: ${response.data} with recipient: $recipient and sender: $sender")
 
-                    intPraxisCommand.emit(
-                        NavigationPraxisCommand(
+                    intOpenCommand.emit(
+                        NavigationOpenCommand(
                             screen = HarvestRoutes.Screen.CHAT_PRIVATE.withRecipient(
                                 recipient,
                                 false,
@@ -100,8 +98,8 @@ class UserListDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -110,8 +108,8 @@ class UserListDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
 

@@ -1,8 +1,8 @@
 package com.mutualmobile.harvestKmp.data.network
 
 object Endpoint {
-    //private const val HOST_URL = "http://192.168.0.105" // WIFI
-    private const val HOST_URL = "http://192.168.60.204" // MOBILE
+    private const val HOST_URL = "http://192.168.0.102" // WIFI
+    //private const val HOST_URL = "http://192.168.140.204" // MOBILE
     const val SPRING_BOOT_BASE_URL = "$HOST_URL:5001"
     const val STATE_URL = "$HOST_URL:8545"
 
@@ -31,9 +31,6 @@ object Endpoint {
 
     const val ORGANIZATION = "$API_URL/organization"
     const val ORG_USERS = "$API_URL/organization/users"
-    const val ORG_USER = "$API_URL/organization/user"
-    const val TIME_ENTRIES = "$API_URL/organization-project-user/times"
-    const val TIME_ENTRY = "$API_URL/organization-project-user/time"
     const val ORG_PROJECT = "$ORGANIZATION/project"
     const val PROJECTS = "$API_URL/projects"
     const val FIND_ORGANIZATION = "$ORGANIZATION/find-organization"
@@ -60,8 +57,9 @@ object Endpoint {
     const val USER_DETAIL = "$API_URL/user/userDetails"
     const val LIST_RECIPIENT_GROUP = "$CHAT_URL/front-messages?user="
 
-    const val RATES_URL = "/api/currency/rate/all"
+    const val RATES_URL = "/api/currency/rate"
     const val BALANCE_URL = "/api/wallets/v2/balance"
+    const val TRANSACTIONS_URL = "/api/wallets/v2/transactions"
     const val GAS_PRICE_URL = "/api/wallets/v2/gas-price"
     const val GAS_LIMIT_URL = "/api/wallets/v2/gas-limit"
     const val NONCE_URL = "/api/wallets/v2/nonce"

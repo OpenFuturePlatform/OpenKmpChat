@@ -1,8 +1,8 @@
 package com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels
 
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.StateUseCaseComponent
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import kotlinx.coroutines.Job
@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 class GetStateRatesDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -22,6 +22,7 @@ class GetStateRatesDataModel() :
 
     private val stateUseCaseComponent = StateUseCaseComponent()
     private val getWalletRatesUseCase = stateUseCaseComponent.provideGetRatesUseCase()
+    private val getWalletRateUseCase = stateUseCaseComponent.provideGetRateUseCase()
 
     override fun activate() {
     }
@@ -32,11 +33,36 @@ class GetStateRatesDataModel() :
 
     override fun refresh() {
     }
-    fun getCryptoRates() {
+    fun getCryptoRates(_ticker: String?) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-            when (val response = getWalletRatesUseCase(ticker = null)) {
+            when (val response = getWalletRatesUseCase(ticker = _ticker)) {
+
+                is NetworkResponse.Success -> {
+                    println("Rate now: ${response.data}")
+                    _dataFlow.emit(SuccessState(listOf(response.data)))
+                }
+
+                is NetworkResponse.Failure -> {
+                    _dataFlow.emit(ErrorState(response.throwable))
+                }
+
+                is NetworkResponse.Unauthorized -> {
+                    settings.clear()
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
+                }
+
+            }
+        }
+    }
+
+    fun getCryptoRate(_ticker: String) {
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch {
+            _dataFlow.emit(LoadingState)
+            when (val response = getWalletRateUseCase(ticker = _ticker)) {
 
                 is NetworkResponse.Success -> {
                     _dataFlow.emit(SuccessState(listOf(response.data)))
@@ -48,8 +74,8 @@ class GetStateRatesDataModel() :
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
 
             }

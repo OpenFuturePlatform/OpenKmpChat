@@ -92,4 +92,5 @@
     <string name="search_title">Search</string>
     <string name="home_last_message">Last Messages:</string>
     <string name="home_no_chats">No chats yet.</string>
+    <string name="no_wallet_transactions">No transactions yet.</string>
 </resources>

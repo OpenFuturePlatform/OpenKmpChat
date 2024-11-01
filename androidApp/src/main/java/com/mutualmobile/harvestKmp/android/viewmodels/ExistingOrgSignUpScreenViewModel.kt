@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels.SignUpDataModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -18,9 +18,9 @@ class ExistingOrgSignUpScreenViewModel : ViewModel() {
     var currentFirstName by mutableStateOf("")
     var currentLastName by mutableStateOf("")
 
-    var currentSignUpState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+    var currentSignUpState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
-    var signUpPraxisCommand: PraxisCommand? by mutableStateOf(null)
+    var signUpOpenCommand: OpenCommand? by mutableStateOf(null)
     private val signUpDataModel = SignUpDataModel().apply {
         observeDataState()
         observeNavigationCommands()
@@ -28,7 +28,7 @@ class ExistingOrgSignUpScreenViewModel : ViewModel() {
 
     private fun SignUpDataModel.observeNavigationCommands() {
         praxisCommand.onEach { newCommand ->
-            signUpPraxisCommand = newCommand
+            signUpOpenCommand = newCommand
         }.launchIn(viewModelScope)
     }
 
@@ -53,8 +53,8 @@ class ExistingOrgSignUpScreenViewModel : ViewModel() {
         currentConfirmPassword = ""
         currentFirstName = ""
         currentLastName = ""
-        currentSignUpState = PraxisDataModel.EmptyState
-        signUpPraxisCommand = null
+        currentSignUpState = OpenDataModel.EmptyState
+        signUpOpenCommand = null
         onComplete()
     }
 }

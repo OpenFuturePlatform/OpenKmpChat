@@ -27,9 +27,9 @@ import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.GreateGroupTextField
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
-import com.mutualmobile.harvestKmp.android.viewmodels.AddGroupViewModel
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.android.viewmodels.AddGroupScreenViewModel
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import org.koin.androidx.compose.get
 
@@ -37,8 +37,8 @@ import org.koin.androidx.compose.get
 @Composable
 fun CreateGroupScreen(
     navController: NavHostController,
-    agVm: AddGroupViewModel = get(),
-    userState: PraxisDataModel.DataState,
+    agVm: AddGroupScreenViewModel = get(),
+    userState: OpenDataModel.DataState,
     _participants: String?,
 ) {
 
@@ -50,8 +50,8 @@ fun CreateGroupScreen(
 
     LaunchedEffect(agVm.currentNavigationCommand) {
         when (agVm.currentNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (agVm.currentNavigationCommand as NavigationPraxisCommand).screen
+            is NavigationOpenCommand -> {
+                val destination = (agVm.currentNavigationCommand as NavigationOpenCommand).screen
                 agVm.resetAll {
                     navController clearBackStackAndNavigateTo destination
                 }
@@ -61,7 +61,7 @@ fun CreateGroupScreen(
 
     LaunchedEffect(userState) {
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> {
+            is OpenDataModel.SuccessState<*> -> {
                 agVm.getGroupParticipants(userState)
             }
             else -> Unit
@@ -106,7 +106,7 @@ fun CreateGroupScreen(
                                 onValueChange = { updatedString -> agVm.currentGroupName = updatedString },
                                 placeholderText = "GROUP NAME"
                             )
-                            ParticipantList(participants = participants, addGroupViewModel = agVm, context = context)
+                            ParticipantList(participants = participants, addGroupScreenViewModel = agVm, context = context)
                         }
                     }
 
@@ -118,9 +118,9 @@ fun CreateGroupScreen(
 }
 
 @Composable
-fun ParticipantList(participants: List<User>, addGroupViewModel: AddGroupViewModel, context: Context) {
+fun ParticipantList(participants: List<User>, addGroupScreenViewModel: AddGroupScreenViewModel, context: Context) {
 
-    val currentUser = addGroupViewModel.currentUser.collectAsState()
+    val currentUser = addGroupScreenViewModel.currentUser.collectAsState()
 
     if(participants.isNotEmpty()) {
         Text(
@@ -169,13 +169,13 @@ fun ParticipantList(participants: List<User>, addGroupViewModel: AddGroupViewMod
 }
 
 @Composable
-fun CreateGroupButtonCompose(addGroupViewModel: AddGroupViewModel){
+fun CreateGroupButtonCompose(addGroupScreenViewModel: AddGroupScreenViewModel){
 
     FloatingActionButton(
         shape = MaterialTheme.shapes.large.copy(CornerSize(percent = 40)),
         backgroundColor = MaterialTheme.colors.primary,
         contentColor = Color.White,
-        onClick = { addGroupViewModel.createGroupWithParticipant() }
+        onClick = { addGroupScreenViewModel.createGroupWithParticipant() }
     ) {
         Icon(Icons.Default.ArrowForward, contentDescription = null)
     }

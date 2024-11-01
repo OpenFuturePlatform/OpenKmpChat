@@ -6,12 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.TaskRequest
-import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
-import com.mutualmobile.harvestKmp.domain.model.response.OrgProjectResponse
 import com.mutualmobile.harvestKmp.domain.model.response.TaskResponse
 import com.mutualmobile.harvestKmp.features.datamodels.userTaskDataModels.GetUserTasksDataModel
 import kotlinx.coroutines.flow.launchIn
@@ -24,8 +22,8 @@ class TaskScreenViewModel : ViewModel() {
 
     var textState by mutableStateOf(TextFieldValue(""))
 
-    var currentTaskScreenState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
-    var taskScreenNavigationCommands: PraxisCommand? by mutableStateOf(null)
+    var currentTaskScreenState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
+    var taskScreenNavigationCommands: OpenCommand? by mutableStateOf(null)
 
     private val getUserTasksDataModel = GetUserTasksDataModel()
 
@@ -46,7 +44,7 @@ class TaskScreenViewModel : ViewModel() {
         dataFlow.onEach { taskState ->
             currentTaskScreenState = taskState
             when (taskState) {
-                is PraxisDataModel.SuccessState<*> -> {
+                is OpenDataModel.SuccessState<*> -> {
                     println("TaskState $taskState")
                     taskListMap =
                         taskState.data as List<TaskResponse>
@@ -56,7 +54,7 @@ class TaskScreenViewModel : ViewModel() {
         }.launchIn(viewModelScope)
     }
 
-    fun getUserTasks(userState: PraxisDataModel.SuccessState<*>) {
+    fun getUserTasks(userState: OpenDataModel.SuccessState<*>) {
         getUserTasksDataModel.getUserTasks(
             userId = (userState.data as GetUserResponse).email ?: ""
         )

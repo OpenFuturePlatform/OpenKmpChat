@@ -1,12 +1,8 @@
 package com.mutualmobile.harvestKmp.features.datamodels.userProjectDataModels
 
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.DataState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.di.UserProjectUseCaseComponent
 import com.mutualmobile.harvestKmp.di.UserWorkUseCaseComponent
@@ -14,18 +10,13 @@ import com.mutualmobile.harvestKmp.domain.model.request.HarvestUserWorkRequest
 import com.mutualmobile.harvestKmp.domain.model.response.HarvestUserWorkResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import db.Harvest_user
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.core.component.KoinComponent
 
 class TimeLogginDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
 
     private val userProjectUseCaseComponent = UserProjectUseCaseComponent()
     private val logWorkTimeUseCase =
@@ -67,15 +58,15 @@ class TimeLogginDataModel() :
                 )) {
                 is NetworkResponse.Success -> {
                     this.emit(SuccessState(response.data))
-                    intPraxisCommand.emit(ModalPraxisCommand("Success", response.data.message ?: ""))
+                    intOpenCommand.emit(ModalOpenCommand("Success", response.data.message ?: ""))
                 }
                 is NetworkResponse.Failure -> {
                     this.emit(ErrorState(response.throwable))
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
             }
         }
@@ -98,8 +89,8 @@ class TimeLogginDataModel() :
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
             }
         }
@@ -126,8 +117,8 @@ class TimeLogginDataModel() :
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
             }
         }
@@ -142,15 +133,15 @@ class TimeLogginDataModel() :
                 )) {
                 is NetworkResponse.Success -> {
                     this.emit(SuccessState(response.data))
-                    intPraxisCommand.emit(ModalPraxisCommand("Success", response.data.message ?: ""))
+                    intOpenCommand.emit(ModalOpenCommand("Success", response.data.message ?: ""))
                 }
                 is NetworkResponse.Failure -> {
                     this.emit(ErrorState(response.throwable))
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
             }
         }

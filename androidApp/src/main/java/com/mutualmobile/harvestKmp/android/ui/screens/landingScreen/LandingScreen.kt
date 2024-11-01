@@ -56,7 +56,7 @@ import com.mutualmobile.harvestKmp.android.viewmodels.LandingScreenViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.NewEntryScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.OpenOrganization
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.get
@@ -69,7 +69,7 @@ fun LandingScreen(
     lsVm: LandingScreenViewModel = get(),
     maVm: MainActivityViewModel = get(),
     userOrganization: OpenOrganization? = null,
-    userState: PraxisDataModel.DataState
+    userState: OpenDataModel.DataState
 ) {
     val scaffoldDrawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 

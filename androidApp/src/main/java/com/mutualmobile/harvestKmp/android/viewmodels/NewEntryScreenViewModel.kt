@@ -8,9 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.components.serverDateFormatter
 import com.mutualmobile.harvestKmp.android.ui.utils.toDecimalString
 import com.mutualmobile.harvestKmp.data.mappers.toWorkResponse
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.SuccessState
 import com.mutualmobile.harvestKmp.domain.model.request.HarvestUserWorkRequest
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.domain.model.response.OrgProjectResponse
@@ -47,17 +47,17 @@ class NewEntryScreenViewModel : ViewModel() {
         currentWorkRequest?.workHours?.toDecimalString().orEmpty()
     )
 
-    var currentLogWorkTimeState: PraxisDataModel.DataState by mutableStateOf(
-        PraxisDataModel.EmptyState
+    var currentLogWorkTimeState: OpenDataModel.DataState by mutableStateOf(
+        OpenDataModel.EmptyState
     )
 
-    var logWorkTimeNavigationCommands: PraxisCommand? by mutableStateOf(null)
+    var logWorkTimeNavigationCommands: OpenCommand? by mutableStateOf(null)
 
     private val logWorkTimeDataModel = TimeLogginDataModel()
 
     private val orgProjectsDataModel = OrgProjectsDataModel()
 
-    var deleteWorkState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+    var deleteWorkState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
         private set
     var isDeleteDialogVisible by mutableStateOf(false)
 
@@ -171,8 +171,8 @@ class NewEntryScreenViewModel : ViewModel() {
         noteEtText = ""
         selectedWorkDate = Date()
         currentWorkRequestType = WorkRequestType.CREATE
-        deleteWorkState = PraxisDataModel.EmptyState
-        currentLogWorkTimeState = PraxisDataModel.EmptyState
+        deleteWorkState = OpenDataModel.EmptyState
+        currentLogWorkTimeState = OpenDataModel.EmptyState
         isDeleteDialogVisible = false
         onResetCompleted()
     }

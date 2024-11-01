@@ -6,8 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.domain.model.response.OrgProjectResponse
@@ -22,8 +22,8 @@ class ProjectScreenViewModel : ViewModel() {
 
     var textState by mutableStateOf(TextFieldValue(""))
 
-    var currentProjectScreenState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
-    var projectScreenNavigationCommands: PraxisCommand? by mutableStateOf(null)
+    var currentProjectScreenState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
+    var projectScreenNavigationCommands: OpenCommand? by mutableStateOf(null)
 
     private val getUserAssignedProjectsDataModel = GetUserAssignedProjectsDataModel()
 
@@ -44,7 +44,7 @@ class ProjectScreenViewModel : ViewModel() {
         dataFlow.onEach { projectState ->
             currentProjectScreenState = projectState
             when (projectState) {
-                is PraxisDataModel.SuccessState<*> -> {
+                is OpenDataModel.SuccessState<*> -> {
                     projectListMap =
                         (projectState.data as ApiResponse<*>).data as List<OrgProjectResponse>
                 }
@@ -53,7 +53,7 @@ class ProjectScreenViewModel : ViewModel() {
         }.launchIn(viewModelScope)
     }
 
-    fun getUserAssignedProjects(userState: PraxisDataModel.SuccessState<*>) {
+    fun getUserAssignedProjects(userState: OpenDataModel.SuccessState<*>) {
         getUserAssignedProjectsDataModel.getUserAssignedProjects(
             userId = (userState.data as GetUserResponse).id ?: ""
         )

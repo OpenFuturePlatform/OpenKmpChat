@@ -17,11 +17,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.mutualmobile.harvestKmp.MR
-import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
+import com.mutualmobile.harvestKmp.android.ui.utils.getIconUrl
+import com.mutualmobile.harvestKmp.android.viewmodels.WalletsScreenViewModel
 import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.domain.model.response.WalletResponse
 import java.math.RoundingMode
@@ -32,22 +32,22 @@ fun ExpandableListItem(
     wallets: List<WalletResponse>,
     isExpanded: Boolean,
     onClick: () -> Unit,
-    wsVm: WalletScreenViewModel
+    wsVm: WalletsScreenViewModel
 ) {
     var rate = "0"
     if (wsVm.exchangeRates.isNotEmpty()) {
         val coinGateRate = wsVm.exchangeRates[0]
         rate = when (blockchainType) {
-            "BNB" -> coinGateRate.bnb.usdt
-            "BTC" -> coinGateRate.btc.usdt
-            "ETH" -> coinGateRate.eth.usdt
-            "TRX" -> coinGateRate.trx.usdt
-            "SOL" -> coinGateRate.sol.usdt
-            else -> "1" //usdt
+            "BNB" -> coinGateRate.bnb.usd
+            "BTC" -> coinGateRate.btc.usd
+            "ETH" -> coinGateRate.eth.usd
+            "TRX" -> coinGateRate.trx.usd
+            "SOL" -> coinGateRate.sol.usd
+            else -> coinGateRate.usdt.usd //usdt
         }
     }
     val iconUrl = getIconUrl(blockchainType)
-
+    var totalBalance = 0.0
     Row(
         modifier = Modifier
             .clickable { onClick() }
@@ -62,34 +62,40 @@ fun ExpandableListItem(
                 modifier = Modifier
                     .size(PROFILE_PICTURE_SIZE.dp)
                     .clip(CircleShape),
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.FillBounds,
                 painter = iconUrl,
                 contentDescription = "Icon"
             )
-            Column {
+            Column(
+                modifier = Modifier.padding(start = 8.dp),
+            ) {
                 Text(blockchainType)
+                Text("$rate $")
             }
         }
-        Column {
-            Text("$rate $")
-        }
-        Column{
-            val icon = if (isExpanded)
-                Icons.Filled.KeyboardArrowUp
-            else
-                Icons.Filled.KeyboardArrowDown
-            Icon(icon, contentDescription = "Expand")
+
+        Row {
+            Column {
+                val icon = if (isExpanded)
+                    Icons.Filled.KeyboardArrowUp
+                else
+                    Icons.Filled.KeyboardArrowDown
+                Icon(icon, contentDescription = "Expand")
+            }
         }
     }
     wallets.forEach {
         AnimatedVisibility(visible = isExpanded) {
 
             val walletKey = it.address + it.blockchainType
-            val totalBalance = it.balance
+
             val amount = if (wsVm.walletBalances.isNotEmpty() && wsVm.walletBalances.containsKey(walletKey)) {
                 wsVm.walletBalances[walletKey]
             } else {
                 "0.00"
+            }
+            if (amount != null) {
+                totalBalance = totalBalance.plus(amount.toDouble().times( rate.toDouble()))
             }
 
             Card(
@@ -98,9 +104,10 @@ fun ExpandableListItem(
                 Row(
                     modifier = Modifier
                         .clickable(onClick = {
-                            wsVm.isWalletDetailDialogVisible = true
-                            wsVm.currentWalletAddress = it.address!!
-                            wsVm.currentWalletPrivateKey = it.privateKey!!
+                            //wsVm.isWalletDetailDialogVisible = true
+                            //wsVm.currentWalletAddress = it.address!!
+                            //wsVm.currentWalletPrivateKey = it.privateKey!!
+                            wsVm.onWalletClicked(address = it.address!!, encryptedPrivetKey = it.privateKey!!, blockchainType = it.blockchainType!!)
 
                         })
                         .background(Color.White)
@@ -141,19 +148,4 @@ fun ExpandableListItem(
         }
     }
 
-}
-
-@Composable
-fun getIconUrl(blokchainType: String): Painter {
-    return when (blokchainType) {
-        "BNB" -> painterResource(MR.images.bnb.drawableResId)
-        "BTC" -> painterResource(MR.images.btc.drawableResId)
-        "ETH" -> painterResource(MR.images.eth.drawableResId)
-        "TRX" -> painterResource(MR.images.trx.drawableResId)
-        "SOL" -> painterResource(MR.images.sol.drawableResId)
-        "USDT" -> painterResource(MR.images.usdt.drawableResId)
-        else -> {
-            painterResource(MR.images.bnb.drawableResId)
-        }
-    }
 }

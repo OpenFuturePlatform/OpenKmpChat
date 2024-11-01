@@ -1,6 +1,5 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.chatScreen
 
-import CustomLinearProgressBar
 import DotsPulsing
 import SendMessage
 import android.annotation.SuppressLint
@@ -12,19 +11,17 @@ import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
-import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.Messages
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.viewmodels.ChatViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.ChatUser
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
@@ -37,7 +34,7 @@ fun ChatGptScreen(
     navController: NavHostController,
     crVm: ChatViewModel = get(),
     user: GetUserResponse?,
-    userState: PraxisDataModel.DataState
+    userState: OpenDataModel.DataState
 ) {
 
     // 1
@@ -108,7 +105,7 @@ fun ChatGptScreen(
         //initial fetch messages
         println("INITIAL FETCH ONLY")
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> { crVm.getUserChats(userState = userState) }
+            is OpenDataModel.SuccessState<*> -> { crVm.getUserChats(userState = userState) }
             else -> Unit
         }
     }

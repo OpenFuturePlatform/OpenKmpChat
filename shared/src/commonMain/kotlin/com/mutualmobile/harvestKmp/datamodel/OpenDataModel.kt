@@ -1,27 +1,26 @@
 package com.mutualmobile.harvestKmp.datamodel
 
 import com.mutualmobile.harvestKmp.di.SharedComponent
-import com.mutualmobile.harvestKmp.domain.model.response.ApiError
 import com.rickclephas.kmp.nativecoroutines.NativeCoroutineScope
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
-abstract class PraxisDataModel(
+abstract class OpenDataModel(
     @NativeCoroutineScope
     var dataModelScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 ) {
 
     protected val settings = SharedComponent().provideSettings()
 
-    internal val intPraxisCommand = MutableSharedFlow<PraxisCommand>()
-    val praxisCommand = intPraxisCommand.asSharedFlow()
+    internal val intOpenCommand = MutableSharedFlow<OpenCommand>()
+    val praxisCommand = intOpenCommand.asSharedFlow()
 
 
     protected val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
         throwable.printStackTrace()
-        dataModelScope.launch { intPraxisCommand.emit(
-            ModalPraxisCommand(
+        dataModelScope.launch { intOpenCommand.emit(
+            ModalOpenCommand(
                 title = "Error",
                 throwable.message ?: "An Unknown error has happened"
             )

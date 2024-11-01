@@ -5,9 +5,7 @@ import com.mutualmobile.harvestKmp.data.network.getSafeNetworkResponse
 import com.mutualmobile.harvestKmp.data.network.state.StateApi
 import com.mutualmobile.harvestKmp.domain.model.request.BalanceRequest
 import com.mutualmobile.harvestKmp.domain.model.request.BroadcastRequest
-import com.mutualmobile.harvestKmp.domain.model.response.CoinGateRate
-import com.mutualmobile.harvestKmp.domain.model.response.ContractResponse
-import com.mutualmobile.harvestKmp.domain.model.response.WalletBalanceResponse
+import com.mutualmobile.harvestKmp.domain.model.response.*
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -20,7 +18,16 @@ class StateApiImpl(
     override suspend fun getPrices(ticker: String?): NetworkResponse<CoinGateRate> =
         getSafeNetworkResponse {
             httpClient.get(
-                urlString = "${Endpoint.STATE_URL}${Endpoint.RATES_URL}"
+                urlString = "${Endpoint.STATE_URL}${Endpoint.RATES_URL}/all" + if (ticker != null) "?ticker=$ticker" else ""
+            ) {
+                contentType(ContentType.Application.Json)
+            }
+        }
+
+    override suspend fun getPrice(ticker: String): NetworkResponse<ExchangeRate> =
+        getSafeNetworkResponse {
+            httpClient.get(
+                urlString = "${Endpoint.STATE_URL}${Endpoint.RATES_URL}/$ticker"
             ) {
                 contentType(ContentType.Application.Json)
             }
@@ -30,6 +37,16 @@ class StateApiImpl(
         getSafeNetworkResponse {
             httpClient.post(
                 urlString = "${Endpoint.STATE_URL}${Endpoint.BALANCE_URL}"
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+        }
+
+    override suspend fun getTransactions(request: BalanceRequest): NetworkResponse<List<TransactionResponse>> =
+        getSafeNetworkResponse {
+            httpClient.post(
+                urlString = "${Endpoint.STATE_URL}${Endpoint.TRANSACTIONS_URL}"
             ) {
                 contentType(ContentType.Application.Json)
                 setBody(request)

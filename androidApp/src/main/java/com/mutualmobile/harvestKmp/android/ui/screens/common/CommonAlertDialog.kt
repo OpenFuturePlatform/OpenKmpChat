@@ -10,11 +10,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.AnnotatedString
@@ -35,7 +37,9 @@ import com.mutualmobile.harvestKmp.android.ui.screens.newEntryScreen.components.
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.TaskScreenViewModel
-import com.mutualmobile.harvestKmp.android.viewmodels.WalletScreenViewModel
+import com.mutualmobile.harvestKmp.android.viewmodels.WalletDetailScreenViewModel
+import com.mutualmobile.harvestKmp.android.viewmodels.WalletReceiverDetailScreenViewModel
+import com.mutualmobile.harvestKmp.android.viewmodels.WalletsScreenViewModel
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import com.mutualmobile.harvestKmp.domain.model.request.TaskRequest
 import com.mutualmobile.harvestKmp.domain.model.response.AssistantNotesResponse
@@ -344,7 +348,7 @@ fun GenerateWalletDialog(
     selectedNetworks: List<String>,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    wsVm: WalletScreenViewModel = get(),
+    wsVm: WalletsScreenViewModel = get(),
 ) {
 
     var expanded by remember { mutableStateOf(false) }
@@ -487,53 +491,77 @@ fun GenerateWalletDialog(
 }
 
 @Composable
-fun MultiSelectDialog(
-    items: List<String>,
-    selectedItems: List<String>,
-    onDismissRequest: () -> Unit,
-    onConfirm: (List<String>) -> Unit
+fun WalletDetailDialog(
+    onDismiss: () -> Unit,
+    wsVm: WalletsScreenViewModel
 ) {
-    val selected = remember { mutableStateListOf(*selectedItems.toTypedArray()) }
+    val clipboardManager = LocalClipboardManager.current
 
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        title = { Text(text = "Select Items") },
-        text = {
-            Column {
-                items.forEach { item ->
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+    Dialog(onDismissRequest = {
+        onDismiss()
+    }, properties = DialogProperties()) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Checkbox(
-                            checked = selected.contains(item),
-                            onCheckedChange = {
-                                if (it) selected.add(item) else selected.remove(item)
-                            }
+
+                        Image(
+                            painter = rememberQrBitmapPainter(wsVm.currentWalletAddress),
+                            contentDescription = "QR Code",
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxWidth(),
                         )
-                        Text(text = item)
+
+                        TextField(
+                            value = wsVm.currentWalletAddress,
+                            readOnly = true,
+                            onValueChange = { wsVm.currentWalletAddress = it },
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    clipboardManager.setText(AnnotatedString((wsVm.currentWalletAddress)))
+                                }) {
+                                    Icon(Icons.Filled.Share, contentDescription = "Copy to clipboard")
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(4.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Buttons
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(onClick = {
+                            wsVm.isWalletDetailDialogVisible = false
+                            wsVm.isWalletDecryptDialogVisible = true
+                        }) {
+                            Text(text = "Show Private Key")
+                        }
                     }
                 }
             }
-        },
-        confirmButton = {
-            Button(onClick = { onConfirm(selected) }) {
-                Text("Confirm")
-            }
-        },
-        dismissButton = {
-            Button(onClick = onDismissRequest) {
-                Text("Cancel")
-            }
         }
-    )
+    }
 }
 
 @Composable
-fun WalletDetailDialog(
+fun WalletDecryptDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     onSend: () -> Unit,
-    wsVm: WalletScreenViewModel
+    wsVm: WalletsScreenViewModel
 ) {
     val clipboardManager = LocalClipboardManager.current
     val txtFieldError = remember { mutableStateOf("") }
@@ -549,66 +577,79 @@ fun WalletDetailDialog(
             Box(
                 contentAlignment = Alignment.Center
             ) {
-                Column(modifier = Modifier.padding(20.dp)) {
+                Column(modifier = Modifier.padding(10.dp)) {
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = "Wallet Detail",
-                            style = TextStyle(
-                                fontSize = 24.sp,
-                                fontFamily = FontFamily.Default,
-                                fontWeight = FontWeight.Bold
-                            )
-                        )
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = "",
-                            tint = colorResource(R.color.darker_gray),
-                            modifier = Modifier
-                                .width(30.dp)
-                                .height(30.dp)
-                                .clickable { onDismiss() }
+
+                        TextField(
+                            value = wsVm.currentWalletAddress,
+                            readOnly = true,
+                            onValueChange = { wsVm.currentWalletAddress = it },
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    clipboardManager.setText(AnnotatedString((wsVm.currentWalletAddress)))
+                                }) {
+                                    Icon(Icons.Filled.Share, contentDescription = "Copy to clipboard")
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(4.dp)
                         )
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    Text(
-                        text = wsVm.currentWalletAddress,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                    Button(onClick = {
-                        clipboardManager.setText(AnnotatedString((wsVm.currentWalletAddress)))
-                    }) {
-                        Text("Copy Address")
+                    if (wsVm.currentWalletDecryptedPrivateKey != "") {
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Private Key",
+                                style = TextStyle(
+                                    fontSize = 24.sp,
+                                    fontFamily = FontFamily.Default,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+
+                            TextField(
+                                value = wsVm.currentWalletDecryptedPrivateKey.take(5) + "..." + wsVm.currentWalletDecryptedPrivateKey.takeLast(
+                                    5
+                                ),
+                                readOnly = true,
+                                onValueChange = { wsVm.currentWalletDecryptedPrivateKey = it },
+                                trailingIcon = {
+                                    IconButton(onClick = {
+                                        clipboardManager.setText(AnnotatedString((wsVm.currentWalletDecryptedPrivateKey)))
+                                    }) {
+                                        Icon(Icons.Filled.Share, contentDescription = "Copy to clipboard")
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(4.dp)
+                            )
+
+                            Button(
+                                onClick = {
+                                    onSend()
+                                }, modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(text = "Create Transaction")
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
 
                     if (wsVm.currentWalletDecryptedPrivateKey != "") {
-//                        Text(
-//                            text = wsVm.currentWalletSeeedPhrases,
-//                            fontSize = 18.sp,
-//                            color = Color.Black,
-//                            modifier = Modifier.padding(all = 8.dp)
-//                        )
                         Text(
                             text = wsVm.currentWalletDecryptedPrivateKey,
                             fontSize = 18.sp,
                             color = Color.Black,
                             modifier = Modifier.padding(all = 8.dp)
                         )
-                        Button(onClick = {
-                            onSend()
-                        }) {
-                            Text(text = "SEND")
-                        }
+
                         Button(onClick = {
                             clipboardManager.setText(AnnotatedString((wsVm.currentWalletDecryptedPrivateKey)))
                         }) {
@@ -640,15 +681,9 @@ fun WalletDetailDialog(
 
                     // Buttons
                     Row(
-                        horizontalArrangement = Arrangement.End,
+                        horizontalArrangement = Arrangement.Center,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Button(onClick = {
-                            onDismiss()
-                        }) {
-                            Text(text = "CANCEL")
-                        }
-                        Spacer(modifier = Modifier.width(4.dp))
                         Button(onClick = {
                             if (txtField.value.isEmpty()) {
                                 txtFieldError.value = "Password can not be empty"
@@ -657,31 +692,11 @@ fun WalletDetailDialog(
                             wsVm.password = txtField.value
                             onConfirm()
                         }) {
-                            Text(text = "DECRYPT")
+                            Text(text = "Decrypt")
                         }
 
 
                     }
-
-//                    Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
-//                        Button(
-//                            onClick = {
-//                                if (txtField.value.isEmpty()) {
-//                                    txtFieldError.value = "Password can not be empty"
-//                                    return@Button
-//                                }
-//                                wsVm.password = txtField.value
-//
-//                                onConfirm()
-//                            },
-//                            shape = RoundedCornerShape(50.dp),
-//                            modifier = Modifier
-//                                .fillMaxWidth()
-//                                .height(50.dp)
-//                        ) {
-//                            Text(text = "Done")
-//                        }
-//                    }
                 }
             }
         }
@@ -692,7 +707,7 @@ fun WalletDetailDialog(
 fun WalletTransactionDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
-    wsVm: WalletScreenViewModel
+    wsVm: WalletsScreenViewModel
 ) {
 
     val clipboardManager = LocalClipboardManager.current
@@ -713,6 +728,7 @@ fun WalletTransactionDialog(
                 contentAlignment = Alignment.Center
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
+
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -894,7 +910,73 @@ fun WalletTransactionDialog(
     }
 }
 
-//Layout
+
+@Composable
+fun WalletScreenDetailDialog(
+    onDismiss: () -> Unit,
+    wsVm: WalletDetailScreenViewModel
+) {
+    val clipboardManager = LocalClipboardManager.current
+
+    Dialog(onDismissRequest = {
+        onDismiss()
+    }, properties = DialogProperties()) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        Image(
+                            painter = rememberQrBitmapPainter(wsVm.address),
+                            contentDescription = "QR Code",
+                            contentScale = ContentScale.FillWidth,
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                        )
+
+                        TextField(
+                            value = wsVm.address,
+                            readOnly = true,
+                            onValueChange = { wsVm.address = it },
+                            trailingIcon = {
+                                IconButton(onClick = {
+                                    clipboardManager.setText(AnnotatedString((wsVm.address)))
+                                }) {
+                                    Icon(Icons.Filled.Share, contentDescription = "Copy to clipboard")
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth().padding(4.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Buttons
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(onClick = {
+                            wsVm.isWalletDetailDialogVisible = false
+                            wsVm.isWalletDecryptDialogVisible = true
+                        }) {
+                            Text(text = "Show Private Key")
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 fun CustomDialogUI(modifier: Modifier = Modifier, openDialogCustom: MutableState<Boolean>) {
     Card(
@@ -959,6 +1041,123 @@ fun CustomDialogUI(modifier: Modifier = Modifier, openDialogCustom: MutableState
                         color = Color.Black,
                         modifier = Modifier.padding(top = 5.dp, bottom = 5.dp)
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun WalletReceiverDecryptDialog(
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    wrdsm: WalletReceiverDetailScreenViewModel
+) {
+    val clipboardManager = LocalClipboardManager.current
+    val txtFieldError = remember { mutableStateOf("") }
+    val txtField = remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = {
+        onDismiss()
+    }, properties = DialogProperties()) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
+        ) {
+            Box(
+                contentAlignment = Alignment.Center
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+
+                    if (wrdsm.currentWalletDecryptedPrivateKey != "") {
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = "Private Key",
+                                style = TextStyle(
+                                    fontSize = 24.sp,
+                                    fontFamily = FontFamily.Default,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            )
+
+                            TextField(
+                                value = wrdsm.currentWalletDecryptedPrivateKey.take(5) + "..." + wrdsm.currentWalletDecryptedPrivateKey.takeLast(
+                                    5
+                                ),
+                                readOnly = true,
+                                onValueChange = { wrdsm.currentWalletDecryptedPrivateKey = it },
+                                trailingIcon = {
+                                    IconButton(onClick = {
+                                        clipboardManager.setText(AnnotatedString((wrdsm.currentWalletDecryptedPrivateKey)))
+                                    }) {
+                                        Icon(Icons.Filled.Share, contentDescription = "Copy to clipboard")
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(4.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (wrdsm.currentWalletDecryptedPrivateKey != "") {
+                        Text(
+                            text = wrdsm.currentWalletDecryptedPrivateKey,
+                            fontSize = 18.sp,
+                            color = Color.Black,
+                            modifier = Modifier.padding(all = 8.dp)
+                        )
+
+                        Button(onClick = {
+                            clipboardManager.setText(AnnotatedString((wrdsm.currentWalletDecryptedPrivateKey)))
+                        }) {
+                            Text("Copy Private Key")
+                        }
+
+                    }
+                    TextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                BorderStroke(
+                                    width = 2.dp,
+                                    color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+                                )
+                            ),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = Color.Transparent,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        placeholder = { Text(text = "Enter password to decrypt") },
+                        value = txtField.value,
+                        onValueChange = {
+                            txtField.value = it.take(10)
+                        })
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Buttons
+                    Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(onClick = {
+                            if (txtField.value.isEmpty()) {
+                                txtFieldError.value = "Password can not be empty"
+                                return@Button
+                            }
+                            wrdsm.password = txtField.value
+                            onConfirm()
+                        }) {
+                            Text(text = "Decrypt")
+                        }
+
+
+                    }
                 }
             }
         }

@@ -1,28 +1,21 @@
 package com.mutualmobile.harvestKmp.features.datamodels.orgApiDataModels
 
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.DataState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withOrgId
 import com.mutualmobile.harvestKmp.di.OrgApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.UseCasesComponent
 import com.mutualmobile.harvestKmp.features.NetworkResponse
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.flow
 import org.koin.core.component.KoinComponent
 
 class FindOrgByIdentifierDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -44,8 +37,8 @@ class FindOrgByIdentifierDataModel() :
             )) {
                 is NetworkResponse.Success -> {
                     _dataFlow.emit(SuccessState(response.data)) // TODO redundant
-                    intPraxisCommand.emit(
-                        NavigationPraxisCommand(
+                    intOpenCommand.emit(
+                        NavigationOpenCommand(
                             screen = HarvestRoutes.Screen.LOGIN.withOrgId(
                                 response.data.data?.identifier,
                                 response.data.data?.id
@@ -55,8 +48,8 @@ class FindOrgByIdentifierDataModel() :
                 }
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find workspace"
                         )
@@ -64,8 +57,8 @@ class FindOrgByIdentifierDataModel() :
                 }
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
             }
         }
@@ -74,8 +67,8 @@ class FindOrgByIdentifierDataModel() :
     override fun activate() {
         if (isUserTokenAvailable()) {
             dataModelScope.launch {
-                intPraxisCommand.emit(
-                    NavigationPraxisCommand(
+                intOpenCommand.emit(
+                    NavigationOpenCommand(
                         screen = HarvestRoutes.Screen.ORG_USER_DASHBOARD
                     )
                 )

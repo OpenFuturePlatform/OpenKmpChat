@@ -1,28 +1,21 @@
 package com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels
 
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withOrgId
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withRecipient
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withWalletDetail
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
-import com.mutualmobile.harvestKmp.domain.model.ChatUser
-import com.mutualmobile.harvestKmp.domain.model.ColorProvider
-import com.mutualmobile.harvestKmp.domain.model.DisplayChatRoom
-import com.mutualmobile.harvestKmp.domain.model.Message
-import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toInstant
 import org.koin.core.component.KoinComponent
 
-class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
+class ChatGroupDataModel : OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -46,15 +39,20 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
 
     // NAVIGATE TO PRIVATE CHAT FROM LIST OF GROUP CHATS
     fun getUserPrivateChats(chatUid: String, isGroup: Boolean, recipient: String, sender: String) {
-        currentLoadingJob?.cancel()
-        currentLoadingJob = dataModelScope.launch {
+        executeJob {
             _dataFlow.emit(LoadingState)
+
+//            intOpenCommand.emit(
+//                NavigationOpenCommand(
+//                    screen = HarvestRoutes.Screen.WALLET_DETAIL.withWalletDetail("0x9a6fADEde3eA995eEF711814ffA6d62496C8cB44", "BNB", "YVipJR6+2IcTKyM0z8asXUbxWyDA1kaewEOvXExMaVa18Ofkcnw34l6kKVyaI1OhymJqOIJr4ATUmYzlu5z2WQ==")
+//                )
+//            )
             when (val response = getMessagesByUidUseCase(chatUid = chatUid, isGroup = isGroup)) {
                 is NetworkResponse.Success -> {
                     println("GET GROUP PRIVATE CHATS: ${response.data} with recipient: $recipient and sender: $sender")
 
-                    intPraxisCommand.emit(
-                        NavigationPraxisCommand(
+                    intOpenCommand.emit(
+                        NavigationOpenCommand(
                             screen = HarvestRoutes.Screen.CHAT_PRIVATE.withRecipient(
                                 chatUid,
                                 isGroup,
@@ -68,8 +66,8 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -77,9 +75,8 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
                 }
 
                 is NetworkResponse.Unauthorized -> {
-                    settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    handleUnauthorized()
+
                 }
             }
         }
@@ -101,8 +98,8 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             "Failed",
                             response.throwable.message ?: "Failed to find chats"
                         )
@@ -111,10 +108,21 @@ class ChatGroupDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     settings.clear()
-                    intPraxisCommand.emit(ModalPraxisCommand("Unauthorized", "Please login again!"))
-                    intPraxisCommand.emit(NavigationPraxisCommand(HarvestRoutes.Screen.LOGIN))
+                    intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+                    intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
                 }
             }
         }
+    }
+
+    private suspend fun handleUnauthorized() {
+        settings.clear()
+        intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
+        intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
+    }
+
+    private fun executeJob(block: suspend () -> Unit) {
+        currentLoadingJob?.cancel()
+        currentLoadingJob = dataModelScope.launch { block() }
     }
 }

@@ -26,8 +26,8 @@ import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.theme.Typography
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.UserListViewModel
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import org.koin.androidx.compose.get
 
@@ -37,13 +37,13 @@ import org.koin.androidx.compose.get
 fun UserListScreen(
     navController: NavHostController,
     ulVm: UserListViewModel = get(),
-    userState: PraxisDataModel.DataState
+    userState: OpenDataModel.DataState
 ) {
 
     LaunchedEffect(ulVm.currentNavigationCommand) {
         when (ulVm.currentNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (ulVm.currentNavigationCommand as NavigationPraxisCommand).screen
+            is NavigationOpenCommand -> {
+                val destination = (ulVm.currentNavigationCommand as NavigationOpenCommand).screen
                 ulVm.resetAll {
                     navController clearBackStackAndNavigateTo destination
                 }
@@ -53,7 +53,7 @@ fun UserListScreen(
 
     LaunchedEffect(userState) {
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> { ulVm.getUserContacts(userState) }
+            is OpenDataModel.SuccessState<*> -> { ulVm.getUserContacts(userState) }
             else -> Unit
         }
     }

@@ -2,21 +2,13 @@ package com.mutualmobile.harvestKmp.features.datamodels.chatApiDataModels
 
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withDetail
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.di.ChatApiUseCaseComponent
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.GroupApiUseCaseComponent
-import com.mutualmobile.harvestKmp.di.SharedComponent
-import com.mutualmobile.harvestKmp.domain.model.ChatUser
-import com.mutualmobile.harvestKmp.domain.model.ColorProvider
-import com.mutualmobile.harvestKmp.domain.model.Message
-import com.mutualmobile.harvestKmp.domain.model.TextType
 import com.mutualmobile.harvestKmp.domain.model.request.GroupCreateRequest
 import com.mutualmobile.harvestKmp.domain.model.request.GroupMemberUpdateRequest
-import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
-import dev.icerock.moko.graphics.Color
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,7 +16,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-class AddGroupDataModel : PraxisDataModel(), KoinComponent {
+class AddGroupDataModel : OpenDataModel(), KoinComponent {
 
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
@@ -58,8 +50,8 @@ class AddGroupDataModel : PraxisDataModel(), KoinComponent {
                 is NetworkResponse.Success -> {
                     //_dataFlow.emit(SuccessState(createGroupResponse))
                     println("CREATE GROUP RESPONSE: ${createGroupResponse.data}")
-                    intPraxisCommand.emit(
-                        NavigationPraxisCommand(
+                    intOpenCommand.emit(
+                        NavigationOpenCommand(
                             screen = HarvestRoutes.Screen.CHAT
                         )
                     )
@@ -67,8 +59,8 @@ class AddGroupDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(createGroupResponse.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             title = "Error",
                             createGroupResponse.throwable.message ?: "An Unknown error has happened"
                         )
@@ -77,8 +69,8 @@ class AddGroupDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     _dataFlow.emit(ErrorState(createGroupResponse.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             title = "Error",
                             createGroupResponse.throwable.message ?: "An Unknown error has happened"
                         )
@@ -101,8 +93,8 @@ class AddGroupDataModel : PraxisDataModel(), KoinComponent {
 
                     println("ADD MEMBER GROUP RESPONSE: ${response.data} and groupId: $groupId and route to => $profileScreen")
 
-                    intPraxisCommand.emit(
-                        NavigationPraxisCommand(
+                    intOpenCommand.emit(
+                        NavigationOpenCommand(
                             screen = profileScreen
                         )
                     )
@@ -110,8 +102,8 @@ class AddGroupDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             title = "Error",
                             response.throwable.message ?: "An Unknown error has happened"
                         )
@@ -120,8 +112,8 @@ class AddGroupDataModel : PraxisDataModel(), KoinComponent {
 
                 is NetworkResponse.Unauthorized -> {
                     _dataFlow.emit(ErrorState(response.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             title = "Error",
                             response.throwable.message ?: "An Unknown error has happened"
                         )

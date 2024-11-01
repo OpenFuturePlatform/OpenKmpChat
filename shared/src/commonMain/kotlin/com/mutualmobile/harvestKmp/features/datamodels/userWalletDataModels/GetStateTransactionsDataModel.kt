@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
-class GetStateGasLimitDataModel() :
+class GetStateTransactionsDataModel :
     OpenDataModel(), KoinComponent {
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
@@ -21,7 +21,7 @@ class GetStateGasLimitDataModel() :
     private var currentLoadingJob: Job? = null
 
     private val stateUseCaseComponent = StateUseCaseComponent()
-    private val getGasLimitUseCase = stateUseCaseComponent.provideGetGasLimitUseCase()
+    private val getWalletTransactionsUseCase = stateUseCaseComponent.provideGetTransactionsUseCase()
 
     override fun activate() {
     }
@@ -33,20 +33,19 @@ class GetStateGasLimitDataModel() :
     override fun refresh() {
     }
 
-    fun getGasLimit(address: String, blockchainType: String) {
+    fun getTransactions(address: String, blockchainType: String) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
-            when (val response = getGasLimitUseCase(
+            when (val response = getWalletTransactionsUseCase(
                 BalanceRequest(
                     address = address,
-                    blockchainName = blockchainType,
-                    contractAddress = null
+                    contractAddress = null,
+                    blockchainName = blockchainType
                 )
             )) {
 
                 is NetworkResponse.Success -> {
-                    println("GetGasLimit: Success -> ${response.data}")
                     _dataFlow.emit(SuccessState(response.data))
                 }
 
@@ -60,30 +59,6 @@ class GetStateGasLimitDataModel() :
                     intOpenCommand.emit(NavigationOpenCommand(""))
                 }
 
-            }
-        }
-    }
-
-    suspend fun getGasLimitSync(address: String, blockchainType: String) : Long {
-        val response = getGasLimitUseCase(
-            BalanceRequest(
-                address = address,
-                blockchainName = blockchainType,
-                contractAddress = null
-            )
-        )
-        return when (response) {
-
-            is NetworkResponse.Success -> {
-                response.data
-            }
-
-            is NetworkResponse.Failure -> {
-                0
-            }
-
-            is NetworkResponse.Unauthorized -> {
-                0
             }
         }
     }

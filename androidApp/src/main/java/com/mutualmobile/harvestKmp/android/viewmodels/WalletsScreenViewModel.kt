@@ -8,17 +8,25 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.android.ui.utils.BlockchainUtils
 import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.Wallet
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
 import com.mutualmobile.harvestKmp.domain.model.response.*
 import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 
-class WalletScreenViewModel : ViewModel() {
+class WalletsScreenViewModel : ViewModel() {
+    var currentWalletsScreenState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
+    var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
+
+    private val _loading = MutableStateFlow(false)
+    val loading: StateFlow<Boolean> = _loading
+
     var wallets by mutableStateOf(emptyList<WalletResponse>())
     var contracts by mutableStateOf(emptyList<ContractResponse>())
     var exchangeRates by mutableStateOf(emptyList<CoinGateRate>())
@@ -26,10 +34,6 @@ class WalletScreenViewModel : ViewModel() {
     var filteredWalletListMap: List<WalletResponse> = emptyList()
 
     var textState by mutableStateOf(TextFieldValue(""))
-
-    var currentWalletScreenState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
-
-    var walletScreenNavigationCommands: PraxisCommand? by mutableStateOf(null)
 
     var isWalletGenerateDialogVisible by mutableStateOf(false)
     var blockchainNetworks by mutableStateOf(emptyList<BlockchainType>())
@@ -41,7 +45,7 @@ class WalletScreenViewModel : ViewModel() {
     var currentWalletSeeedPhrases by mutableStateOf("")
     var currentWalletAddress by mutableStateOf("")
     var isWalletDetailDialogVisible by mutableStateOf(false)
-
+    var isWalletDecryptDialogVisible by mutableStateOf(false)
     var isWalletTransactionDialogVisible by mutableStateOf(false)
     var currentReceiverAddress by mutableStateOf("")
     var currentReceiverAmount by mutableStateOf("")
@@ -49,7 +53,7 @@ class WalletScreenViewModel : ViewModel() {
     var currentBroadcastError by mutableStateOf("")
     var isBroadcastLoading by mutableStateOf(false)
 
-    private val getUserWalletsDataModel = GetUserWalletsDataModel()
+    private val getWalletsDataModel = WalletsDataModel()
     private val getStateRatesDataModel = GetStateRatesDataModel()
     private val getStateBalanceDataModel = GetStateBalanceDataModel()
     private val getStateGasPriceDataModel = GetStateGasPriceDataModel()
@@ -58,7 +62,8 @@ class WalletScreenViewModel : ViewModel() {
     private val postBroadcastDataModel = PostStateBroadcastDataModel()
 
     init {
-        with(getUserWalletsDataModel) {
+        println("WalletsScreenViewModel init")
+        with(getWalletsDataModel) {
             observeDataState()
             observeNavigationCommands()
         }
@@ -76,17 +81,15 @@ class WalletScreenViewModel : ViewModel() {
         }
     }
 
-    private fun GetUserWalletsDataModel.observeNavigationCommands() {
+    private fun WalletsDataModel.observeNavigationCommands() =
         praxisCommand.onEach { newCommand ->
-            walletScreenNavigationCommands = newCommand
+            currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
-    }
-
-    private fun GetUserWalletsDataModel.observeDataState() {
+    private fun WalletsDataModel.observeDataState() {
         dataFlow.onEach { walletState ->
-            currentWalletScreenState = walletState
+            currentWalletsScreenState = walletState
             when (walletState) {
-                is PraxisDataModel.SuccessState<*> -> {
+                is OpenDataModel.SuccessState<*> -> {
                     //println("User WalletState $walletState")
                     val walletListMapNewState = walletState.data as List<WalletResponse>
 
@@ -101,18 +104,16 @@ class WalletScreenViewModel : ViewModel() {
             }
         }.launchIn(viewModelScope)
     }
-
-    private fun GetStateRatesDataModel.observeStateNavigationCommands() {
+    private fun GetStateRatesDataModel.observeStateNavigationCommands() =
         praxisCommand.onEach { newCommand ->
-            walletScreenNavigationCommands = newCommand
+            println("Rates Command $newCommand")
+            currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
-    }
-
     private fun GetStateRatesDataModel.observeStateDataState() {
         dataFlow.onEach { rateState ->
-            currentWalletScreenState = rateState
+            currentWalletsScreenState = rateState
             when (rateState) {
-                is PraxisDataModel.SuccessState<*> -> {
+                is OpenDataModel.SuccessState<*> -> {
                     println("Rates ${rateState.data}")
                     exchangeRates = rateState.data as List<CoinGateRate>
                 }
@@ -121,23 +122,20 @@ class WalletScreenViewModel : ViewModel() {
             }
         }.launchIn(viewModelScope)
     }
-
-    private fun GetStateBalanceDataModel.observeStateBalanceNavigationCommands() {
+    private fun GetStateBalanceDataModel.observeStateBalanceNavigationCommands() =
         praxisCommand.onEach { newCommand ->
-            walletScreenNavigationCommands = newCommand
+            currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
-    }
-
     private fun GetStateBalanceDataModel.observeStateBalanceDataState() {
         dataFlow.onEach { balanceState ->
-            currentWalletScreenState = balanceState
-            println("BalanceState $balanceState")
+            currentWalletsScreenState = balanceState
+            //println("BalanceState $balanceState")
             when (balanceState) {
-                is PraxisDataModel.SuccessState<*> -> {
+                is OpenDataModel.SuccessState<*> -> {
                     val balanceResponse = balanceState.data as WalletBalanceResponse
                     val key = balanceResponse.address + balanceResponse.blockchain
                     val balance = balanceResponse.balance
-                    println("Key: $key and balance: $balance")
+                    //println("Key: $key and balance: $balance")
                     walletBalances = walletBalances.plus(Pair(key, balance.toString()))
                 }
 
@@ -145,23 +143,20 @@ class WalletScreenViewModel : ViewModel() {
             }
         }.launchIn(viewModelScope)
     }
-
-    private fun PostStateBroadcastDataModel.observeNavigationCommands() {
+    private fun PostStateBroadcastDataModel.observeNavigationCommands() =
         praxisCommand.onEach { newCommand ->
-            walletScreenNavigationCommands = newCommand
+            currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
-    }
-
     private fun PostStateBroadcastDataModel.observeDataState() {
         dataFlow.onEach { broadcastState ->
-            currentWalletScreenState = broadcastState
+            currentWalletsScreenState = broadcastState
             when (broadcastState) {
-                is PraxisDataModel.SuccessState<*> -> {
+                is OpenDataModel.SuccessState<*> -> {
                     println("Broadcast State $broadcastState")
                     currentBroadcastHash = broadcastState.data as String
                     isBroadcastLoading = false
                 }
-                is PraxisDataModel.ErrorState -> {
+                is OpenDataModel.ErrorState -> {
                     println("Broadcast State Error: ${broadcastState.throwable}")
 
                     isBroadcastLoading = false
@@ -180,14 +175,14 @@ class WalletScreenViewModel : ViewModel() {
         }.launchIn(viewModelScope)
     }
 
-    fun getUserWallets(userState: PraxisDataModel.SuccessState<*>) {
+    fun getUserWallets(userState: OpenDataModel.SuccessState<*>) {
         val userResponse = userState.data as GetUserResponse
         currentUserId = userResponse.id!!
-        getUserWalletsDataModel.getLocalUserWallets()
+        getWalletsDataModel.getLocalUserWallets()
         //getUserWalletsDataModel.getUserWallets(userResponse.email!!)
-        getStateRatesDataModel.getCryptoRates()
+        getStateRatesDataModel.getCryptoRates(null)
         wallets.forEach {
-            println("Fetch balance ${it.address} and ${it.blockchainType}  = ${it.balance}")
+            //println("Fetch balance ${it.address} and ${it.blockchainType}  = ${it.balance}")
             if (it.blockchainType!! == BlockchainType.BNB.name || it.blockchainType == BlockchainType.ETH.name || it.blockchainType == BlockchainType.TRX.name) {
                 getStateBalanceDataModel.getCryptoBalance(
                     address = it.address!!,
@@ -208,9 +203,9 @@ class WalletScreenViewModel : ViewModel() {
 
         }
         currentWallets.forEach { wallet ->
-            getUserWalletsDataModel.saveWalletsRemote(wallet)
+            getWalletsDataModel.saveWalletsRemote(wallet)
         }
-        getUserWalletsDataModel.saveWalletsLocal(currentWallets)
+        getWalletsDataModel.saveWalletsLocal(currentWallets)
 
     }
 
@@ -256,10 +251,13 @@ class WalletScreenViewModel : ViewModel() {
         currentWalletDecryptedPrivateKey = decrypted
     }
 
+    fun onWalletClicked(address : String, encryptedPrivetKey: String, blockchainType: String) {
+        getWalletsDataModel.navigateWalletDetail(address, encryptedPrivetKey, blockchainType)
+    }
+
     fun resetAll(onComplete: () -> Unit = {}) {
-        wallets = emptyList()
-        filteredWalletListMap = emptyList()
-        textState = TextFieldValue("")
+        currentNavigationCommand = null
+        currentWalletsScreenState = OpenDataModel.EmptyState
         onComplete()
     }
 }

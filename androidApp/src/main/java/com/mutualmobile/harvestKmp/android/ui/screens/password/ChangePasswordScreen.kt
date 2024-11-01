@@ -33,9 +33,9 @@ import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.components.Si
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.ChangePasswordViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.ErrorState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.LoadingState
 import org.koin.androidx.compose.get
 
 @Composable
@@ -45,10 +45,10 @@ fun ChangePasswordScreen(
 ) {
     val ctx = LocalContext.current
 
-    LaunchedEffect(cpVm.changePasswordPraxisCommand) {
-        when (cpVm.changePasswordPraxisCommand) {
-            is NavigationPraxisCommand -> {
-                if ((cpVm.changePasswordPraxisCommand as NavigationPraxisCommand).screen.isBlank()) {
+    LaunchedEffect(cpVm.changePasswordOpenCommand) {
+        when (cpVm.changePasswordOpenCommand) {
+            is NavigationOpenCommand -> {
+                if ((cpVm.changePasswordOpenCommand as NavigationOpenCommand).screen.isBlank()) {
                     navController clearBackStackAndNavigateTo HarvestRoutes.Screen.FIND_WORKSPACE
                 }
             }
@@ -112,9 +112,9 @@ fun ChangePasswordScreen(
                 )
             }
             HarvestDialog(
-                praxisCommand = cpVm.changePasswordPraxisCommand,
+                openCommand = cpVm.changePasswordOpenCommand,
                 onConfirm = {
-                    cpVm.changePasswordPraxisCommand = null
+                    cpVm.changePasswordOpenCommand = null
                 },
             )
         }

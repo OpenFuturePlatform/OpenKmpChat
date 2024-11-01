@@ -1,9 +1,9 @@
 package com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels
 
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.AuthApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.di.UseCasesComponent
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.component.KoinComponent
 
 class LoginDataModel :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
 
     private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
@@ -52,8 +52,8 @@ class LoginDataModel :
                 is NetworkResponse.Success -> {
                     _dataFlow.emit(SuccessState(loginResponse.data))
                     saveToken(loginResponse)
-                    intPraxisCommand.emit(
-                        NavigationPraxisCommand(
+                    intOpenCommand.emit(
+                        NavigationOpenCommand(
                             screen = HarvestRoutes.Screen.CHAT
                         )
                     )
@@ -61,8 +61,8 @@ class LoginDataModel :
 
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(loginResponse.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             title = "Error",
                             loginResponse.throwable.message ?: "An Unknown error has happened"
                         )
@@ -71,8 +71,8 @@ class LoginDataModel :
 
                 is NetworkResponse.Unauthorized -> {
                     _dataFlow.emit(ErrorState(loginResponse.throwable))
-                    intPraxisCommand.emit(
-                        ModalPraxisCommand(
+                    intOpenCommand.emit(
+                        ModalOpenCommand(
                             title = "Error",
                             loginResponse.throwable.message ?: "An Unknown error has happened"
                         )
@@ -116,8 +116,8 @@ class LoginDataModel :
 
     fun logoutUser() {
         dataModelScope.launch {
-            intPraxisCommand.emit(
-                ModalPraxisCommand(
+            intOpenCommand.emit(
+                ModalOpenCommand(
                     title = "Work in Progress",
                     message = "The mobile client app is currently made for organization users only, if you're an Admin or a SuperAdmin, you can click on OK and go to the Harvest Web App which supports Admin sign-in"
                 )

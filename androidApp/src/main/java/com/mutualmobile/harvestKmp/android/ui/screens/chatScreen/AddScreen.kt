@@ -10,10 +10,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,27 +19,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.DefaultProfilePicture
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.LoadingIndicator
-import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.ProfilePicture
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.theme.Typography
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.UserListViewModel
 import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import org.koin.androidx.compose.get
 
@@ -51,15 +45,15 @@ import org.koin.androidx.compose.get
 fun AddScreen(
     navController: NavHostController,
     ulVm: UserListViewModel = get(),
-    userState: PraxisDataModel.DataState
+    userState: OpenDataModel.DataState
 ) {
 
     println("ADD SCREEN")
 
     LaunchedEffect(ulVm.currentNavigationCommand) {
         when (ulVm.currentNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (ulVm.currentNavigationCommand as NavigationPraxisCommand).screen
+            is NavigationOpenCommand -> {
+                val destination = (ulVm.currentNavigationCommand as NavigationOpenCommand).screen
                 ulVm.resetAll {
                     navController clearBackStackAndNavigateTo destination
                 }
@@ -69,7 +63,7 @@ fun AddScreen(
 
     LaunchedEffect(userState) {
         when (userState) {
-            is PraxisDataModel.SuccessState<*> -> { ulVm.getUserContacts(userState) }
+            is OpenDataModel.SuccessState<*> -> { ulVm.getUserContacts(userState) }
             else -> Unit
         }
     }

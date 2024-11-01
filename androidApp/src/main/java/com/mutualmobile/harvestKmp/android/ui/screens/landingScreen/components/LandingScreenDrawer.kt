@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mutualmobile.harvestKmp.MR
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.DataState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.DataState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.SuccessState
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
 
 @Composable

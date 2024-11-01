@@ -4,13 +4,7 @@ package com.mutualmobile.harvestKmp.android.ui
 import android.Manifest
 import android.R
 import android.animation.ObjectAnimator
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.media.audiofx.BassBoost
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -34,8 +28,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.animation.doOnEnd
-import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavHostController
@@ -43,7 +35,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.findNavController
 import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -63,18 +54,22 @@ import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.SignUpScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.userScreen.ContactProfileScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.userScreen.GroupProfileScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.userScreen.UserListScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.WalletDetailScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.WalletReceiverDetailScreen
 import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.WalletScreen
+import com.mutualmobile.harvestKmp.android.ui.screens.walletScreen.WalletSenderDetailScreen
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.ui.utils.SetupSystemUiController
 import com.mutualmobile.harvestKmp.android.viewmodels.MainActivityViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.EmptyState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.EmptyState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.LoadingState
 import org.koin.android.ext.android.get
 
 class MainActivity : ComponentActivity() {
     val mainActivityViewModel: MainActivityViewModel = get()
     private lateinit var navController: NavHostController
+
     init {
         System.loadLibrary("TrustWalletCore")
     }
@@ -247,6 +242,23 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable(
+                                HarvestRoutes.Screen.WALLET_DETAIL_WITH_ADDRESS,
+                                arguments = listOf(
+                                    navArgument(HarvestRoutes.Keys.address) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.blockchainType) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.privateKey) { nullable = true },
+                                ),
+                            ) {
+                                WalletDetailScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState,
+                                    address = it.arguments?.getString("address"),
+                                    privateKey = it.arguments?.getString("privateKey"),
+                                    blockchainType = it.arguments?.getString("blockchainType"),
+                                )
+                            }
+
+                            composable(
                                 HarvestRoutes.Screen.ADD_MEMBER_WITH_GROUP_ID,
                                 arguments = listOf(
                                     navArgument(HarvestRoutes.Keys.groupId) { nullable = false },
@@ -328,7 +340,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable(
-                                HarvestRoutes.Screen.USER_WALLET,
+                                HarvestRoutes.Screen.USER_WALLETS,
                                 deepLinks = listOf(navDeepLink {
                                     uriPattern = "https://openaix.io/wallets"
                                     action = Intent.ACTION_VIEW
@@ -339,6 +351,42 @@ class MainActivity : ComponentActivity() {
                                     userState = mainActivityViewModel.getUserState
                                 )
                             }
+
+                            composable(
+                                HarvestRoutes.Screen.WALLET_SENDER_DETAIL_WITH_ADDRESS,
+                                arguments = listOf(
+                                    navArgument(HarvestRoutes.Keys.address) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.blockchainType) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.privateKey) { nullable = true },
+                                ),
+                            ) {
+                                WalletSenderDetailScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState,
+                                    address = it.arguments?.getString("address")!!,
+                                    privateKey = it.arguments?.getString("privateKey")!!,
+                                    blockchainType = it.arguments?.getString("blockchainType")!!,
+                                )
+                            }
+
+                            composable(
+                                HarvestRoutes.Screen.WALLET_RECEIVER_DETAIL_WITH_ADDRESS,
+                                arguments = listOf(
+                                    navArgument(HarvestRoutes.Keys.address) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.blockchainType) { nullable = true },
+                                    navArgument(HarvestRoutes.Keys.privateKey) { nullable = true },
+                                ),
+                            ) {
+                                WalletReceiverDetailScreen(
+                                    navController = navController,
+                                    userState = mainActivityViewModel.getUserState,
+                                    address = it.arguments?.getString("address")!!,
+                                    privateKey = it.arguments?.getString("privateKey")!!,
+                                    blockchainType = it.arguments?.getString("blockchainType")!!,
+                                )
+                            }
+
+
 
                         }
                     }
@@ -468,6 +516,7 @@ class MainActivity : ComponentActivity() {
     fun currentRoute(navController: NavHostController): String? {
         return navController.currentBackStackEntryAsState().value?.destination?.route
     }
+
     @Composable
     fun ShowSettingDialog(openDialog: MutableState<Boolean>) {
         if (openDialog.value) {

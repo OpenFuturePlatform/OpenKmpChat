@@ -66,6 +66,8 @@ dependencies {
     implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.accompanist:accompanist-permissions:0.25.1")
+    // QR
+    implementation("com.google.zxing:core:3.4.1")
     AndroidDependencies.platforms.forEach { platformDependency ->
         implementation(platform(platformDependency))
     }

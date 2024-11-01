@@ -7,8 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.data.network.TAG
-import com.mutualmobile.harvestKmp.datamodel.PraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.GroupDetails
 import com.mutualmobile.harvestKmp.domain.model.request.User
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
@@ -19,8 +19,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 class ContactProfileViewModel : ViewModel() {
-    var currentNavigationCommand: PraxisCommand? by mutableStateOf(null)
-    var currentGroupDetailState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+    var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
+    var currentGroupDetailState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
@@ -33,7 +33,7 @@ class ContactProfileViewModel : ViewModel() {
     var currentGroupId by mutableStateOf("")
     var participants by mutableStateOf(emptyList<String>())
 
-    var deleteMemberState: PraxisDataModel.DataState by mutableStateOf(PraxisDataModel.EmptyState)
+    var deleteMemberState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
         private set
     var isDeleteDialogVisible by mutableStateOf(false)
     var deleteMemberId by mutableStateOf("")
@@ -63,8 +63,8 @@ class ContactProfileViewModel : ViewModel() {
 
     fun resetAll(onComplete: () -> Unit = {}) {
         currentNavigationCommand = null
-        currentGroupDetailState = PraxisDataModel.EmptyState
-        deleteMemberState = PraxisDataModel.EmptyState
+        currentGroupDetailState = OpenDataModel.EmptyState
+        deleteMemberState = OpenDataModel.EmptyState
         isDeleteDialogVisible = false
         deleteMemberId = ""
         deleteMemberGroupId = ""
@@ -75,7 +75,7 @@ class ContactProfileViewModel : ViewModel() {
         _loading.value = true
         with(getProfileDataModel) {
             dataFlow.onEach { newChatState ->
-                if (newChatState is PraxisDataModel.SuccessState<*>) {
+                if (newChatState is OpenDataModel.SuccessState<*>) {
                     println("NEW STATE GROUP DETAILS WITH ${newChatState.data}")
                     val newMessage = newChatState.data as GroupDetails
                     participants = newMessage.participants
@@ -89,13 +89,13 @@ class ContactProfileViewModel : ViewModel() {
         }
     }
 
-    fun getGroupDetails(groupId: String, userState: PraxisDataModel.SuccessState<*>){
+    fun getGroupDetails(groupId: String, userState: OpenDataModel.SuccessState<*>){
         val userResponse = userState.data as GetUserResponse
         _currentUser.value = User(id = userResponse.id, firstName = userResponse.firstName, lastName = userResponse.lastName, email = userResponse.email)
         getProfileDataModel.getGroup(groupId)
     }
 
-    fun getUserDetails(userId: String, userState: PraxisDataModel.SuccessState<*>){
+    fun getUserDetails(userId: String, userState: OpenDataModel.SuccessState<*>){
         val userResponse = userState.data as GetUserResponse
         _currentUser.value = User(id = userResponse.id, firstName = userResponse.firstName, lastName = userResponse.lastName, email = userResponse.email)
     }
@@ -104,7 +104,7 @@ class ContactProfileViewModel : ViewModel() {
         if (deleteMemberId != "" && deleteMemberGroupId != "") {
             getProfileDataModel.removeMember(groupId = deleteMemberGroupId, memberId = deleteMemberId)
                 .onEach { newState ->
-                    if (newState is PraxisDataModel.SuccessState<*>) {
+                    if (newState is OpenDataModel.SuccessState<*>) {
                         println("NEW STATE ON REMOVE MEMBER $newState with participants: $participants and member : $deleteMemberId")
                         participants = participants.minus(deleteMemberId)
                         deleteMemberState = newState
@@ -112,7 +112,7 @@ class ContactProfileViewModel : ViewModel() {
                 }
                 .launchIn(getProfileDataModel.dataModelScope)
 
-            deleteMemberState = PraxisDataModel.EmptyState
+            deleteMemberState = OpenDataModel.EmptyState
             isDeleteDialogVisible = false
 
             onCompleted()

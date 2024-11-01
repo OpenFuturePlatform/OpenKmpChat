@@ -1,12 +1,8 @@
 package com.mutualmobile.harvestKmp.features.datamodels.orgForgotPasswordApiDataModels
 
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.DataState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
-import com.mutualmobile.harvestKmp.datamodel.ModalPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
+import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.di.ForgotPasswordApiUseCaseComponent
 import com.mutualmobile.harvestKmp.domain.model.request.ResetPasswordRequest
 import com.mutualmobile.harvestKmp.domain.model.response.ApiResponse
@@ -19,7 +15,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.core.component.KoinComponent
 
 class ResetPasswordDataModel() :
-    PraxisDataModel(), KoinComponent {
+    OpenDataModel(), KoinComponent {
   private val _dataFlow = MutableSharedFlow<DataState>()
     val dataFlow = _dataFlow.asSharedFlow()
 
@@ -52,15 +48,15 @@ class ResetPasswordDataModel() :
                 )) {
                 is NetworkResponse.Success<*> -> {
                     if (changePasswordResponse.data is ApiResponse<*>) {
-                        intPraxisCommand.emit(
-                            ModalPraxisCommand(
+                        intOpenCommand.emit(
+                            ModalOpenCommand(
                                 "Response",
                                 changePasswordResponse.data.message ?: "Woah!"
                             )
                         )
                     }
                     _dataFlow.emit(SuccessState(changePasswordResponse.data))
-                    intPraxisCommand.emit(NavigationPraxisCommand(""))
+                    intOpenCommand.emit(NavigationOpenCommand(""))
                 }
                 is NetworkResponse.Failure -> {
                     _dataFlow.emit(ErrorState(changePasswordResponse.throwable))

@@ -1,13 +1,13 @@
 package com.mutualmobile.harvestKmp.datamodel
 
-open class PraxisCommand
+open class OpenCommand
 
 const val BROWSER_SCREEN_ROUTE_SEPARATOR = "/"
 const val BROWSER_QUERY = "?"
 const val BROWSER_AND = "&"
 
-data class NavigationPraxisCommand(val screen: String, val route: String? = null) : PraxisCommand()
-data class ModalPraxisCommand(val title: String, val message: String) : PraxisCommand()
+data class NavigationOpenCommand(val screen: String, val route: String? = null) : OpenCommand()
+data class ModalOpenCommand(val title: String, val message: String) : OpenCommand()
 
 object HarvestRoutes {
     object Keys {
@@ -21,6 +21,9 @@ object HarvestRoutes {
         const val isGroup = "isGroup"
         const val profileId = "profileId"
         const val groupId = "groupId"
+        const val address = "address"
+        const val privateKey = "privateKey"
+        const val blockchainType = "blockchainType"
     }
 
     object Screen {
@@ -37,20 +40,18 @@ object HarvestRoutes {
         const val NEW_ORG_SIGNUP = "new_org_signup"
         const val ORG_USERS = "users"
         const val ORG_PROJECTS = "projects"
-        const val ASSIGN_PROJECT = "assign-projects"
-        const val ORG_TIME = "time-log-screen"
         const val SETTINGS = "settings"
-        const val USER_REPORT = "user-reports"
         const val ORG_USER_DASHBOARD = "user-dashboard"
-        const val LIST_USERS_PROJECT = "list-user-project"
-        const val LIST_PROJECTS_USER = "list-projects-user"
         const val ON_BOARDING = "on_boarding"
         const val FIND_WORKSPACE = "find-workspace"
         const val WORK_ENTRY = "work-entry"
         const val SELECT_WORK_TYPE = "select-work-type"
 
         const val USER_HOME = "user-home"
-        const val USER_WALLET = "user-wallet"
+        const val USER_WALLETS = "user-wallets"
+        const val WALLET_DETAIL = "wallet-detail"
+        const val WALLET_SENDER_DETAIL = "wallet-sender-detail"
+        const val WALLET_RECEIVER_DETAIL = "wallet-receiver-detail"
         const val CHAT = "chat"
         const val TASK = "task"
         const val CHAT_PRIVATE = "chat-private"
@@ -69,7 +70,7 @@ object HarvestRoutes {
             .plus(BROWSER_AND)
             .plus("${Keys.chatUid}={${Keys.chatUid}}")
             .plus(BROWSER_AND)
-           .plus("${Keys.isGroup}={${Keys.isGroup}}")
+            .plus("${Keys.isGroup}={${Keys.isGroup}}")
 
 
         const val CHAT_GPT = "chat-gpt"
@@ -92,6 +93,29 @@ object HarvestRoutes {
             .plus(BROWSER_AND)
             .plus("${Keys.isGroup}={${Keys.isGroup}}")
 
+        const val WALLET_DETAIL_WITH_ADDRESS = WALLET_DETAIL
+            .plus(BROWSER_QUERY)
+            .plus("${Keys.address}={${Keys.address}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.blockchainType}={${Keys.blockchainType}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.privateKey}={${Keys.privateKey}}")
+
+        const val WALLET_SENDER_DETAIL_WITH_ADDRESS = WALLET_SENDER_DETAIL
+            .plus(BROWSER_QUERY)
+            .plus("${Keys.address}={${Keys.address}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.blockchainType}={${Keys.blockchainType}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.privateKey}={${Keys.privateKey}}")
+
+        const val WALLET_RECEIVER_DETAIL_WITH_ADDRESS = WALLET_RECEIVER_DETAIL
+            .plus(BROWSER_QUERY)
+            .plus("${Keys.address}={${Keys.address}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.blockchainType}={${Keys.blockchainType}}")
+            .plus(BROWSER_AND)
+            .plus("${Keys.privateKey}={${Keys.privateKey}}")
 
         fun String.withOrgId(identifier: String?, id: String?): String {
             return this.plus(
@@ -126,5 +150,14 @@ object HarvestRoutes {
                 BROWSER_QUERY + "${Keys.groupId}=${groupId ?: ""}"
             )
         }
+
+        fun String.withWalletDetail(address: String?, blockchainType: String?, encryptedPrivateKey: String?): String {
+            return this.plus(
+                BROWSER_QUERY + "${Keys.address}=${address?: ""}"
+                        + BROWSER_AND + "${Keys.blockchainType}=${blockchainType?: ""}"
+                        + BROWSER_AND + "${Keys.privateKey}=${encryptedPrivateKey?: ""}"
+            )
+        }
+
     }
 }

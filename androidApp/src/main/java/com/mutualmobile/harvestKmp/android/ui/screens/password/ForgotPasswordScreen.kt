@@ -33,10 +33,10 @@ import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.components.Si
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.ForgotPasswordViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.SuccessState
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.ErrorState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.SuccessState
 import org.koin.androidx.compose.get
 
 @Composable
@@ -46,8 +46,8 @@ fun ForgotPasswordScreen(
 ) {
     LaunchedEffect(fpVm.forgotPasswordNavigationCommand) {
         when (fpVm.forgotPasswordNavigationCommand) {
-            is NavigationPraxisCommand -> {
-                if ((fpVm.forgotPasswordNavigationCommand as NavigationPraxisCommand).screen.isBlank()) {
+            is NavigationOpenCommand -> {
+                if ((fpVm.forgotPasswordNavigationCommand as NavigationOpenCommand).screen.isBlank()) {
                     navController clearBackStackAndNavigateTo HarvestRoutes.Screen.FIND_WORKSPACE
                 }
             }
@@ -103,10 +103,10 @@ fun ForgotPasswordScreen(
                     errorMsg = (fpVm.forgotPasswordState as? ErrorState)?.throwable?.message,
                     label = stringResource(MR.strings.request_reset_password.resourceId),
                     onClick = { fpVm.forgotPassword() },
-                    isLoading = fpVm.forgotPasswordState is PraxisDataModel.LoadingState
+                    isLoading = fpVm.forgotPasswordState is OpenDataModel.LoadingState
                 )
             }
-            HarvestDialog(praxisCommand = fpVm.forgotPasswordNavigationCommand, onConfirm = {
+            HarvestDialog(openCommand = fpVm.forgotPasswordNavigationCommand, onConfirm = {
                 fpVm.forgotPasswordNavigationCommand = null
                 when (fpVm.forgotPasswordState) {
                     is SuccessState<*> -> {

@@ -31,9 +31,9 @@ import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.Ico
 import com.mutualmobile.harvestKmp.android.ui.screens.signUpScreen.components.SignUpTextField
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.viewmodels.ExistingOrgSignUpScreenViewModel
-import com.mutualmobile.harvestKmp.datamodel.NavigationPraxisCommand
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.PraxisDataModel.LoadingState
+import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.ErrorState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.LoadingState
 import org.koin.androidx.compose.get
 
 @Composable
@@ -41,10 +41,10 @@ fun SignUpScreen(
     navController: NavHostController,
     eossVm: ExistingOrgSignUpScreenViewModel = get()
 ) {
-    LaunchedEffect(eossVm.signUpPraxisCommand) {
-        when (eossVm.signUpPraxisCommand) {
-            is NavigationPraxisCommand -> {
-                val destination = (eossVm.signUpPraxisCommand as NavigationPraxisCommand).screen
+    LaunchedEffect(eossVm.signUpOpenCommand) {
+        when (eossVm.signUpOpenCommand) {
+            is NavigationOpenCommand -> {
+                val destination = (eossVm.signUpOpenCommand as NavigationOpenCommand).screen
                 eossVm.resetAll {
                     navController clearBackStackAndNavigateTo destination
                 }
@@ -123,9 +123,9 @@ fun SignUpScreen(
             }
         }
         HarvestDialog(
-            praxisCommand = eossVm.signUpPraxisCommand,
+            openCommand = eossVm.signUpOpenCommand,
             onConfirm = {
-                eossVm.signUpPraxisCommand = null
+                eossVm.signUpOpenCommand = null
             },
         )
     }

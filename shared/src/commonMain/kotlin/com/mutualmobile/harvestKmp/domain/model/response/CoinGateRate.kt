@@ -9,10 +9,17 @@ data class CoinGateRate(
     val bnb: CoinGateExchangeRate,
     val trx: CoinGateExchangeRate,
     val sol: CoinGateExchangeRate,
-    val eth: CoinGateExchangeRate
+    val eth: CoinGateExchangeRate,
+    val usdt: CoinGateExchangeRate
+)
+
+@Serializable
+data class ExchangeRate(
+    val symbol: String,
+    val price: String
 )
 
 @Serializable
 data class CoinGateExchangeRate(
-    val usdt: String
+    val usd: String
 )
