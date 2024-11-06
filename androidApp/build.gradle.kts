@@ -13,7 +13,7 @@ android {
     compileSdk = 33
     defaultConfig {
         applicationId = "com.mutualmobile.harvestKmp.android"
-        minSdk = 23
+        minSdk = 24
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -68,6 +68,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.25.1")
     // QR
     implementation("com.google.zxing:core:3.4.1")
+    implementation("com.journeyapps:zxing-android-embedded:4.1.0")
     AndroidDependencies.platforms.forEach { platformDependency ->
         implementation(platform(platformDependency))
     }

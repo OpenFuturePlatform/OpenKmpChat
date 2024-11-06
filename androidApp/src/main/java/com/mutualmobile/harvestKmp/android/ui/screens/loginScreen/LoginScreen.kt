@@ -35,6 +35,7 @@ import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.Sig
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.SurfaceTextButton
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.ui.utils.get
+import com.mutualmobile.harvestKmp.android.ui.utils.getIconUrl
 import com.mutualmobile.harvestKmp.android.viewmodels.LoginViewModel
 import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
@@ -95,12 +96,22 @@ fun LoginScreen(
             .padding(top = 20.dp),
         contentAlignment = Alignment.Center
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .fillMaxHeight(),
+            //verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Image(
+                modifier = Modifier
+                    .size(68.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop,
+                painter = painterResource(MR.images.btc.drawableResId),
+                contentDescription = "Icon"
+            )
             SignInTextField(
                 value = lVm.currentWorkEmail,
                 onValueChange = { updatedString -> lVm.currentWorkEmail = updatedString },
@@ -135,6 +146,7 @@ fun LoginScreen(
                 }
             )
         }
+
         HarvestDialog(
             openCommand = lVm.currentNavigationCommand,
             onConfirm = {

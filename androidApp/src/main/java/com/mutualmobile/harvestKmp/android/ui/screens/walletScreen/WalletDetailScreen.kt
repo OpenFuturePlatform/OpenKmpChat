@@ -1,5 +1,6 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.walletScreen
 
+import android.R
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -13,6 +14,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.runtime.Composable
@@ -23,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -41,7 +44,9 @@ import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
 import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
+import com.mutualmobile.harvestKmp.domain.model.response.ExchangeRate
 import org.koin.androidx.compose.get
+import java.math.BigDecimal
 import java.math.RoundingMode
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -95,7 +100,7 @@ fun WalletDetailScreen(
         Column(
             modifier = Modifier.fillMaxSize().padding(bodyPadding)
                 .then(Modifier.padding(top = 20.dp)),
-            verticalArrangement = Arrangement.Center,
+            //verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Image(
@@ -193,13 +198,13 @@ fun CircleButtonsWithTitles(mContext: Context, wsVm: WalletDetailScreenViewModel
             Box(
                 modifier = Modifier
                     .size(50.dp)
-                    .background(Color.DarkGray, CircleShape),
+                    .background(Color(0xffcacccc), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.KeyboardArrowUp,
                     contentDescription = "content description",
-                    tint = Color.White,
+                    tint = Color(0xff092929),
                     modifier = Modifier.size(30.dp)
                 )
             }
@@ -207,6 +212,8 @@ fun CircleButtonsWithTitles(mContext: Context, wsVm: WalletDetailScreenViewModel
             Text(
                 text = "Send",
                 fontSize = 16.sp,
+                //fontWeight = FontWeight(700),
+                //color = Color(0xff000000),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
@@ -230,13 +237,13 @@ fun CircleButtonsWithTitles(mContext: Context, wsVm: WalletDetailScreenViewModel
             Box(
                 modifier = Modifier
                     .size(50.dp)
-                    .background(Color.DarkGray, CircleShape),
+                    .background(Color(0xffcacccc), CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.KeyboardArrowDown,
                     contentDescription = "content description",
-                    tint = Color.White,
+                    tint = Color(0xff092929),
                     modifier = Modifier.size(30.dp)
                 )
             }
@@ -244,6 +251,8 @@ fun CircleButtonsWithTitles(mContext: Context, wsVm: WalletDetailScreenViewModel
             Text(
                 text = "Receive",
                 fontSize = 16.sp,
+                //fontWeight = FontWeight(700),
+                //color = Color(0xff000000),
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
@@ -254,31 +263,38 @@ fun CircleButtonsWithTitles(mContext: Context, wsVm: WalletDetailScreenViewModel
 @Composable
 fun Transactions(viewModel: WalletDetailScreenViewModel) {
     val transactions = viewModel.walletTransactions
+    val exchangeRates = viewModel.exchangeRate
     if (transactions.isNotEmpty()) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxSize().padding(top = 20.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             itemsIndexed(transactions) { position, transaction ->
                 TransactionCard(
                     position = position,
                     dateAt = transaction.date.toString(),
+                    currentAddress = viewModel.address,
                     fromAddress = transaction.from.last(),
-                    amount = transaction.amount.toString()
+                    toAddress = transaction.to,
+                    amount = transaction.amount.toString(),
+                    blockchainType = viewModel.blockchainType,
+                    rates = exchangeRates
                 )
-
-                Divider()
             }
         }
     } else {
-        Text(
-            text = stringResource(id = MR.strings.no_wallet_transactions.resourceId),
-            modifier = Modifier
-                .padding(top = 50.dp)
-                .fillMaxWidth(),
-            style = MaterialTheme.typography.subtitle1,
-            textAlign = TextAlign.Center
-        )
+        Column(
+            modifier = Modifier.fillMaxSize().padding(top = 20.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(
+                contentScale = ContentScale.FillHeight,
+                painter = painterResource(MR.images.search.drawableResId),
+                contentDescription = "Icon"
+            )
+        }
     }
 }
 
@@ -286,45 +302,79 @@ fun Transactions(viewModel: WalletDetailScreenViewModel) {
 fun TransactionCard(
     position: Int,
     dateAt: String,
+    blockchainType: String,
+    currentAddress: String,
     fromAddress: String,
-    amount: String
+    toAddress: String,
+    amount: String,
+    rates: List<ExchangeRate>
 ) {
+    val isOutGoing = currentAddress == fromAddress
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 8.dp, vertical = 8.dp)
             .clickable { }
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                //.padding(start = 16.dp, top = 8.dp)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+//            Box(
+//                modifier = Modifier
+//                    .size(50.dp)
+//                    .padding(all = 10.dp)
+//                    .background(Color.Green, CircleShape),
+//                contentAlignment = Alignment.Center,
+//            ) {
+//                Image(
+//                    painter = painterResource(id = R.drawable.btn_dropdown),
+//                    contentDescription = "Income",
+//                    modifier = Modifier.size(24.dp)
+//                )
+//            }
+            Column(
+                verticalArrangement = Arrangement.SpaceEvenly,
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    text = fromAddress.take(6) + "..." + fromAddress.takeLast(6),
-                    style = MaterialTheme.typography.subtitle2,
-                    modifier = Modifier.padding(start = 16.dp)
+                    text = "Transfer",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(8.dp)
+                )
+                val sDetail = if (isOutGoing) "To: ${toAddress.take(6) + "..." + toAddress.takeLast(6)}" else "From: ${fromAddress.take(6) + "..." + fromAddress.takeLast(6)}"
+                Text(
+                    text = sDetail,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(8.dp)
                 )
             }
-            Row(
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp, bottom = 8.dp)
+
+            Column(
+                verticalArrangement = Arrangement.SpaceEvenly,
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier.weight(1f)
             ) {
+                var amountUsd = BigDecimal.ZERO
+                for (i in 0 until rates.size) {
+                    amountUsd =
+                        amount.toBigDecimal().multiply(rates[i].price.toBigDecimal())
+                            .setScale(2, RoundingMode.DOWN)
+                }
+                val amountSign = if (isOutGoing) "-" else "+"
                 Text(
-                    text = amount,
-                    style = MaterialTheme.typography.body2,
-                    maxLines = 1,
-                    textAlign = TextAlign.Start,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(start = 16.dp)
+                    text = "$amountSign $amount  $blockchainType",
+                    color = if (isOutGoing) Color(0xffe74c3c) else Color(0xff18c331),
+                    modifier = Modifier.padding(8.dp)
+                )
+                Text(
+                    text = "≈ $amountUsd $ ",
+                    modifier = Modifier.padding(8.dp)
                 )
             }
         }
+
     }
 }
