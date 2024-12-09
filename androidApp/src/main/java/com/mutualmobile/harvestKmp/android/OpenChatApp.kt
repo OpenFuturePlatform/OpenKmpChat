@@ -14,6 +14,7 @@ val sharedComponent = SharedComponent()
 class OpenChatApp : Application() {
     override fun onCreate() {
         super.onCreate()
+        println("INITIALIZING APP")
         initSharedDependencies().apply {
             androidContext(this@OpenChatApp)
             modules(viewModelModule)

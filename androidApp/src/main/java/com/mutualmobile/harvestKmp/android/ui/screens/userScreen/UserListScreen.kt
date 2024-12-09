@@ -61,7 +61,7 @@ fun UserListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("User List") },
+                title = { Text("Contacts") },
                 backgroundColor = MaterialTheme.colors.primary,
                 contentPadding = WindowInsets.statusBars.asPaddingValues()
             )
@@ -80,7 +80,7 @@ fun UserListScreen(
                     Column(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Box(Modifier.weight(1f)) {
+                        Box(Modifier.weight(1f).padding(top = 4.dp)) {
                             ContactsBody(viewModel = ulVm)
                         }
                     }
@@ -96,6 +96,7 @@ fun UserListScreen(
 fun ContactsBody(viewModel: UserListViewModel) {
     val contacts = viewModel.contacts.collectAsState()
     val currentUser = viewModel.currentUser.collectAsState()
+
     if(contacts.value.isNotEmpty()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize()
@@ -142,7 +143,7 @@ fun ContactCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(all = 4.dp)
+            //.padding(all = 4.dp)
             .clickable { onChatClicked.invoke(position) }
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -151,7 +152,7 @@ fun ContactCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, top = 8.dp)
+                    //.padding(start = 8.dp, top = 8.dp)
             ) {
 
                 DefaultProfilePicture(displayName = otherUser.email!!)

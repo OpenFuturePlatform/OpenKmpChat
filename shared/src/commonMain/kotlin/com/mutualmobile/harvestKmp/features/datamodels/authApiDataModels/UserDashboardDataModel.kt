@@ -4,6 +4,7 @@ import com.mutualmobile.harvestKmp.datamodel.*
 import com.mutualmobile.harvestKmp.di.AuthApiUseCaseComponent
 import com.mutualmobile.harvestKmp.di.SharedComponent
 import com.mutualmobile.harvestKmp.di.UseCasesComponent
+import com.mutualmobile.harvestKmp.domain.model.response.LoginResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse
 import com.mutualmobile.harvestKmp.features.NetworkResponse.Failure
 import com.mutualmobile.harvestKmp.features.NetworkResponse.Success
@@ -67,12 +68,12 @@ class UserDashboardDataModel() :
             _dataFlow.emit(LogoutInProgress)
             when (val result = logoutUseCase.invoke()) {
                 is Success<*> -> {
-                    println("logged out!")
+                    println("logged out! with result: ${result.data}")
                     _dataFlow.emit(SuccessState(result.data))
                     intOpenCommand.emit(NavigationOpenCommand(screen = ""))
                 }
                 is Failure -> {
-                    println("logg out failed!")
+                    println("logout failed!")
                     _dataFlow.emit(ErrorState(result.throwable))
                     intOpenCommand.emit(
                         ModalOpenCommand(

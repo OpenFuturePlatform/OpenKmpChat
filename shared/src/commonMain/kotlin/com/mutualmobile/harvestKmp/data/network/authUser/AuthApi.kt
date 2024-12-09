@@ -30,7 +30,7 @@ interface AuthApi {
 
     suspend fun logout(): NetworkResponse<ApiResponse<String>>
 
-    suspend fun refreshToken(refreshToken: String): LoginResponse
+    suspend fun refreshToken(refreshToken: String, userId: String): LoginResponse
 
     suspend fun getUser(): NetworkResponse<GetUserResponse>
 

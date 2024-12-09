@@ -6,11 +6,14 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.messaging.FirebaseMessaging
+import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils.generateSecretKey
+import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils.getSecretKey
 import com.mutualmobile.harvestKmp.datamodel.OpenCommand
 import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.response.LoginResponse
 import com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels.GetUserDataModel
 import com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels.LoginDataModel
+import com.mutualmobile.harvestKmp.features.datamodels.authApiDataModels.UserDashboardDataModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -20,14 +23,20 @@ class LoginViewModel : ViewModel() {
 
     var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
     var currentLoginState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
+    var currentLogoutState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
     private val loginDataModel = LoginDataModel()
+    private val userDashboardDataModel = UserDashboardDataModel()
     private val getUserDataModel = GetUserDataModel()
 
     var currentErrorMsg: String? by mutableStateOf(null)
 
     init {
         with(loginDataModel) {
+            observeDataState()
+            observeNavigationCommands()
+        }
+        with(userDashboardDataModel) {
             observeDataState()
             observeNavigationCommands()
         }
@@ -43,10 +52,30 @@ class LoginViewModel : ViewModel() {
             currentLoginState = loginState
             if (loginState is OpenDataModel.SuccessState<*>) {
                 val loginResponse = loginState.data as? LoginResponse
+
+                getSecretKey("harvestKey")
+
                 FirebaseMessaging.getInstance().token.addOnSuccessListener { fcmToken ->
-                    println("LOGIN FcmToken: $fcmToken for userId: ${loginResponse?.userId!!}")
-                    loginDataModel.saveFcmToken(fcmToken, loginResponse.userId!!)
+                    if (loginResponse != null) {
+                        loginDataModel.saveFcmToken(fcmToken, loginResponse.userId!!)
+                    }
                 }
+            }
+        }.launchIn(viewModelScope)
+    }
+
+    private fun UserDashboardDataModel.observeNavigationCommands() =
+        praxisCommand.onEach { newCommand ->
+            currentNavigationCommand = newCommand
+        }.launchIn(viewModelScope)
+
+    private fun UserDashboardDataModel.observeDataState() {
+        dataFlow.onEach { logoutState ->
+            currentLogoutState = logoutState
+            if (logoutState is OpenDataModel.SuccessState<*>) {
+                val logoutStateResponse = logoutState.data as? LoginResponse
+                println("Logout State Response: $logoutStateResponse")
+
             }
         }.launchIn(viewModelScope)
     }

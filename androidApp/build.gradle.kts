@@ -69,6 +69,14 @@ dependencies {
     // QR
     implementation("com.google.zxing:core:3.4.1")
     implementation("com.journeyapps:zxing-android-embedded:4.1.0")
+    // BIOMETRIC
+    implementation("androidx.biometric:biometric:1.0.0")
+    //
+    implementation("com.google.android.material:material:1.4.0")
+    implementation("androidx.compose.material3:material3:1.0.0-alpha02")
+    implementation("androidx.compose.material:material-icons-extended:1.0.1")
+    implementation("com.airbnb.android:lottie-compose:4.2.0")
+
     AndroidDependencies.platforms.forEach { platformDependency ->
         implementation(platform(platformDependency))
     }

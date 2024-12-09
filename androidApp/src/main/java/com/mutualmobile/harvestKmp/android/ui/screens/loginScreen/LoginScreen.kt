@@ -1,7 +1,6 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.loginScreen
 
-import android.content.Intent
-import android.net.Uri
+import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.fadeIn
@@ -10,11 +9,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,29 +20,28 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.mutualmobile.harvestKmp.MR
-import com.mutualmobile.harvestKmp.android.ui.screens.common.HarvestDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.noAccountAnnotatedString
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.IconLabelButton
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.SignInTextField
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.SurfaceTextButton
+import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
+import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils.knownSecret
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.ui.utils.get
-import com.mutualmobile.harvestKmp.android.ui.utils.getIconUrl
 import com.mutualmobile.harvestKmp.android.viewmodels.LoginViewModel
 import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
-import com.mutualmobile.harvestKmp.datamodel.ModalOpenCommand
 import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
 import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
-import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.DataState
-import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.ErrorState
-import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.LoadingState
+import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.*
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
+import com.mutualmobile.harvestKmp.domain.model.response.LoginResponse
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.androidx.compose.get
 
@@ -57,17 +53,20 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit
 ) {
     val ctx = LocalContext.current
+    var pinSet by remember { mutableStateOf(false) }
+    val sharedPreferences = ctx.getSharedPreferences("MyAppPreferences", Context.MODE_PRIVATE)
 
     LaunchedEffect(lVm.currentNavigationCommand) {
         when (lVm.currentNavigationCommand) {
             is NavigationOpenCommand -> {
                 onLoginSuccess()
+                println("login success")
             }
         }
     }
 
     LaunchedEffect(userState) {
-        if (userState is OpenDataModel.SuccessState<*>) {
+        if (userState is SuccessState<*>) {
             if ((userState.data as? GetUserResponse) != null) {
 
                 if (lVm.currentNavigationCommand is NavigationOpenCommand) {
@@ -76,16 +75,51 @@ fun LoginScreen(
                         navController clearBackStackAndNavigateTo destination
                     }
                 }
-
             }
         }
     }
 
     LaunchedEffect(lVm.currentLoginState) {
+
         lVm.currentErrorMsg = when (lVm.currentLoginState) {
             is ErrorState -> (lVm.currentLoginState as ErrorState).throwable.message
             else -> null
         }
+        if (lVm.currentErrorMsg?.isNotEmpty() == true){
+            println("Error message : ${lVm.currentErrorMsg}")
+        }
+
+        pinSet = SecurityUtils.isPinSet(ctx)
+
+        println("Pin set : $pinSet")
+        println("Login state : ${if (lVm.currentLoginState is SuccessState<*>) (lVm.currentLoginState as SuccessState<*>).data else lVm.currentLoginState}")
+
+        if (lVm.currentLoginState is SuccessState<*>) {
+            sharedPreferences.edit().putBoolean("isAuthenticated", true).apply()
+            if (pinSet) {
+                // Navigate to the main content or dashboard LockScreen()
+                navController.navigate(HarvestRoutes.Screen.CHAT)
+            } else {
+                navController.navigate(HarvestRoutes.Screen.PIN_CREATE)
+            }
+        }
+
+    }
+
+    LaunchedEffect(lVm.currentLogoutState) {
+
+        lVm.currentErrorMsg = when (lVm.currentLogoutState) {
+            is ErrorState -> (lVm.currentLogoutState as ErrorState).throwable.message
+            else -> null
+        }
+        if (lVm.currentErrorMsg?.isNotEmpty() == true){
+            println("Error message : ${lVm.currentErrorMsg}")
+        }
+
+        println("Logout state : ${lVm.currentLogoutState}")
+
+        SecurityUtils.deleteEncryptedSecret(ctx)
+
     }
 
     Box(
@@ -130,7 +164,13 @@ fun LoginScreen(
             )
             IconLabelButton(
                 label = stringResource(MR.strings.login_screen_signIn_btn_txt.resourceId),
-                onClick = { lVm.login() },
+                onClick = {
+                    if (lVm.currentWorkEmail.isNotEmpty() && lVm.currentPassword.isNotEmpty()) {
+                        lVm.login()
+                    } else {
+                        lVm.currentErrorMsg = "Please enter email and password"
+                    }
+                },
                 isLoading = lVm.currentLoginState is LoadingState || userState is LoadingState,
                 errorMsg = lVm.currentErrorMsg,
             )
@@ -146,24 +186,6 @@ fun LoginScreen(
                 }
             )
         }
-
-        HarvestDialog(
-            openCommand = lVm.currentNavigationCommand,
-            onConfirm = {
-                if (lVm.currentNavigationCommand is ModalOpenCommand) {
-                    if ((lVm.currentNavigationCommand as ModalOpenCommand).title == "Work in Progress") {
-                        val intent = Intent(Intent.ACTION_VIEW).apply {
-                            data = Uri.parse("https://harvestkmp.web.app/")
-                        }
-                        ctx.startActivity(intent)
-                    }
-                }
-                lVm.currentNavigationCommand = null
-            },
-            onDismiss = {
-                lVm.currentNavigationCommand = null
-            }
-        )
     }
 }
 

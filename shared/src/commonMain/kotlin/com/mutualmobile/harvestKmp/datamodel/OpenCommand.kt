@@ -36,6 +36,9 @@ object HarvestRoutes {
             .plus("${Keys.orgId}={${Keys.orgId}}")
             .plus(BROWSER_AND)
             .plus("${Keys.orgIdentifier}={${Keys.orgIdentifier}}")
+        const val PIN_INPUT = "pin_input"
+        const val PIN_CREATE = "pin_create"
+        const val PIN_UNLOCK = "pin_unlock"
         const val SIGNUP = "signup"
         const val NEW_ORG_SIGNUP = "new_org_signup"
         const val ORG_USERS = "users"

@@ -77,12 +77,6 @@ class WalletDetailDataModel : OpenDataModel(), KoinComponent {
         }
     }
 
-    private suspend fun handleUnauthorized() {
-        settings.clear()
-        intOpenCommand.emit(ModalOpenCommand("Unauthorized", "Please login again!"))
-        intOpenCommand.emit(NavigationOpenCommand(HarvestRoutes.Screen.LOGIN))
-    }
-
     private fun executeJob(block: suspend () -> Unit) {
         currentLoadingJob?.cancel()
         currentLoadingJob = dataModelScope.launch { block() }

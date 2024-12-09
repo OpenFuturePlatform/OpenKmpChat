@@ -7,9 +7,10 @@
     <uses-permission android:name="android.permission.READ_CONTACTS"/>
     <uses-permission android:name="android.permission.ACTION_OPEN"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <application
             android:name="com.mutualmobile.harvestKmp.android.OpenChatApp"
-            android:icon="@mipmap/ic_launcher"
+            android:icon="@drawable/btc"
             android:label="@string/app_name"
             android:supportsRtl="true"
             tools:ignore="RtlEnabled"
@@ -34,8 +35,22 @@
                         android:scheme="https" />
             </intent-filter>
         </activity>
+        <activity
+                android:name="com.mutualmobile.harvestKmp.android.ui.UnlockActivity"
+                android:exported="true"
+                android:windowSoftInputMode="adjustResize"
+                android:allowEmbedded="true"
+                android:launchMode="singleTask"
+                android:resizeableActivity="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
         <service
-                android:name=".MyFirebaseMessagingService"
+                android:name=".OpenFirebaseMessagingService"
                 android:enabled="true"
                 android:exported="false">
             <intent-filter>

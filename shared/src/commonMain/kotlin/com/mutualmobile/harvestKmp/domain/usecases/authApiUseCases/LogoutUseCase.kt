@@ -19,12 +19,13 @@ class LogoutUseCase(
     private val tokenLocal: TokenLocal
 ) {
     suspend operator fun invoke(): NetworkResponse<ApiResponse<String>> {
-        return authApi.logout().apply {
-            settings.clear()
-            harvestUserLocal.clear()
-            tokenLocal.clear()
-            httpClient.plugin(Auth).providers.filterIsInstance<BearerAuthProvider>().first()
-                .clearToken() // this will invalidate the tokens
-        }
+        return authApi.logout()
+            .apply {
+                settings.clear()
+                harvestUserLocal.clear()
+                tokenLocal.clear()
+                httpClient.plugin(Auth).providers.filterIsInstance<BearerAuthProvider>().first()
+                    .clearToken() // this will invalidate the tokens
+            }
     }
 }

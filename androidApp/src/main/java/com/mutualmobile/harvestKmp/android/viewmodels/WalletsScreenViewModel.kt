@@ -246,7 +246,7 @@ class WalletsScreenViewModel : ViewModel() {
     }
 
     fun decryptWallet() {
-        val decrypted = SecurityUtils.decrypt(currentWalletPrivateKey, password)
+        val decrypted = SecurityUtils.decryptWithPassword(currentWalletPrivateKey, password)
         println("Decrypted $decrypted")
         currentWalletDecryptedPrivateKey = decrypted
     }

@@ -92,7 +92,7 @@ class ChatGroupDataModel : OpenDataModel(), KoinComponent {
                 getGroupMessagesByRecipientUseCase(username = username)) {
 
                 is NetworkResponse.Success -> {
-                    println("GROUP RESPONSE ${response.data}")
+                    //println("GROUP RESPONSE ${response.data}")
                     _dataFlow.emit(SuccessState(response.data))
                 }
 

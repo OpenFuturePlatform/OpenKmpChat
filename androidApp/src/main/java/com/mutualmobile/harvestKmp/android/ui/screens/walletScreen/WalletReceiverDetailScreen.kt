@@ -1,15 +1,20 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.walletScreen
 
 import android.R
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.*
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -19,7 +24,6 @@ import androidx.compose.material.icons.filled.Warning
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -34,6 +38,8 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
@@ -44,7 +50,8 @@ import com.google.zxing.Result
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.qrcode.QRCodeReader
-import com.mutualmobile.harvestKmp.android.ui.screens.common.*
+import com.mutualmobile.harvestKmp.android.ui.screens.common.WalletReceiverDecryptDialog
+import com.mutualmobile.harvestKmp.android.viewmodels.BiometricViewModel
 import com.mutualmobile.harvestKmp.android.viewmodels.WalletReceiverDetailScreenViewModel
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes.Screen.withWalletDetail
@@ -52,6 +59,7 @@ import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
 import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import org.koin.androidx.compose.get
 
+@SuppressLint("StateFlowValueCalledInComposition")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun WalletReceiverDetailScreen(
@@ -74,7 +82,43 @@ fun WalletReceiverDetailScreen(
     var addressField by remember { mutableStateOf(TextFieldValue("0x014D9Fcdb245CF31BfbaD92F3031FE036fE91Bc3")) }
     var amountField by remember { mutableStateOf(TextFieldValue("0.0001")) }
 
-    ShowDialogs(wrdsVm)
+    showDialogs(wrdsVm)
+
+    val biometricViewModel: BiometricViewModel = viewModel()
+
+    // TODO - use in login screen
+    val context = LocalContext.current as FragmentActivity
+    val biometricManager = BiometricManager.from(context)
+    val canAuthenticateWithBiometrics = when (biometricManager.canAuthenticate()) {
+        BiometricManager.BIOMETRIC_SUCCESS -> true
+        else -> {
+            Log.e("TAG", "Device does not support strong biometric authentication")
+            false
+        }
+    }
+
+    val biometricPrompt = BiometricPrompt(
+        context,
+        mContext.mainExecutor,
+        object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                Log.e("TAG", "onAuthenticationError")
+                biometricViewModel.isAuthenticated.value = false
+            }
+
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                Log.d("TAG", "Authentication successful!!!")
+                biometricViewModel.isAuthenticated.value = true
+            }
+
+            override fun onAuthenticationFailed() {
+                Log.e("TAG", "onAuthenticationFailed")
+                biometricViewModel.isAuthenticated.value = false
+            }
+        }
+    )
+    biometricViewModel.setBiometricPrompt(biometricPrompt)
+    biometricViewModel.setBiometricManager(biometricManager)
 
     val qrScanLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
@@ -133,39 +177,40 @@ fun WalletReceiverDetailScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (txtFieldError.value.isNotEmpty() || wrdsVm.currentBroadcastError.isNotEmpty()) {
-                    Icon(
-                        imageVector = Icons.Filled.Warning,
-                        contentDescription = "",
-                        tint = colorResource(R.color.darker_gray),
-                        modifier = Modifier
-                            .width(30.dp)
-                            .height(30.dp)
-                    )
-                    Text(
-                        text = txtFieldError.value,
-                        style = TextStyle(
-                            fontSize = 15.sp,
-                            fontFamily = FontFamily.Default,
-                            fontWeight = FontWeight.Bold
+            if (biometricViewModel.isAuthenticated.value) {
+                wrdsVm.decryptWallet()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (txtFieldError.value.isNotEmpty() || wrdsVm.currentBroadcastError.isNotEmpty()) {
+                        Icon(
+                            imageVector = Icons.Filled.Warning,
+                            contentDescription = "",
+                            tint = colorResource(R.color.darker_gray),
+                            modifier = Modifier
+                                .width(30.dp)
+                                .height(30.dp)
                         )
-                    )
-                    Text(
-                        text = wrdsVm.currentBroadcastError,
-                        style = TextStyle(
-                            fontSize = 15.sp,
-                            fontFamily = FontFamily.Default,
-                            fontWeight = FontWeight.Bold
+                        Text(
+                            text = txtFieldError.value,
+                            style = TextStyle(
+                                fontSize = 15.sp,
+                                fontFamily = FontFamily.Default,
+                                fontWeight = FontWeight.Bold
+                            )
                         )
-                    )
+                        Text(
+                            text = wrdsVm.currentBroadcastError,
+                            style = TextStyle(
+                                fontSize = 15.sp,
+                                fontFamily = FontFamily.Default,
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+                    }
                 }
-            }
-            if (wrdsVm.currentWalletDecryptedPrivateKey != "") {
 
                 OutlinedTextField(
                     value = addressField,
@@ -214,12 +259,6 @@ fun WalletReceiverDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(MaterialTheme.colors.background)
-//                        .border(
-//                            BorderStroke(
-//                                width = 2.dp,
-//                                color = colorResource(id = if (addressFieldError.value.isNotEmpty()) R.color.holo_red_dark else R.color.darker_gray)
-//                            )
-//                        )
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -234,12 +273,6 @@ fun WalletReceiverDetailScreen(
                     ),
                     visualTransformation = VisualTransformation.None,
                     modifier = Modifier.fillMaxWidth()
-//                        .border(
-//                            BorderStroke(
-//                                width = 2.dp,
-//                                color = colorResource(id = if (amountFieldError.value.isNotEmpty()) R.color.holo_red_dark else R.color.darker_gray)
-//                            )
-//                        )
                 )
 
                 Spacer(modifier = Modifier.width(16.dp).height(40.dp))
@@ -281,19 +314,23 @@ fun WalletReceiverDetailScreen(
                     }
                 }
             } else {
-                Spacer(modifier = Modifier.width(4.dp))
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Button(onClick = {
-                        wrdsVm.isWalletDecryptDialogVisible = true
-                    }) {
-                        Text(text = "Encrypt private key")
-                    }
-                    Spacer(modifier = Modifier.width(4.dp))
-                }
+                // Trigger biometric authentication
+                biometricViewModel.authenticate()
             }
+//            else {
+//                Spacer(modifier = Modifier.width(4.dp))
+//                Row(
+//                    horizontalArrangement = Arrangement.Center,
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    Button(onClick = {
+//                        wrdsVm.isWalletDecryptDialogVisible = true
+//                    }) {
+//                        Text(text = "Encrypt private key")
+//                    }
+//                    Spacer(modifier = Modifier.width(4.dp))
+//                }
+//            }
         }
 
     }
@@ -312,7 +349,6 @@ fun WalletReceiverDetailScreen(
             is OpenDataModel.SuccessState<*> -> {
                 wrdsVm.getWalletDetail(address!!, privateKey!!, blockchainType!!)
             }
-
             else -> Unit
         }
     }
@@ -320,7 +356,7 @@ fun WalletReceiverDetailScreen(
 }
 
 @Composable
-fun ShowDialogs(wrdsVm: WalletReceiverDetailScreenViewModel) {
+fun showDialogs(wrdsVm: WalletReceiverDetailScreenViewModel) {
 
     if (wrdsVm.isWalletDecryptDialogVisible) {
         WalletReceiverDecryptDialog(

@@ -3,22 +3,23 @@ package com.mutualmobile.harvestKmp.android.viewmodels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.android.ui.utils.BlockchainUtils
 import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
 import com.mutualmobile.harvestKmp.datamodel.OpenCommand
 import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
-import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.request.BlockchainType
-import com.mutualmobile.harvestKmp.domain.model.response.*
+import com.mutualmobile.harvestKmp.domain.model.response.ExchangeRate
+import com.mutualmobile.harvestKmp.domain.model.response.TransactionResponse
+import com.mutualmobile.harvestKmp.domain.model.response.WalletBalanceResponse
 import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
+
 
 class WalletReceiverDetailScreenViewModel : ViewModel() {
     var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
@@ -38,6 +39,7 @@ class WalletReceiverDetailScreenViewModel : ViewModel() {
 
     var currentWalletAddress by mutableStateOf("")
     var currentWalletDecryptedPrivateKey by mutableStateOf("")
+
     // TRANSACTIONS
     var walletTransactions by mutableStateOf(emptyList<TransactionResponse>())
 
@@ -109,19 +111,16 @@ class WalletReceiverDetailScreenViewModel : ViewModel() {
             }
         }.launchIn(viewModelScope)
     }
-
     private fun PostStateBroadcastDataModel.observeNavigationCommands() {
         praxisCommand.onEach { newCommand ->
             currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
     }
-
     private fun WalletDetailDataModel.observeNavigationCommands() =
         praxisCommand.onEach { newCommand ->
             println("WalletDetailScreenViewModel observeNavigationCommands $newCommand")
             currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
-
     private fun WalletDetailDataModel.observeDataState() {
 
         dataFlow.onEach { walletDetailState ->
@@ -139,12 +138,10 @@ class WalletReceiverDetailScreenViewModel : ViewModel() {
             }
         }.launchIn(viewModelScope)
     }
-
     private fun GetStateRatesDataModel.observeStateNavigationCommands() =
         praxisCommand.onEach { newCommand ->
             currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
-
     private fun GetStateRatesDataModel.observeStateDataState() {
         dataFlow.onEach { rateState ->
             currentScreenState = rateState
@@ -158,12 +155,10 @@ class WalletReceiverDetailScreenViewModel : ViewModel() {
             }
         }.launchIn(viewModelScope)
     }
-
     private fun GetStateBalanceDataModel.observeStateBalanceNavigationCommands() =
         praxisCommand.onEach { newCommand ->
             currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
-
     private fun GetStateBalanceDataModel.observeStateBalanceDataState() {
         dataFlow.onEach { balanceState ->
             currentScreenState = balanceState
@@ -178,12 +173,10 @@ class WalletReceiverDetailScreenViewModel : ViewModel() {
             }
         }.launchIn(viewModelScope)
     }
-
     private fun GetStateTransactionsDataModel.observeStateBalanceNavigationCommands() =
         praxisCommand.onEach { newCommand ->
             currentNavigationCommand = newCommand
         }.launchIn(viewModelScope)
-
     private fun GetStateTransactionsDataModel.observeStateBalanceDataState() {
         dataFlow.onEach { transactionState ->
             currentScreenState = transactionState
@@ -199,12 +192,10 @@ class WalletReceiverDetailScreenViewModel : ViewModel() {
 
         }.launchIn(viewModelScope)
     }
-
     fun decryptWallet() {
-        val decrypted = SecurityUtils.decrypt(privateKey, password)
-        println("Decrypted $decrypted")
+        println("Decrypting wallet with encrypted privateKey: ${privateKey.replace("\\s".toRegex(), "+")}")
+        val decrypted = SecurityUtils.decryptRaw(privateKey)
         currentWalletDecryptedPrivateKey = decrypted
-        isWalletDecryptDialogVisible = false
     }
 
     fun broadcastTransaction(
@@ -242,6 +233,7 @@ class WalletReceiverDetailScreenViewModel : ViewModel() {
     fun getWalletDetail(_address: String, _privateKey: String, _blockchainType: String) {
         address = _address
         privateKey = _privateKey
+        currentWalletDecryptedPrivateKey = _privateKey
         blockchainType = _blockchainType
         currentWalletAddress = _address
     }

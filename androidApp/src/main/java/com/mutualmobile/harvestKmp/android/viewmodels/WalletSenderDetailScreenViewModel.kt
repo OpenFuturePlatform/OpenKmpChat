@@ -5,13 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
 import com.mutualmobile.harvestKmp.datamodel.OpenCommand
 import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.domain.model.response.ExchangeRate
 import com.mutualmobile.harvestKmp.domain.model.response.TransactionResponse
 import com.mutualmobile.harvestKmp.domain.model.response.WalletBalanceResponse
-import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.*
+import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetStateBalanceDataModel
+import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetStateRatesDataModel
+import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.GetStateTransactionsDataModel
+import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.WalletDetailDataModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -19,7 +21,7 @@ import kotlinx.coroutines.flow.onEach
 
 class WalletSenderDetailScreenViewModel : ViewModel() {
     var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
-    var currentScreenState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
+    private var currentScreenState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading
 
@@ -29,29 +31,16 @@ class WalletSenderDetailScreenViewModel : ViewModel() {
     var blockchainType by mutableStateOf("")
     var decryptedPrivateKey by mutableStateOf("")
 
-    var exchangeRate by mutableStateOf(emptyList<ExchangeRate>())
-    var walletBalance by mutableStateOf(0.0)
-
-    var isWalletDetailDialogVisible by mutableStateOf(false)
-    var isWalletDecryptDialogVisible by mutableStateOf(false)
-    var isWalletTransactionDialogVisible by mutableStateOf(false)
+    private var exchangeRate by mutableStateOf(emptyList<ExchangeRate>())
+    private var walletBalance by mutableStateOf(0.0)
 
     // TRANSACTIONS
-    var walletTransactions by mutableStateOf(emptyList<TransactionResponse>())
-
-    // TRANSACTION BROADCAST
-    var currentReceiverAddress by mutableStateOf("")
-    var currentReceiverAmount by mutableStateOf("")
-    var currentBroadcastHash by mutableStateOf("")
-    var currentBroadcastError by mutableStateOf("")
-    var isBroadcastLoading by mutableStateOf(false)
+    private var walletTransactions by mutableStateOf(emptyList<TransactionResponse>())
 
     private val walletDetailDataModel = WalletDetailDataModel()
 
     private val getStateRatesDataModel = GetStateRatesDataModel()
     private val getStateBalanceDataModel = GetStateBalanceDataModel()
-    private val getStateTransactionsDataModel = GetStateTransactionsDataModel()
-
 
     init {
         println("WalletSenderDetailScreenViewModel init")
@@ -86,11 +75,9 @@ class WalletSenderDetailScreenViewModel : ViewModel() {
                 is OpenDataModel.SuccessState<*> -> {
                     println("Get Wallet Detail State $walletDetailState")
                 }
-
                 is OpenDataModel.ErrorState -> {
                     println("Get Wallet Detail State Error: ${walletDetailState.throwable}")
                 }
-
                 else -> Unit
             }
         }.launchIn(viewModelScope)
@@ -109,7 +96,6 @@ class WalletSenderDetailScreenViewModel : ViewModel() {
                     println("Rates in wallet detail: ${rateState.data}")
                     exchangeRate = rateState.data as List<ExchangeRate>
                 }
-
                 else -> Unit
             }
         }.launchIn(viewModelScope)

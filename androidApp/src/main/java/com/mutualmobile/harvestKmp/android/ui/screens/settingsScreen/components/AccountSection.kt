@@ -31,6 +31,7 @@ fun AccountSection(navController: NavHostController) {
     val coroutineScope = rememberCoroutineScope()
     var currentOpenCommand: OpenCommand? by remember { mutableStateOf(null) }
     var userLogoutState: DataState by remember { mutableStateOf(EmptyState) }
+
     val userDashboardDataModel: UserDashboardDataModel by remember {
         mutableStateOf(
             UserDashboardDataModel().apply {

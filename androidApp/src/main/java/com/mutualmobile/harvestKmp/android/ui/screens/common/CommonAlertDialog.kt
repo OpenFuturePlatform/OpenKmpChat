@@ -440,37 +440,37 @@ fun GenerateWalletDialog(
 
 
                     Spacer(modifier = Modifier.height(20.dp))
-
-                    TextField(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .border(
-                                BorderStroke(
-                                    width = 2.dp,
-                                    color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
-                                )
-                            ),
-                        colors = TextFieldDefaults.textFieldColors(
-                            backgroundColor = Color.Transparent,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        placeholder = { Text(text = "Enter password") },
-                        value = txtField.value,
-                        onValueChange = {
-                            txtField.value = it.take(10)
-                        })
-
-                    Spacer(modifier = Modifier.height(20.dp))
+                // PASSWORD FIELD
+//                    TextField(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .border(
+//                                BorderStroke(
+//                                    width = 2.dp,
+//                                    color = colorResource(id = if (txtFieldError.value.isEmpty()) R.color.holo_green_light else R.color.holo_red_dark)
+//                                )
+//                            ),
+//                        colors = TextFieldDefaults.textFieldColors(
+//                            backgroundColor = Color.Transparent,
+//                            focusedIndicatorColor = Color.Transparent,
+//                            unfocusedIndicatorColor = Color.Transparent
+//                        ),
+//                        placeholder = { Text(text = "Enter password") },
+//                        value = txtField.value,
+//                        onValueChange = {
+//                            txtField.value = it.take(10)
+//                        })
+//
+//                    Spacer(modifier = Modifier.height(20.dp))
 
                     Box(modifier = Modifier.padding(40.dp, 0.dp, 40.dp, 0.dp)) {
                         Button(
                             onClick = {
-                                if (txtField.value.isEmpty()) {
-                                    txtFieldError.value = "Password can not be empty"
-                                    return@Button
-                                }
-                                wsVm.password = txtField.value
+//                                if (txtField.value.isEmpty()) {
+//                                    txtFieldError.value = "Password can not be empty"
+//                                    return@Button
+//                                }
+//                                wsVm.password = txtField.value
                                 wsVm.isWalletGenerateDialogVisible = false
                                 wsVm.blockchainNetworks = selectedNetworks.map { BlockchainType.valueOf(it) }
                                 // confirm
@@ -1161,5 +1161,18 @@ fun WalletReceiverDecryptDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun BiometricButton(
+    onClick: () -> Unit,
+    text: String
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier.padding(8.dp)
+    ) {
+        Text(text = text)
     }
 }

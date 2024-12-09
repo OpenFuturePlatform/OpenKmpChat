@@ -34,12 +34,6 @@ class MainActivityViewModel : ViewModel() {
                 getUserState = newUserState
                 if (newUserState is OpenDataModel.SuccessState<*>) {
                     user = newUserState.data as? GetUserResponse
-
-//                    FirebaseMessaging.getInstance().token.addOnSuccessListener { fcmToken ->
-//                        println("FcmToken: $fcmToken")
-//                        getUserDataModel.saveFcmToken(fcmToken)
-//                    }
-
                 }
             }.launchIn(viewModelScope)
             activate()

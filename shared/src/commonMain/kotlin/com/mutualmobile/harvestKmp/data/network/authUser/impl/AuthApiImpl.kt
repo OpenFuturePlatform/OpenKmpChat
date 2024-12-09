@@ -80,11 +80,12 @@ class AuthApiImpl(private val httpClient: HttpClient) : AuthApi {
     }
 
     override suspend fun refreshToken(
-        refreshToken: String
+        refreshToken: String,
+        userId: String
     ): LoginResponse {
         return httpClient.post("${Endpoint.SPRING_BOOT_BASE_URL}${Endpoint.REFRESH_TOKEN}") {
             contentType(ContentType.Application.Json)
-            setBody(LoginResponse(refreshToken = refreshToken))
+            setBody(LoginResponse(refreshToken = refreshToken, userId = userId))
         }.body()
     }
 

@@ -98,7 +98,7 @@ fun ChatGptScreen(
                 contentPadding = WindowInsets.statusBars.asPaddingValues()
             )
         }
-    ) {  scaffoldPadding -> ChatApp(viewModel =  crVm,  user = user, paddingValues = scaffoldPadding)
+    ) {  scaffoldPadding -> ChatApp(viewModel =  crVm, user = user)
     }
 
     LaunchedEffect(Unit) {
@@ -116,8 +116,7 @@ fun ChatGptScreen(
 fun ChatApp(
     displayTextField: Boolean = true,
     viewModel: ChatViewModel = get(),
-    user: GetUserResponse?,
-    paddingValues: PaddingValues
+    user: GetUserResponse?
 ) {
 
     val mainActivityViewModel: MainActivityViewModel = get()

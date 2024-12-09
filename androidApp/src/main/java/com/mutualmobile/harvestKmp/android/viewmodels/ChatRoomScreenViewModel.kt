@@ -69,10 +69,10 @@ class ChatRoomScreenViewModel : ViewModel() {
     private fun getCurrentUserAndChats() {
         _loading.value = true
         with(getChatGroupDataModel) {
-            println("GROUP CHAT STATE")
+            //println("GROUP CHAT STATE")
             dataFlow.onEach { newChatState ->
                 if (newChatState is OpenDataModel.SuccessState<*>) {
-                    println("NEW ROOM STATE WITH ${newChatState.data}")
+                    //println("NEW ROOM STATE WITH ${newChatState.data}")
                     val newGroupMessage = newChatState.data as List<DisplayChatRoom>
                     _chats.value = newGroupMessage
                 }
@@ -95,7 +95,6 @@ class ChatRoomScreenViewModel : ViewModel() {
     }
 
     fun getUserGroupChats(userState: OpenDataModel.SuccessState<*>){
-        println("GROUP STATE $userState")
         val userResponse = userState.data as GetUserResponse
         _currentUser.value = User(id = userResponse.id, firstName = userResponse.firstName, lastName = userResponse.lastName, email = userResponse.email)
         getChatGroupDataModel.getUserGroupChats(username = userResponse.email ?: "")

@@ -73,7 +73,10 @@ fun ChatRoomScreen(
 
     LaunchedEffect(userState) {
         when (userState) {
-            is OpenDataModel.SuccessState<*> -> { crVm.getUserGroupChats(userState = userState) }
+            is OpenDataModel.SuccessState<*> -> {
+                crVm.getUserGroupChats(userState = userState)
+            }
+
             else -> Unit
         }
     }
@@ -81,7 +84,7 @@ fun ChatRoomScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("OpenAiX") },
+                title = { Text("OpenAiX Team") },
                 backgroundColor = MaterialTheme.colors.primary,
                 contentPadding = WindowInsets.statusBars.asPaddingValues()
             )
@@ -94,7 +97,11 @@ fun ChatRoomScreen(
         OpenChatTheme {
             Surface {
                 Box(modifier = Modifier.fillMaxSize().then(Modifier.padding(it))) {
-                    Image(painterResource(MR.images.background.drawableResId), null, contentScale = ContentScale.FillHeight)
+                    Image(
+                        painterResource(MR.images.background.drawableResId),
+                        null,
+                        contentScale = ContentScale.FillHeight
+                    )
                     LoadingIndicator(loadingFlow = crVm.loading)
 
                     Column(
@@ -115,13 +122,13 @@ fun ChatRoomScreen(
 @Composable
 fun ChatsBody(viewModel: ChatRoomScreenViewModel) {
     val chats = viewModel.chats.collectAsState()
-    if(chats.value.isNotEmpty()) {
+    if (chats.value.isNotEmpty()) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             //verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             itemsIndexed(chats.value) { position, chat ->
-                if(chat.group) {
+                if (chat.group) {
                     GroupChatCard(
                         position = position,
                         groupName = chat.chatRoomName,
@@ -262,7 +269,7 @@ fun OneToOneChatCard(
                     )
                 }
                 Text(
-                    text =  convertDateTimeToString( lastMessageAt!!),
+                    text = convertDateTimeToString(lastMessageAt!!),
                     style = MaterialTheme.typography.overline,
                     modifier = Modifier
                         .padding(top = 35.dp)
@@ -304,7 +311,7 @@ fun convertDateTimeToString(date: LocalDateTime): String {
 }
 
 @Composable
-fun FloatingActionButtonCompose(context: Context, navController: NavHostController){
+fun FloatingActionButtonCompose(context: Context, navController: NavHostController) {
 
     FloatingActionButton(
         shape = MaterialTheme.shapes.large.copy(CornerSize(percent = 40)),

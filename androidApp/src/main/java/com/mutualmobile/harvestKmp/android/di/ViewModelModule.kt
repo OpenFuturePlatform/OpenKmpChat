@@ -10,6 +10,7 @@ val viewModelModule = module {
     single { TimeScreenViewModel() }
     single { FindWorkspaceViewModel() }
     single { LoginViewModel() }
+    single { PinInputViewModel() }
     single { ChangePasswordViewModel() }
     single { ForgotPasswordViewModel() }
     single { ProjectScreenViewModel() }
@@ -28,4 +29,5 @@ val viewModelModule = module {
     single { WalletsScreenViewModel() }
     single { WalletSenderDetailScreenViewModel() }
     single { WalletReceiverDetailScreenViewModel() }
+    single { BiometricViewModel()}
 }

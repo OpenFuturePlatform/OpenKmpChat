@@ -51,7 +51,10 @@ class LoginDataModel :
             )) {
                 is NetworkResponse.Success -> {
                     _dataFlow.emit(SuccessState(loginResponse.data))
+                    // Save the token to the local storage
                     saveToken(loginResponse)
+
+                    // After successful login, navigate to the chat screen
                     intOpenCommand.emit(
                         NavigationOpenCommand(
                             screen = HarvestRoutes.Screen.CHAT
@@ -87,9 +90,11 @@ class LoginDataModel :
     ) {
         loginResponse.data.token?.let { token ->
             loginResponse.data.refreshToken?.let { refreshToken ->
+                println("token ${token.take(4)} and refresh token ${refreshToken.take(4)}")
                 saveSettingsUseCase(
                     token,
-                    refreshToken
+                    refreshToken,
+                    loginResponse.data.userId ?: ""
                 )
             }
         }
@@ -100,9 +105,9 @@ class LoginDataModel :
         userId: String
     ) {
         dataModelScope.launch(exceptionHandler) {
-            when (val response = fcmUseCase(FcmToken(token = fcmToken, userId = userId))) {
+            when (fcmUseCase(FcmToken(token = fcmToken, userId = userId))) {
                 is NetworkResponse.Success -> {
-                    println("fcm save response ${response.data.data}")
+
                 }
 
                 is NetworkResponse.Failure -> {

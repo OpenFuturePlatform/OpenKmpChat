@@ -3,13 +3,11 @@ package com.mutualmobile.harvestKmp.android.viewmodels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
 import com.mutualmobile.harvestKmp.datamodel.OpenCommand
 import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
-import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.response.*
 import com.mutualmobile.harvestKmp.features.datamodels.userWalletDataModels.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -199,7 +197,7 @@ class WalletDetailScreenViewModel : ViewModel() {
     }
 
     fun decryptWallet() {
-        val decrypted = SecurityUtils.decrypt(privateKey, password)
+        val decrypted = SecurityUtils.decryptWithPassword(privateKey, password)
         println("Decrypted $decrypted")
         decryptedPrivateKey = decrypted
     }

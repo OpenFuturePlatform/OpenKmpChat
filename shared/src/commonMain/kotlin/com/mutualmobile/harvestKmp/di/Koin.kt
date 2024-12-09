@@ -431,17 +431,20 @@ private suspend fun RefreshTokensParams.refreshToken(
 ): BearerTokens {
     try {
         val oldRefreshToken = settings.getString(Constants.REFRESH_TOKEN, "")
+        val userId = settings.getString(Constants.USER_ID, "")
+        println("Refresh token request with ${oldRefreshToken.take(5)}... and user id $userId")
         val refreshTokensResponse =
             this.client.post("${Endpoint.SPRING_BOOT_BASE_URL}$REFRESH_TOKEN") {
                 contentType(ContentType.Application.Json)
                 markAsRefreshTokenRequest()
-                setBody(LoginResponse(refreshToken = oldRefreshToken))
+                setBody(LoginResponse(refreshToken = oldRefreshToken, userId = userId))
             }
         if (refreshTokensResponse.body<String>().isNotEmpty()) {
             val refreshTokens = refreshTokensResponse.body<LoginResponse>()
             saveSettingsUseCase.invoke(
                 refreshTokens.token,
-                refreshTokens.refreshToken
+                refreshTokens.refreshToken,
+                refreshTokens.userId
             )
             BearerTokens(
                 settings.getString(Constants.JWT_TOKEN, ""),

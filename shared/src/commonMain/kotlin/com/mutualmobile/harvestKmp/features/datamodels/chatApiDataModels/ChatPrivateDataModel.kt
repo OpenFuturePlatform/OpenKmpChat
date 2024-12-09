@@ -231,15 +231,17 @@ class ChatPrivateDataModel : OpenDataModel(), KoinComponent {
         }
     }
 
-    fun saveAssistantNotes(chatId: String, isGroup: Boolean, startDate: String, endDate: String){
+    fun saveAssistantNotes(chatId: String, isGroup: Boolean, startDate: String, endDate: String) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
 
-            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0,0,0) //LocalDateTime.now()
-            val endTime: LocalDateTime = LocalDate.parse(endDate).atTime(0,0,0) //datetime.minus(24, DateTimeUnit.HOUR)
+            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0, 0, 0) //LocalDateTime.now()
+            val endTime: LocalDateTime =
+                LocalDate.parse(endDate).atTime(0, 0, 0) //datetime.minus(24, DateTimeUnit.HOUR)
 
-            when (val response = createAssistantNotesUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
+            when (val response =
+                createAssistantNotesUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
                 is NetworkResponse.Success -> {
                     println("AssistantNotes saved successfully: ${response.data}")
                     val res = mutableListOf(response.data)
@@ -267,7 +269,7 @@ class ChatPrivateDataModel : OpenDataModel(), KoinComponent {
         }
     }
 
-    fun getAssistantNotes(chatId: String, isGroup: Boolean){
+    fun getAssistantNotes(chatId: String, isGroup: Boolean) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
@@ -299,14 +301,16 @@ class ChatPrivateDataModel : OpenDataModel(), KoinComponent {
         }
     }
 
-    fun saveAssistantReminders(chatId: String, isGroup: Boolean, startDate: String, endDate: String){
+    fun saveAssistantReminders(chatId: String, isGroup: Boolean, startDate: String, endDate: String) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
-            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0,0,0) //LocalDateTime.now()
-            val endTime: LocalDateTime = LocalDate.parse(endDate).atTime(0,0,0) //datetime.minus(24, DateTimeUnit.HOUR)
+            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0, 0, 0) //LocalDateTime.now()
+            val endTime: LocalDateTime =
+                LocalDate.parse(endDate).atTime(0, 0, 0) //datetime.minus(24, DateTimeUnit.HOUR)
 
-            when (val response = createAssistantRemindersUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
+            when (val response =
+                createAssistantRemindersUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
                 is NetworkResponse.Success -> {
                     println("AssistantReminders saved successfully: ${response.data}")
                     val res = mutableListOf(response.data)
@@ -334,7 +338,7 @@ class ChatPrivateDataModel : OpenDataModel(), KoinComponent {
         }
     }
 
-    fun getAssistantReminders(chatId: String, isGroup: Boolean){
+    fun getAssistantReminders(chatId: String, isGroup: Boolean) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
@@ -366,14 +370,16 @@ class ChatPrivateDataModel : OpenDataModel(), KoinComponent {
         }
     }
 
-    fun saveAssistantTodos(chatId: String, isGroup: Boolean, startDate: String, endDate: String){
+    fun saveAssistantTodos(chatId: String, isGroup: Boolean, startDate: String, endDate: String) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
-            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0,0,0) //LocalDateTime.now()
-            val endTime: LocalDateTime = LocalDate.parse(endDate).atTime(0,0,0) //datetime.minus(24, DateTimeUnit.HOUR)
+            val startTime: LocalDateTime = LocalDate.parse(startDate).atTime(0, 0, 0) //LocalDateTime.now()
+            val endTime: LocalDateTime =
+                LocalDate.parse(endDate).atTime(0, 0, 0) //datetime.minus(24, DateTimeUnit.HOUR)
 
-            when (val response = createAssistantTodosUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
+            when (val response =
+                createAssistantTodosUseCase(message = AssistantRequest(chatId, isGroup, startTime, endTime))) {
                 is NetworkResponse.Success -> {
                     println("AssistantTodos saved successfully: ${response.data}")
                     val res = mutableListOf(response.data)
@@ -401,7 +407,7 @@ class ChatPrivateDataModel : OpenDataModel(), KoinComponent {
         }
     }
 
-    fun getAssistantTodos(chatId: String, isGroup: Boolean){
+    fun getAssistantTodos(chatId: String, isGroup: Boolean) {
         currentLoadingJob = dataModelScope.launch {
             _dataFlow.emit(LoadingState)
 
@@ -515,14 +521,14 @@ class ChatPrivateDataModel : OpenDataModel(), KoinComponent {
         }
     }
 
-    suspend fun downloadAttachment(id: Int) : ByteArray {
+    suspend fun downloadAttachment(id: Int): ByteArray {
         return when (val response =
-                downloadAttachmentUseCase(
-                   id = id
-                )) {
-                is NetworkResponse.Success -> {
-                    response.data
-                }
+            downloadAttachmentUseCase(
+                id = id
+            )) {
+            is NetworkResponse.Success -> {
+                response.data
+            }
 
             is NetworkResponse.Failure -> TODO()
             is NetworkResponse.Unauthorized -> TODO()

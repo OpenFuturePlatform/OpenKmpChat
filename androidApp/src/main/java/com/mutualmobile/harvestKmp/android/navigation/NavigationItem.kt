@@ -13,10 +13,11 @@ sealed class NavigationItem(
 ) {
 
     object Home : NavigationItem(HarvestRoutes.Screen.USER_HOME, "Home", Icons.Rounded.Home)
-    object Chat : NavigationItem(HarvestRoutes.Screen.CHAT, "Chat", Icons.Rounded.Send)
-    object Task : NavigationItem(HarvestRoutes.Screen.TASK, "Task", Icons.Rounded.List)
-    object ChatGPT : NavigationItem(HarvestRoutes.Screen.CHAT_GPT, "Chat GPT", Icons.Rounded.Search)
+    object Chat : NavigationItem(HarvestRoutes.Screen.CHAT, "Chat", Icons.Rounded.Chat)
+    object Task : NavigationItem(HarvestRoutes.Screen.TASK, "Task", Icons.Rounded.Assignment)
+    object ChatGPT : NavigationItem(HarvestRoutes.Screen.CHAT_GPT, "Chat GPT", Icons.Rounded.ChatBubble)
     object
-      Contacts : NavigationItem(HarvestRoutes.Screen.ORG_USERS, "Contacts", Icons.Rounded.AccountBox)
+      Contacts : NavigationItem(HarvestRoutes.Screen.ORG_USERS, "Contacts", Icons.Rounded.Contacts)
     object Settings : NavigationItem(HarvestRoutes.Screen.SETTINGS, "Settings", Icons.Rounded.Settings)
+    object PinInput : NavigationItem(HarvestRoutes.Screen.PIN_INPUT, "Pin", Icons.Rounded.Build)
 }
