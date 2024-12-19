@@ -73,10 +73,10 @@ fun AccountSection(navController: NavHostController) {
 //        title = stringResource(MR.strings.account_section_help_center_item_title.resourceId),
 //        showTopDivider = true
 //    )
-    SettingsListItem(
-        title = stringResource(MR.strings.account_section_switch_accounts_item_title.resourceId),
-        showTopDivider = true
-    )
+//    SettingsListItem(
+//        title = stringResource(MR.strings.account_section_switch_accounts_item_title.resourceId),
+//        showTopDivider = true
+//    )
     SettingsListItem(
         title = stringResource(MR.strings.account_section_change_password_item_title.resourceId),
         showTopDivider = true,

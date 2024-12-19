@@ -6,8 +6,8 @@ import androidx.compose.ui.graphics.Color
 //val PrimaryLightColor = Color(0xFFFF8F1E)
 //new
 val PrimaryColor = Color(0xFF0292FA)
-//val PrimaryLightColor = Color(0xFF75B1DC)
-val PrimaryLightColor = Color(0xFF3589a6)
+val PrimaryLightColor = Color(0xFF75B1DC)
+//val PrimaryLightColor = Color(0xFF3589a6)
 
 val SecondaryColor = Color(0xFF00B500)
 val TertiaryColor = Color(0xFF0079CF)

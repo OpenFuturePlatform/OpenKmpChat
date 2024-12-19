@@ -10,20 +10,17 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC"/>
     <application
             android:name="com.mutualmobile.harvestKmp.android.OpenChatApp"
-            android:icon="@drawable/btc"
+            android:icon="@drawable/open"
             android:label="@string/app_name"
             android:supportsRtl="true"
             tools:ignore="RtlEnabled"
             android:usesCleartextTraffic="true"
-            tools:targetApi="donut">
+            >
         <activity
                 android:name="com.mutualmobile.harvestKmp.android.ui.MainActivity"
                 android:exported="true"
                 android:theme="@style/SplashScreen"
-                android:windowSoftInputMode="adjustResize"
-                android:allowEmbedded="true"
-                android:launchMode="singleTask"
-                android:resizeableActivity="true">
+                android:windowSoftInputMode="adjustPan">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

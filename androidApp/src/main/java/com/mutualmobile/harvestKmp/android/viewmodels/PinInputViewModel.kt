@@ -19,6 +19,7 @@ class PinInputViewModel : ViewModel() {
 
     var currentNavigationCommand: OpenCommand? by mutableStateOf(null)
     var currentPinLockState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
+    var currentPinCreateState: OpenDataModel.DataState by mutableStateOf(OpenDataModel.EmptyState)
 
     private val pinInputDataModel = PinInputDataModel()
     var isAuthenticated by mutableStateOf(false)

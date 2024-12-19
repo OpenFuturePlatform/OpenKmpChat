@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
-    <string name="app_name">OpenAiX</string>
+    <string name="app_name">Open</string>
     <string name="title_activity_trending_repos_ui">TrendingReposUI</string>
     <string name="app_widget_description">Trending Github Repos</string>
     <string name="title_activity_main">MainActivity</string>
@@ -12,6 +12,8 @@
     <string name="notifications_section_running_timer_item_subtitle">See the ongoing status of running timers</string>
     <string name="notifications_section_reminders_item_title">Reminders</string>
     <string name="notifications_section_reminders_item_subtitle">Get reminded if you forget to submit your time</string>
+    <string name="notifications_section_alert_price_title">Alert Price</string>
+    <string name="notifications_section_alert_price_subtitle">Get reminded hot gainers</string>
     <string name="account_section_title">Account</string>
     <string name="account_section_wallet_title">Crypto Wallets</string>
     <string name="account_section_refer_friend_item_title">Refer a friend</string>

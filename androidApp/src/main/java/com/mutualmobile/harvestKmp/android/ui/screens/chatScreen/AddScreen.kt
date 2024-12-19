@@ -12,7 +12,9 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.rounded.GroupAdd
 import androidx.compose.material.icons.rounded.List
+import androidx.compose.material.icons.rounded.Message
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -84,7 +86,9 @@ fun AddScreen(
     ) {
         OpenChatTheme {
             Surface {
-                Box(modifier = Modifier.fillMaxSize().then(Modifier.padding(it))) {
+                Box(modifier = Modifier.fillMaxSize()
+                    .then(Modifier.padding(it))
+                ) {
                     Image(painterResource(
                         MR.images.background.drawableResId),
                         null,
@@ -110,13 +114,11 @@ fun AddScreen(
                             ) {
                                 DefaultLogoPicture()
                                 Text(
-                                    text = "Add new Group",
+                                    text = "Create New Group",
                                     style = Typography.subtitle2,
                                     modifier = Modifier.padding(start = 16.dp)
                                 )
                             }
-
-
                         }
                     }
 
@@ -192,7 +194,7 @@ fun UserCard(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                //.padding(all = 4.dp)
+                //.padding(all = 5.dp)
                 .clickable { onChatClicked.invoke(position) }
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -205,6 +207,7 @@ fun UserCard(
                 ) {
 
                     DefaultProfilePicture(displayName = otherUser.email!!)
+
                     if (isSelected) {
                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.background(MaterialTheme.colors.primary))
                     }
@@ -222,7 +225,8 @@ fun UserCard(
 
 @Composable
 fun DefaultLogoPicture() {
-    Icon(Icons.Rounded.List,
+    Icon(
+        imageVector = Icons.Rounded.GroupAdd,
         contentDescription = null,
         modifier = Modifier
            .size(PROFILE_PICTURE_SIZE.dp)

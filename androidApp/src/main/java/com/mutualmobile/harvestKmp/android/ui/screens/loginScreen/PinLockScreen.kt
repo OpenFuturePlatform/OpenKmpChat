@@ -3,6 +3,7 @@ package com.mutualmobile.harvestKmp.android.ui.screens.loginScreen
 import android.content.Context
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.compose.animation.core.*
@@ -379,9 +380,9 @@ fun PinInputColumn(isPinCorrect: (Boolean) -> Unit, navController: NavHostContro
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
-            .fillMaxHeight()
-            .systemBarsPadding()
+            //.fillMaxSize()
+            //.fillMaxHeight()
+            //.systemBarsPadding()
             //.padding(top = 20.dp)
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -397,7 +398,7 @@ fun PinInputColumn(isPinCorrect: (Boolean) -> Unit, navController: NavHostContro
                 Spacer(modifier = Modifier.height(50.dp))
 
                 Image(
-                    painter = painterResource(id = R.drawable.btc),
+                    painter = painterResource(id = R.drawable.open),
                     contentDescription = "Logo",
                     modifier = Modifier
                         .size(70.dp)
@@ -505,6 +506,16 @@ fun PinInputColumn(isPinCorrect: (Boolean) -> Unit, navController: NavHostContro
                                 .clickable {
                                     // Trigger biometric authentication
                                     biometricViewModel.authenticate()
+                                }
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Fingerprint,
+                            contentDescription = "Biometric",
+                            modifier = Modifier
+                                .size(25.dp)
+                                .clickable {
+                                    Toast.makeText(context, "Biometric authentication not available", Toast.LENGTH_SHORT).show()
                                 }
                         )
                     }

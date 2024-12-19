@@ -97,9 +97,11 @@ fun LoginScreen(
         if (lVm.currentLoginState is SuccessState<*>) {
             sharedPreferences.edit().putBoolean("isAuthenticated", true).apply()
             if (pinSet) {
+                println("Pin set, redirecting to main content")
                 // Navigate to the main content or dashboard LockScreen()
                 navController.navigate(HarvestRoutes.Screen.CHAT)
             } else {
+                println("Pin not set, redirecting to pin creation")
                 navController.navigate(HarvestRoutes.Screen.PIN_CREATE)
             }
         }
@@ -125,10 +127,10 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colors.primary)
+            .background(MaterialTheme.colors.onSecondary)
             .systemBarsPadding()
-            .padding(top = 20.dp),
-        contentAlignment = Alignment.Center
+            .padding(top = 30.dp),
+        contentAlignment = Alignment.BottomCenter
     ) {
 
         Column(
@@ -140,10 +142,11 @@ fun LoginScreen(
         ) {
             Image(
                 modifier = Modifier
+                    .padding(bottom = 20.dp)
                     .size(68.dp)
                     .clip(CircleShape),
                 contentScale = ContentScale.Crop,
-                painter = painterResource(MR.images.btc.drawableResId),
+                painter = painterResource(MR.images.open.drawableResId),
                 contentDescription = "Icon"
             )
             SignInTextField(
@@ -256,6 +259,7 @@ fun DefaultProfilePicture(displayName: String) {
 
     Image(
         modifier = Modifier
+            .padding(5.dp)
             .size(PROFILE_PICTURE_SIZE.dp)
             .clip(CircleShape),
         contentScale = ContentScale.Crop,
@@ -280,7 +284,7 @@ fun DefaultGroupPicture(displayName: String) {
             .size(PROFILE_PICTURE_SIZE.dp)
             .clip(CircleShape),
         contentScale = ContentScale.Crop,
-        painter = painterResource(MR.images.stock1.drawableResId),
+        painter = painterResource(MR.images.open.drawableResId),
         contentDescription = "User picture"
     )
 }

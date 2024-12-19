@@ -112,27 +112,19 @@ class MainActivity : FragmentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         handler = Handler(Looper.getMainLooper())
-//        checkInactivityRunnable = Runnable {
-//            // Redirect to home screen after 30 seconds
-//            println("checkInactivityRunnable")
-//            if (System.currentTimeMillis() - pauseTime > 10_000) {
-//
-//                val intent = Intent(this@MainActivity, MainActivity::class.java)
-//                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-//                startActivity(intent)
-//
-//            } else {
-//                println("checkInactivityRunnable elapsed time is less than 30 seconds")
-//                handler.postDelayed(checkInactivityRunnable, 30000)
-//            }
-//
-//        }
+        checkInactivityRunnable = Runnable {
+            // Redirect to home screen after 30 seconds
+            if (System.currentTimeMillis() - pauseTime > 30_000) {
+                println("checkInactivityRunnable elapsed time is greater than 10 seconds")
+                val intent = Intent(this@MainActivity, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
 
-        if (!isAuthenticated) {
-            println("MainActivity: Redirecting to UnlockActivity since it is not authenticated")
-            startActivity(Intent(this, UnlockActivity::class.java))
-            finish() // Close MainActivity to prevent back navigation to it
-            return
+            } else {
+                println("checkInactivityRunnable elapsed time is less than 30 seconds")
+                handler.postDelayed(checkInactivityRunnable, 30000)
+            }
+
         }
 
         setContent {
@@ -160,12 +152,6 @@ class MainActivity : FragmentActivity() {
                         navController.addOnDestinationChangedListener { _, destination, _ ->
                             println("DESTINATION ${destination.route}")
                             currentScreen = destination.route ?: HarvestRoutes.Screen.LOGIN_WITH_ORG_ID_IDENTIFIER
-//                            currentScreen =
-//                                if (destination.route?.contains("login") == true || destination.route?.contains("on_boarding") == true) {
-//                                    "login"
-//                                } else {
-//                                    "home"
-//                                }
                         }
 
                         val bottomNavigationItems = listOf(
@@ -427,6 +413,12 @@ class MainActivity : FragmentActivity() {
             }
         }
 
+//        if (!isAuthenticated) {
+//            println("MainActivity: Redirecting to UnlockActivity since it is not authenticated")
+//            startActivity(Intent(this, UnlockActivity::class.java))
+//            finish() // Close MainActivity to prevent back navigation to it
+//            return
+//        }
         // Set up the inactivity manager
         val activityObserver = LifecycleEventObserver { _, event ->
             println("current screen: $currentScreen and event: ${event.name} and auth: $isAuthenticated")
@@ -436,14 +428,14 @@ class MainActivity : FragmentActivity() {
                     val elapsedTime = System.currentTimeMillis() - pauseTime
                     //if (!isAuthenticated && currentScreen != HarvestRoutes.Screen.LOGIN) {
                     if (elapsedTime <= 30_000) {
-                        println("Inactivity Manager stop since elapsed time is ${elapsedTime/1000} seconds")
-                        //handler.removeCallbacks(checkInactivityRunnable)
+                        println("Inactivity Manager stop since elapsed time is ${elapsedTime / 1000} seconds")
+                        handler.removeCallbacks(checkInactivityRunnable)
                         InactivityManager.stop()
                     } else if (!isAuthenticated) {
-                        println("Inactivity Manager start since elapsed time is ${elapsedTime/1000} seconds and auth: $isAuthenticated")
+                        println("Inactivity Manager start since elapsed time is ${elapsedTime / 1000} seconds and auth: $isAuthenticated")
                         // If more than 30 seconds, require unlocking
-                        startActivity(Intent(this, UnlockActivity::class.java))
-                        finish()
+                        //startActivity(Intent(this, UnlockActivity::class.java))
+                        //finish()
                         //InactivityManager.start()
                     } else {
                         println("unknown state")
@@ -458,8 +450,8 @@ class MainActivity : FragmentActivity() {
 
                 Lifecycle.Event.ON_STOP -> {
                     println("MainActivity: ON_STOP")
-                    //handler.postDelayed(checkInactivityRunnable, 30000)
-                    InactivityManager.stop()
+                    handler.postDelayed(checkInactivityRunnable, 30_000)
+                    //InactivityManager.stop()
                     handleOnStopEvent()
                 }
 
@@ -481,7 +473,7 @@ class MainActivity : FragmentActivity() {
                 if (!isAuthenticated) {
                     println("InactivityManager: Redirecting to UnlockActivity since it is not authenticated")
                     startActivity(Intent(this@MainActivity, UnlockActivity::class.java))
-                    //finish()
+                    finish()
                 } else {
                     println("InactivityManager: Redirecting to UnlockActivity since it is authenticated")
                 }
@@ -515,7 +507,7 @@ class MainActivity : FragmentActivity() {
         lifecycleScope.launch {
             val elapsedTime = System.currentTimeMillis() - pauseTime
             println("handleOnStopEvent - Elapsed time: ${elapsedTime.div(1000)} seconds and isAuthenticated: $isAuthenticated")
-            if (elapsedTime >= 30000) {
+            if (elapsedTime >= 30_000) {
                 println("OnStopEvent setting isAuthenticated to false - $elapsedTime")
                 isAuthenticated = false
             }
@@ -526,10 +518,6 @@ class MainActivity : FragmentActivity() {
 
     private fun handleOnPauseEvent() {
         pauseTime = System.currentTimeMillis()
-    }
-
-    private fun isPinSet() : Boolean {
-        return sharedPreferences.getBoolean("isPinSet", false)
     }
 
     private fun removeSplashScreen() {
@@ -568,40 +556,6 @@ class MainActivity : FragmentActivity() {
             }
         }
     }
-
-//    @Composable
-//    fun OpenChatAppTopBar(
-//        onProfileClicked: () -> Unit,
-//        onSearchClicked: () -> Unit,
-//        displayName: String
-//    ) {
-//        TopAppBar(
-//            title = {
-//                Text(
-//                    stringResource(
-//                        id = MR.strings.app_name.resourceId,
-//                        formatArgs = arrayOf(displayName)
-//                    )
-//                )
-//            },
-//            navigationIcon = {
-//                IconButton(onClick = onProfileClicked) {
-//                    Icon(
-//                        imageVector = Icons.Default.Person,
-//                        contentDescription = stringResource(id = MR.strings.choose_project.resourceId)
-//                    )
-//                }
-//            },
-//            actions = {
-//                IconButton(onClick = onSearchClicked) {
-//                    Icon(
-//                        imageVector = Icons.Default.Search,
-//                        contentDescription = stringResource(id = MR.strings.choose_project.resourceId)
-//                    )
-//                }
-//            }
-//        )
-//    }
 
     @Composable
     fun OpenChatAppBottomNavigation(

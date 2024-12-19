@@ -6,35 +6,36 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.ProgressIndicatorDefaults.IndicatorBackgroundOpacity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Call
+import androidx.compose.material.icons.rounded.Attachment
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.mutualmobile.harvestKmp.android.ui.theme.Dimens
-import com.mutualmobile.harvestKmp.android.ui.theme.PrimaryColor
-import com.mutualmobile.harvestKmp.android.ui.theme.SecondaryColor
 import com.mutualmobile.harvestKmp.android.ui.theme.TertiaryColor
 import com.mutualmobile.harvestKmp.android.ui.utils.HashUtils
 import com.mutualmobile.harvestKmp.android.ui.utils.ImagePicker
@@ -76,9 +77,10 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
     }
 
     Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(2.dp),
+        verticalAlignment = Alignment.Bottom,
     ) {
+
         if (photoUri != null) {
             Box(Modifier.fillMaxHeight().padding(vertical = 4.dp, horizontal = 16.dp)) {
                 Image(
@@ -147,25 +149,13 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
 
             OutlinedTextField(
                 modifier = Modifier
-                    //.padding(8.dp)
-                    .background(MaterialTheme.colors.background)
-                    .imePadding()
-                    .wrapContentHeight()
+                    //.weight(1f)
                     .fillMaxWidth(),
                 colors = TextFieldDefaults.textFieldColors(backgroundColor = Color.White),
                 enabled = true,
                 value = inputText,
-                placeholder = {
-                    Text("Type message...")
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Default,
-                ),
-                onValueChange = {
-                    inputText = it
-                },
-                shape = RoundedCornerShape(Dimens.XS),
+                onValueChange = { inputText = it },
+                placeholder = { Text("Type message...") },
                 leadingIcon = {
                     IconButton(onClick = {
                         showImagePicker = true
@@ -175,31 +165,10 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
                             )
                         )
                     }) {
-                        Icon(Icons.Rounded.Add, "Attach Image File")
+                        Icon(Icons.Rounded.Attachment, "Attach Image File")
                     }
                 },
                 trailingIcon = {
-                    Row(
-                        modifier = Modifier
-                            .imePadding(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-
-                        IconButton(onClick = {
-                            showImagePicker = true
-                            launcher.launch(
-                                PickVisualMediaRequest(
-                                    mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo
-                                )
-                            )
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Recordings",
-                                tint = MaterialTheme.colors.primary
-                            )
-                        }
-
                         if (inputText.isNotEmpty()) {
                             IconButton(onClick = {
                                 sendMessage(inputText, TextType.TEXT, null, null)
@@ -212,8 +181,23 @@ fun SendMessage(sendMessage: (prompt: String, type: TextType, imageBytes: ByteAr
                                     tint = MaterialTheme.colors.primary
                                 )
                             }
+                        } else {
+                            IconButton(onClick = {
+                                showImagePicker = true
+                                launcher.launch(
+                                    PickVisualMediaRequest(
+                                        mediaType = ActivityResultContracts.PickVisualMedia.ImageAndVideo
+                                    )
+                                )
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "Recordings",
+                                    tint = MaterialTheme.colors.primary
+                                )
+                            }
                         }
-                    }
+
                 }
             )
         }

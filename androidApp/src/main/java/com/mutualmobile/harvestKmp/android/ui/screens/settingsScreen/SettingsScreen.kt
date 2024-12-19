@@ -16,7 +16,7 @@ import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.Scaffold
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
-import com.mutualmobile.harvestKmp.android.ui.screens.settingsScreen.components.AboutHarvestSection
+import com.mutualmobile.harvestKmp.android.ui.screens.settingsScreen.components.AboutOpenAiXSection
 import com.mutualmobile.harvestKmp.android.ui.screens.settingsScreen.components.AccountSection
 import com.mutualmobile.harvestKmp.android.ui.screens.settingsScreen.components.NotificationsSection
 
@@ -46,9 +46,9 @@ fun SettingsScreen(navController: NavHostController) {
                 .verticalScroll(rememberScrollState())
                 .navigationBarsPadding(),
         ) {
-            //NotificationsSection()
+            NotificationsSection()
             AccountSection(navController = navController)
-            AboutHarvestSection()
+            AboutOpenAiXSection()
         }
     }
 }

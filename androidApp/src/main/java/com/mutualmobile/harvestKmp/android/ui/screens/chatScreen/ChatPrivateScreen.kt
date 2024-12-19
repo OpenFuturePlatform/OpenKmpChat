@@ -7,21 +7,29 @@ import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Note
+import androidx.compose.material.icons.filled.NotificationImportant
+import androidx.compose.material.icons.filled.Queue
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogWindowProvider
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
+import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.ChatInput
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.Messages
 import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantDatePickerDialog
 import com.mutualmobile.harvestKmp.android.ui.screens.common.AssistantNoteDialog
@@ -39,6 +47,7 @@ import com.mutualmobile.harvestKmp.domain.model.ChatUser
 import com.mutualmobile.harvestKmp.domain.model.Message
 import com.mutualmobile.harvestKmp.domain.model.TextType
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.koin.androidx.compose.get
 
@@ -90,19 +99,19 @@ fun ChatPrivateScreen(
 
                     IconButton(onClick = { remindersMenuExpanded = !remindersMenuExpanded }) {
                         Icon(
-                            imageVector = Icons.Filled.DateRange,
+                            imageVector = Icons.Filled.NotificationImportant,
                             contentDescription = "Reminders"
                         )
                     }
                     IconButton(onClick = { notesMenuExpanded = !notesMenuExpanded }) {
                         Icon(
-                            imageVector = Icons.Filled.Create,
+                            imageVector = Icons.Filled.Note,
                             contentDescription = "Notes"
                         )
                     }
                     IconButton(onClick = { todosMenuExpanded = !todosMenuExpanded }) {
                         Icon(
-                            imageVector = Icons.Filled.List,
+                            imageVector = Icons.Filled.Queue,
                             contentDescription = "ToDos",
                         )
                     }
@@ -187,11 +196,11 @@ fun ChatPrivateScreen(
             )
         },
         scaffoldState = scaffoldState
-    ) {
+    ) { padding ->
         ChatPrivateApp(
             viewModel = crVm,
             canSendMessage = canSendMessage,
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(0.dp),
             user = user,
             recipient = recipient,
             isGroup = isGroup == "true",
@@ -343,7 +352,7 @@ fun ContactProfileNavigation(
     chatUid: String?,
     onChatClicked: (String, Boolean) -> Unit
 ) {
-    Row(modifier = Modifier.fillMaxSize()
+    Row(modifier = Modifier.fillMaxSize().padding(5.dp)
         .clickable {
             if (isGroup)
                 onChatClicked.invoke(chatUid!!, true)
@@ -385,49 +394,90 @@ fun ChatPrivateApp(
     OpenChatTheme {
         Surface {
             Box(modifier = Modifier.fillMaxSize()) {
-                Image(painterResource(MR.images.background.drawableResId), null, contentScale = ContentScale.FillHeight)
+                Image(
+                    painter = painterResource(MR.images.background.drawableResId),
+                    null,
+                    contentScale = ContentScale.FillHeight
+                )
                 Column(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    Box(Modifier.weight(1f)) {
+                    Row(Modifier.weight(1f)) {
                         Messages(messages, myUser)
                     }
                     if (!canSendMessage) {
                         CustomLinearProgressBar()
                     }
                     if (displayTextField) {
-                        SendMessage { text, type, imageByteArray, imageCheckSum ->
-                            val receiver = if (isGroup) groupChatId else recipient!!
-                            if (type == TextType.ATTACHMENT) {
-                                viewModel.uploadAttachment(
-                                    imageByteArray!!,
-                                    imageCheckSum!!,
-                                    Clock.System.now().epochSeconds.toString(),
-                                    Message(myUser, recipient = receiver, text, emptyList(), type),
-                                    isGroup
-                                )
-                            } else if (isGroup) {
-                                viewModel.saveGroupChat(
-                                    Message(
-                                        myUser,
-                                        recipient = groupChatId,
-                                        text,
-                                        emptyList(),
-                                        type
+                        ChatInput(
+                            onMessageChange = { text, type, imageByteArray, imageCheckSum ->
+                                val receiver = if (isGroup) groupChatId else recipient!!
+                                if (type == TextType.ATTACHMENT) {
+                                    viewModel.uploadAttachment(
+                                        imageByteArray!!,
+                                        imageCheckSum!!,
+                                        Clock.System.now().epochSeconds.toString(),
+                                        Message(myUser, recipient = receiver, text, emptyList(), type),
+                                        isGroup
                                     )
-                                )
-                            } else {
-                                viewModel.savePrivateChat(
-                                    Message(
-                                        myUser,
-                                        recipient = recipient!!,
-                                        text,
-                                        emptyList(),
-                                        type
+                                } else if (isGroup) {
+                                    viewModel.saveGroupChat(
+                                        Message(
+                                            myUser,
+                                            recipient = groupChatId,
+                                            text,
+                                            emptyList(),
+                                            TextType.TEXT
+                                        )
                                     )
-                                )
+                                } else {
+                                    viewModel.savePrivateChat(
+                                        Message(
+                                            myUser,
+                                            recipient = recipient!!,
+                                            text,
+                                            emptyList(),
+                                            TextType.TEXT
+                                        )
+                                    )
+                                }
+
                             }
-                        }
+                        )
+
+
+//                        SendMessage { text, type, imageByteArray, imageCheckSum ->
+//                            val receiver = if (isGroup) groupChatId else recipient!!
+//                            if (type == TextType.ATTACHMENT) {
+//                                viewModel.uploadAttachment(
+//                                    imageByteArray!!,
+//                                    imageCheckSum!!,
+//                                    Clock.System.now().epochSeconds.toString(),
+//                                    Message(myUser, recipient = receiver, text, emptyList(), type),
+//                                    isGroup
+//                                )
+//                            } else if (isGroup) {
+//                                viewModel.saveGroupChat(
+//                                    Message(
+//                                        myUser,
+//                                        recipient = groupChatId,
+//                                        text,
+//                                        emptyList(),
+//                                        type
+//                                    )
+//                                )
+//                            } else {
+//                                viewModel.savePrivateChat(
+//                                    Message(
+//                                        myUser,
+//                                        recipient = recipient!!,
+//                                        text,
+//                                        emptyList(),
+//                                        type
+//                                    )
+//                                )
+//                            }
+//                        }
                     }
                 }
             }

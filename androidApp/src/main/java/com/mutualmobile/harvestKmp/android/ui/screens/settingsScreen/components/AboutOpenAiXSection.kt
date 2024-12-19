@@ -6,7 +6,7 @@ import com.mutualmobile.harvestKmp.android.BuildConfig
 import com.mutualmobile.harvestKmp.MR
 
 @Composable
-fun AboutHarvestSection() {
+fun AboutOpenAiXSection() {
     ColoredText(text = stringResource(MR.strings.about_harvest_section_title.resourceId))
     SettingsListItem(
         title = stringResource(MR.strings.about_harvest_section_open_source_item_title.resourceId),
