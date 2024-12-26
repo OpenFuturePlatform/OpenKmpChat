@@ -9,7 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +19,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -31,17 +29,14 @@ import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.Ico
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.SignInTextField
 import com.mutualmobile.harvestKmp.android.ui.screens.loginScreen.components.SurfaceTextButton
 import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
-import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils.knownSecret
 import com.mutualmobile.harvestKmp.android.ui.utils.clearBackStackAndNavigateTo
 import com.mutualmobile.harvestKmp.android.ui.utils.get
 import com.mutualmobile.harvestKmp.android.viewmodels.LoginViewModel
 import com.mutualmobile.harvestKmp.data.network.PROFILE_PICTURE_SIZE
 import com.mutualmobile.harvestKmp.datamodel.HarvestRoutes
 import com.mutualmobile.harvestKmp.datamodel.NavigationOpenCommand
-import com.mutualmobile.harvestKmp.datamodel.OpenDataModel
 import com.mutualmobile.harvestKmp.datamodel.OpenDataModel.*
 import com.mutualmobile.harvestKmp.domain.model.response.GetUserResponse
-import com.mutualmobile.harvestKmp.domain.model.response.LoginResponse
 import kotlinx.coroutines.flow.StateFlow
 import org.koin.androidx.compose.get
 
@@ -59,6 +54,7 @@ fun LoginScreen(
     LaunchedEffect(lVm.currentNavigationCommand) {
         when (lVm.currentNavigationCommand) {
             is NavigationOpenCommand -> {
+                println("LoginScreen NavigationOpenCommand: ${lVm.currentNavigationCommand}")
                 onLoginSuccess()
                 println("login success")
             }
@@ -89,16 +85,15 @@ fun LoginScreen(
             println("Error message : ${lVm.currentErrorMsg}")
         }
 
-        pinSet = SecurityUtils.isPinSet(ctx)
-
-        println("Pin set : $pinSet")
-        println("Login state : ${if (lVm.currentLoginState is SuccessState<*>) (lVm.currentLoginState as SuccessState<*>).data else lVm.currentLoginState}")
-
         if (lVm.currentLoginState is SuccessState<*>) {
+
+            pinSet = SecurityUtils.isPinSet(ctx)
+            println("Pin state : $pinSet and Login state : ${if (lVm.currentLoginState is SuccessState<*>) (lVm.currentLoginState as SuccessState<*>).data else lVm.currentLoginState}")
+
             sharedPreferences.edit().putBoolean("isAuthenticated", true).apply()
+
             if (pinSet) {
                 println("Pin set, redirecting to main content")
-                // Navigate to the main content or dashboard LockScreen()
                 navController.navigate(HarvestRoutes.Screen.CHAT)
             } else {
                 println("Pin not set, redirecting to pin creation")
@@ -119,8 +114,9 @@ fun LoginScreen(
         }
 
         println("Logout state : ${lVm.currentLogoutState}")
-
-        SecurityUtils.deleteEncryptedSecret(ctx)
+        if (lVm.currentLogoutState is SuccessState<*>) {
+            SecurityUtils.clearPreferences(ctx)
+        }
 
     }
 

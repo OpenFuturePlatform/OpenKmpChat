@@ -17,6 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavHostController
 import com.google.accompanist.insets.ui.TopAppBar
 import com.mutualmobile.harvestKmp.MR
+import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.ChatInput
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.components.Messages
 import com.mutualmobile.harvestKmp.android.ui.theme.OpenChatTheme
 import com.mutualmobile.harvestKmp.android.viewmodels.ChatViewModel
@@ -135,9 +136,6 @@ fun ChatApp(
                 Image(painterResource(MR.images.background.drawableResId), null, contentScale = ContentScale.FillHeight)
                 Column(
                     modifier = Modifier
-                        .imePadding()
-                        .wrapContentHeight()
-                        .fillMaxHeight()
                         .fillMaxSize()
                 ) {
 
@@ -150,9 +148,14 @@ fun ChatApp(
                         DotsPulsing()
                     }
                     if (displayTextField) {
-                        SendMessage { text, type, _ , _->
-                           viewModel.saveChatGptChat(Message(myUser, myUser.name, text, emptyList(), type))
-                        }
+                        ChatInput(
+                            onMessageChange = { text, type, _ , _->
+                                viewModel.saveChatGptChat(Message(myUser, myUser.name, text, emptyList(), type))
+                            }
+                        )
+//                        SendMessage { text, type, _ , _->
+//                           viewModel.saveChatGptChat(Message(myUser, myUser.name, text, emptyList(), type))
+//                        }
                     }
 
                 }

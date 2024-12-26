@@ -47,6 +47,7 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
+import com.mutualmobile.harvestKmp.BuildConfig
 import com.mutualmobile.harvestKmp.MR
 import com.mutualmobile.harvestKmp.android.navigation.NavigationItem
 import com.mutualmobile.harvestKmp.android.ui.screens.chatScreen.*
@@ -92,9 +93,15 @@ class MainActivity : FragmentActivity() {
     private var pauseTime: Long
         get() = sharedPreferences.getLong("pauseTime", 0L)
         set(value) = sharedPreferences.edit().putLong("pauseTime", value).apply()
+    private var isPinSet: String
+        get() = sharedPreferences.getString("encryptedSecret", null) ?: ""
+        set(value) = sharedPreferences.edit().putString("encryptedSecret", value).apply()
+
 
     val mainActivityViewModel: MainActivityViewModel = get()
     private lateinit var navController: NavHostController
+
+    private var sleepTime = BuildConfig.SLEEP_TIME
     //private var currentScreen = "login"
     //private var isAuthenticated: Boolean by mutableStateOf(false)
 
@@ -113,18 +120,15 @@ class MainActivity : FragmentActivity() {
 
         handler = Handler(Looper.getMainLooper())
         checkInactivityRunnable = Runnable {
-            // Redirect to home screen after 30 seconds
-            if (System.currentTimeMillis() - pauseTime > 30_000) {
-                println("checkInactivityRunnable elapsed time is greater than 10 seconds")
-                val intent = Intent(this@MainActivity, MainActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(intent)
-
+            if (System.currentTimeMillis() - pauseTime > sleepTime) {
+                println("checkInactivityRunnable elapsed time is greater than $sleepTime seconds")
+                //val intent = Intent(this@MainActivity, MainActivity::class.java)
+                //intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+                //startActivity(intent)
             } else {
-                println("checkInactivityRunnable elapsed time is less than 30 seconds")
-                handler.postDelayed(checkInactivityRunnable, 30000)
+                println("checkInactivityRunnable elapsed time is less than $sleepTime seconds")
+                handler.postDelayed(checkInactivityRunnable, sleepTime)
             }
-
         }
 
         setContent {
@@ -138,9 +142,14 @@ class MainActivity : FragmentActivity() {
                         color = MaterialTheme.colors.background
                     ) {
                         val startDestination = remember {
-                            if (mainActivityViewModel.doesLocalUserExist) {
+                            if (isAuthenticated && mainActivityViewModel.doesLocalUserExist && isPinSet.isNotEmpty()) {
+                                println("LOGGED AND PIN SET")
                                 HarvestRoutes.Screen.CHAT
+                            } else if(isAuthenticated && isPinSet.isEmpty()){
+                                println("NEW LOGIN EXISTS BUT PIN NOT SET")
+                                HarvestRoutes.Screen.PIN_CREATE
                             } else {
+                                println("NEW LOGIN STARTING...")
                                 HarvestRoutes.Screen.LOGIN_WITH_ORG_ID_IDENTIFIER
                             }
                         }
@@ -413,32 +422,30 @@ class MainActivity : FragmentActivity() {
             }
         }
 
-//        if (!isAuthenticated) {
-//            println("MainActivity: Redirecting to UnlockActivity since it is not authenticated")
-//            startActivity(Intent(this, UnlockActivity::class.java))
-//            finish() // Close MainActivity to prevent back navigation to it
-//            return
-//        }
+        // Auth redirect
+        //InactivityRedirect()
+
         // Set up the inactivity manager
         val activityObserver = LifecycleEventObserver { _, event ->
-            println("current screen: $currentScreen and event: ${event.name} and auth: $isAuthenticated")
+            println("Screen: $currentScreen and event: ${event.name} and auth: $isAuthenticated")
             when (event) {
                 Lifecycle.Event.ON_RESUME -> {
                     println("MainActivity: ON_RESUME")
                     val elapsedTime = System.currentTimeMillis() - pauseTime
                     //if (!isAuthenticated && currentScreen != HarvestRoutes.Screen.LOGIN) {
-                    if (elapsedTime <= 30_000) {
+                    if (elapsedTime <= sleepTime) {
                         println("Inactivity Manager stop since elapsed time is ${elapsedTime / 1000} seconds")
                         handler.removeCallbacks(checkInactivityRunnable)
                         InactivityManager.stop()
                     } else if (!isAuthenticated) {
                         println("Inactivity Manager start since elapsed time is ${elapsedTime / 1000} seconds and auth: $isAuthenticated")
-                        // If more than 30 seconds, require unlocking
-                        //startActivity(Intent(this, UnlockActivity::class.java))
-                        //finish()
-                        //InactivityManager.start()
+                        // If more than $sleepTime seconds, require unlocking
+                        startActivity(Intent(this, UnlockActivity::class.java))
+                        finish()
+                        InactivityManager.start()
                     } else {
                         println("unknown state")
+
                     }
                 }
 
@@ -450,9 +457,10 @@ class MainActivity : FragmentActivity() {
 
                 Lifecycle.Event.ON_STOP -> {
                     println("MainActivity: ON_STOP")
-                    handler.postDelayed(checkInactivityRunnable, 30_000)
+                    handler.postDelayed(checkInactivityRunnable, sleepTime)
+
                     //InactivityManager.stop()
-                    handleOnStopEvent()
+                    //handleOnStopEvent()
                 }
 
                 Lifecycle.Event.ON_DESTROY -> {
@@ -462,20 +470,17 @@ class MainActivity : FragmentActivity() {
                 else -> Unit
             }
         }
-        // Observe the activity lifecycle
         lifecycle.addObserver(activityObserver)
-        // Set the inactivity timeout callback
         InactivityManager.setCallback {
             lifecycleScope.launch {
-                // Delay to prevent immediate redirect on lifecycle change
                 kotlinx.coroutines.delay(500)
-                //if (!isAuthenticated && currentScreen != HarvestRoutes.Screen.LOGIN) {
+                print("InactivityManager: Redirecting to UnlockActivity")
                 if (!isAuthenticated) {
-                    println("InactivityManager: Redirecting to UnlockActivity since it is not authenticated")
+                    println(" - not authenticated")
                     startActivity(Intent(this@MainActivity, UnlockActivity::class.java))
                     finish()
                 } else {
-                    println("InactivityManager: Redirecting to UnlockActivity since it is authenticated")
+                    println(" - authenticated")
                 }
             }
         }
@@ -507,12 +512,10 @@ class MainActivity : FragmentActivity() {
         lifecycleScope.launch {
             val elapsedTime = System.currentTimeMillis() - pauseTime
             println("handleOnStopEvent - Elapsed time: ${elapsedTime.div(1000)} seconds and isAuthenticated: $isAuthenticated")
-            if (elapsedTime >= 30_000) {
+            if (elapsedTime >= sleepTime) {
                 println("OnStopEvent setting isAuthenticated to false - $elapsedTime")
                 isAuthenticated = false
             }
-//            println("handleOnStopEvent - isAuthenticated: $isAuthenticated")
-//            isAuthenticated = false
         }
     }
 
@@ -570,7 +573,10 @@ class MainActivity : FragmentActivity() {
                 HarvestRoutes.Screen.ON_BOARDING,
                 HarvestRoutes.Screen.SIGNUP,
                 HarvestRoutes.Screen.LOGIN,
-                HarvestRoutes.Screen.LOGIN_WITH_ORG_ID_IDENTIFIER
+                HarvestRoutes.Screen.LOGIN_WITH_ORG_ID_IDENTIFIER,
+                HarvestRoutes.Screen.PIN_CREATE,
+                HarvestRoutes.Screen.PIN_INPUT,
+                HarvestRoutes.Screen.PIN_UNLOCK
             ) || currentRoute == null
         if (!visibility) {
             BottomNavigation(
@@ -607,86 +613,12 @@ class MainActivity : FragmentActivity() {
     }
 
     @Composable
-    fun ShowSettingDialog(openDialog: MutableState<Boolean>) {
-        if (openDialog.value) {
-            AlertDialog(
-                onDismissRequest = {
-                    openDialog.value = false
-                },
-                title = {
-                    Text(text = "Notification Permission")
-                },
-                text = {
-                    Text("Notification permission is required, Please allow notification permission from setting")
-                },
-
-                buttons = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        TextButton(
-                            onClick = {
-                                openDialog.value = false
-                            }
-                        ) {
-                            Text("Cancel")
-                        }
-                        Spacer(modifier = Modifier.width(20.dp))
-                        TextButton(
-                            onClick = {
-                                openDialog.value = false
-
-                                startActivity(intent)
-                            },
-                        ) {
-                            Text("Ok")
-                        }
-                    }
-
-                },
-            )
-        }
-    }
-
-    @Composable
-    fun ShowRationalPermissionDialog(openDialog: MutableState<Boolean>, onclick: () -> Unit) {
-        if (openDialog.value) {
-            AlertDialog(
-                onDismissRequest = {
-                    openDialog.value = false
-                },
-                title = {
-                    Text(text = "Alert")
-                },
-                text = {
-                    Text("Notification permission is required, to show notification")
-                },
-
-                buttons = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        TextButton(
-                            onClick = {
-                                openDialog.value = false
-                            }
-                        ) {
-                            Text("Cancel")
-                        }
-                        Spacer(modifier = Modifier.width(20.dp))
-                        TextButton(
-                            onClick = onclick,
-                        ) {
-                            Text("Ok")
-                        }
-                    }
-
-                },
-            )
+    fun InactivityRedirect() {
+        if (!isAuthenticated) {
+            println("MainActivity: Redirecting to UnlockActivity since it is not authenticated")
+            startActivity(Intent(this, UnlockActivity::class.java))
+            finish() // Close MainActivity to prevent back navigation to it
+            return
         }
     }
 }

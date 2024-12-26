@@ -138,6 +138,8 @@ android {
     defaultConfig {
         minSdk = 21
         targetSdk = 31
+
+        buildConfigField("Long", "SLEEP_TIME", "10000L")
     }
 }
 

@@ -110,7 +110,6 @@ private fun ChatTextField(
 
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let {
-
             println("PHOTO URL $uri")
             val contentResolver = context.contentResolver
         }

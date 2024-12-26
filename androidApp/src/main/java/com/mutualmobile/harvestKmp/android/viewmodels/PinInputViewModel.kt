@@ -3,7 +3,6 @@ package com.mutualmobile.harvestKmp.android.viewmodels
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mutualmobile.harvestKmp.android.ui.utils.SecurityUtils
@@ -64,7 +63,7 @@ class PinInputViewModel : ViewModel() {
     }
 
     fun removePinCode(context: Context){
-        SecurityUtils.deleteEncryptedSecret(context)
+        SecurityUtils.clearPreferences(context)
     }
 
     fun savePinCode(context: Context, pinCode: String) {

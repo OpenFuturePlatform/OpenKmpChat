@@ -237,11 +237,12 @@ object SecurityUtils {
         editor.apply()
     }
 
-    fun deleteEncryptedSecret(context: Context) {
+    fun clearPreferences(context: Context) {
         val sharedPreferences: SharedPreferences = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         val editor = sharedPreferences.edit()
         editor.remove("encryptedSecret")
         editor.remove("isPinSet")
+        editor.remove("isAuthenticated")
         editor.apply()
     }
 

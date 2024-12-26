@@ -1,5 +1,6 @@
 package com.mutualmobile.harvestKmp.android.ui.screens.loginScreen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -61,7 +62,14 @@ fun PinCodeCreationScreen(
 
     }
 
-    OpenChatTheme {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.onPrimary)
+            .systemBarsPadding()
+            .padding(top = 30.dp),
+        contentAlignment = Alignment.BottomCenter
+    ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.Center,

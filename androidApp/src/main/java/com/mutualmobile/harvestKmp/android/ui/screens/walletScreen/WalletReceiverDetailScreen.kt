@@ -109,6 +109,7 @@ fun WalletReceiverDetailScreen(
             override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                 Log.d("TAG", "Authentication successful!!!")
                 biometricViewModel.isAuthenticated.value = true
+                wrdsVm.currentBroadcastHash = ""
             }
 
             override fun onAuthenticationFailed() {

@@ -12,7 +12,7 @@ class UnlockActivity : FragmentActivity() {
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        println("UnlockActivity.onCreate")
+
         setContent {
             UnlockScreen(rememberNavController())
         }

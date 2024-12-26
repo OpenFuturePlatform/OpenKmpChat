@@ -72,6 +72,7 @@ class LoginViewModel : ViewModel() {
     private fun UserDashboardDataModel.observeDataState() {
         dataFlow.onEach { logoutState ->
             currentLogoutState = logoutState
+            println("Logout State: $logoutState")
             if (logoutState is OpenDataModel.SuccessState<*>) {
                 val logoutStateResponse = logoutState.data as? LoginResponse
                 println("Logout State Response: $logoutStateResponse")
