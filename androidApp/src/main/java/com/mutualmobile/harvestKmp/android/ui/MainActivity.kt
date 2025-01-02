@@ -457,10 +457,10 @@ class MainActivity : FragmentActivity() {
 
                 Lifecycle.Event.ON_STOP -> {
                     println("MainActivity: ON_STOP")
-                    handler.postDelayed(checkInactivityRunnable, sleepTime)
+                    //handler.postDelayed(checkInactivityRunnable, sleepTime)
 
                     //InactivityManager.stop()
-                    //handleOnStopEvent()
+                    handleOnStopEvent()
                 }
 
                 Lifecycle.Event.ON_DESTROY -> {
